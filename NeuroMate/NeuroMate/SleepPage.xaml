@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="NeuroMate.SleepPage">
+
+    <StackLayout Padding="20" Spacing="10">
+
+        <!-- Formularz dodawania danych -->
+        <Entry x:Name="TotalMinutesEntry" Placeholder="Total Sleep Minutes" Keyboard="Numeric"/>
+        <Entry x:Name="EfficiencyEntry" Placeholder="Sleep Efficiency (%)" Keyboard="Numeric"/>
+        <Entry x:Name="RemEntry" Placeholder="REM Minutes" Keyboard="Numeric"/>
+        <Entry x:Name="DeepEntry" Placeholder="Deep Sleep Minutes" Keyboard="Numeric"/>
+        <Entry x:Name="AwakeningsEntry" Placeholder="Awakenings Count" Keyboard="Numeric"/>
+        <Button Text="Add Record" Clicked="AddRecord_Clicked"/>
+
+        <!-- Lista rekordów -->
+        <CollectionView x:Name="SleepCollectionView">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <StackLayout Orientation="Horizontal" Padding="5">
+                        <Label Text="{Binding Date, StringFormat='{0:MM/dd/yyyy}'}" WidthRequest="100"/>
+                        <Label Text="{Binding TotalSleepMinutes}" WidthRequest="50"/>
+                        <Button Text="Delete" Clicked="DeleteRecord_Clicked"/>
+                    </StackLayout>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+    </StackLayout>
+
+</ContentPage>
