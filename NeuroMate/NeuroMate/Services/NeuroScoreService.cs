@@ -27,7 +27,7 @@ namespace NeuroMate.Services
             _lastComponents = new NeuroScoreComponents();
         }
 
-        public async Task<int> CalculateNeuroScoreAsync(
+        public Task<int> CalculateNeuroScoreAsync(
             PVTStatistics pvtStats,
             int minutesNoBreak,
             int hrv,
@@ -110,7 +110,7 @@ namespace NeuroMate.Services
             _currentUserData.HRV = hrv;
             _currentUserData.LastUpdate = DateTime.Now;
 
-            return finalScore;
+            return Task.FromResult(finalScore);
         }
 
         public UserData GetCurrentUserData()

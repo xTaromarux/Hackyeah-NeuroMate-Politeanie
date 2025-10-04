@@ -72,8 +72,15 @@
         {
             var window = base.CreateWindow(activationState);
             
-            // Dodatkowa obsługa błędów na poziomie okna
+            var displayInfo = DeviceDisplay.MainDisplayInfo;
+            
             window.Created += (s, e) => System.Diagnostics.Debug.WriteLine("Window Created");
+            
+            window.Width = 390;
+            window.Height = 640;
+            
+            window.X =  displayInfo.Width-window.Width;
+            window.Y =  displayInfo.Height-window.Height-40;
             
             return window;
         }

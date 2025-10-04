@@ -15,8 +15,8 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <!-- Header -->
-            <Frame Grid.Row="0" Style="{StaticResource CardFrame}">
+            <!-- Header z nową paletą -->
+            <Frame Grid.Row="0" Style="{StaticResource ModernCard}">
                 <Grid ColumnSpacing="15">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="60" />
@@ -28,7 +28,7 @@
                            HeightRequest="50" 
                            CornerRadius="25"
                            Padding="0"
-                           BackgroundColor="{StaticResource Success}">
+                           Background="{StaticResource AccentGradient}">
                         <Label Text="🧠" 
                                FontSize="25" 
                                HorizontalTextAlignment="Center" 
@@ -37,15 +37,15 @@
 
                     <StackLayout Grid.Column="1" Spacing="5">
                         <Label Text="Gry Kognitywne" 
-                               Style="{StaticResource SectionTitle}" />
+                               Style="{StaticResource TitleStyle}" />
                         <Label Text="Trenuj swój mózg z mini-grami naukowo potwierdzonymi"
-                               Style="{StaticResource Subtitle}" />
+                               Style="{StaticResource SubtitleStyle}" />
                     </StackLayout>
                 </Grid>
             </Frame>
 
             <!-- Test Stroop -->
-            <Frame Grid.Row="1" Style="{StaticResource CardFrame}">
+            <Frame Grid.Row="1" Style="{StaticResource ModernCard}">
                 <StackLayout Spacing="15">
                     <Grid ColumnSpacing="15">
                         <Grid.ColumnDefinitions>
@@ -61,10 +61,10 @@
 
                         <StackLayout Grid.Column="1" Spacing="5">
                             <Label Text="Test Stroop" 
-                                   FontAttributes="Bold"
+                                   Style="{StaticResource TitleStyle}"
                                    FontSize="18" />
                             <Label Text="Kliknij kolor słowa, nie jego znaczenie. Trenuje uwagę i hamowanie reakcji." 
-                                   Style="{StaticResource Subtitle}"
+                                   Style="{StaticResource BodyLabel}"
                                    LineBreakMode="WordWrap" />
                         </StackLayout>
 
@@ -74,7 +74,7 @@
                                Padding="8"
                                HasShadow="False">
                             <Label Text="30s" 
-                                   TextColor="White" 
+                                   TextColor="{StaticResource TextLight}" 
                                    FontAttributes="Bold"
                                    FontSize="12" />
                         </Frame>
@@ -88,19 +88,87 @@
 
                         <Button Grid.Column="0"
                                 Text="🎯 Rozpocznij Stroop"
-                                Style="{StaticResource PrimaryButton}" />
+                                Style="{StaticResource PrimaryButton}"
+                                Clicked="OnStroopGameClicked" />
 
                         <Frame Grid.Column="1" 
-                               BackgroundColor="{StaticResource Gray100}"
+                               BackgroundColor="{StaticResource SurfaceBackground}"
+                               CornerRadius="12"
                                Padding="10"
                                HasShadow="False">
                             <StackLayout Spacing="2">
                                 <Label Text="Rekord" 
-                                       FontSize="10" 
+                                       Style="{StaticResource CaptionLabel}" 
                                        HorizontalTextAlignment="Center" />
                                 <Label Text="92%" 
+                                       Style="{StaticResource BodyLabel}"
                                        FontAttributes="Bold"
-                                       FontSize="14"
+                                       HorizontalTextAlignment="Center" />
+                            </StackLayout>
+                        </Frame>
+                    </Grid>
+                </StackLayout>
+            </Frame>
+
+            <!-- Test Reakcji (PVT) -->
+            <Frame Grid.Row="2" Style="{StaticResource ModernCard}">
+                <StackLayout Spacing="15">
+                    <Grid ColumnSpacing="15">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <Label Grid.Column="0" 
+                               Text="⚡" 
+                               FontSize="30" 
+                               VerticalTextAlignment="Center" />
+
+                        <StackLayout Grid.Column="1" Spacing="5">
+                            <Label Text="Test Reakcji (PVT)" 
+                                   Style="{StaticResource TitleStyle}"
+                                   FontSize="18" />
+                            <Label Text="Kliknij gdy zobaczysz sygnał. Mierzy szybkość i uwagę."
+                                   Style="{StaticResource BodyLabel}"
+                                   LineBreakMode="WordWrap" />
+                        </StackLayout>
+
+                        <Frame Grid.Column="2" 
+                               BackgroundColor="{StaticResource Tertiary}"
+                               CornerRadius="15"
+                               Padding="8"
+                               HasShadow="False">
+                            <Label Text="2min" 
+                                   TextColor="{StaticResource TextPrimary}" 
+                                   FontAttributes="Bold"
+                                   FontSize="12" />
+                        </Frame>
+                    </Grid>
+
+                    <Grid ColumnSpacing="10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="2*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <Button Grid.Column="0"
+                                Text="⚡ Rozpocznij PVT"
+                                Style="{StaticResource AccentButton}"
+                                Clicked="OnPvtGameClicked" />
+
+                        <Frame Grid.Column="1" 
+                               BackgroundColor="{StaticResource SurfaceBackground}"
+                               CornerRadius="12"
+                               Padding="10"
+                               HasShadow="False">
+                            <StackLayout Spacing="2">
+                                <Label Text="Średni czas" 
+                                       Style="{StaticResource CaptionLabel}" 
+                                       HorizontalTextAlignment="Center" />
+                                <Label Text="245ms" 
+                                       Style="{StaticResource BodyLabel}"
+                                       FontAttributes="Bold"
                                        HorizontalTextAlignment="Center" />
                             </StackLayout>
                         </Frame>
@@ -109,7 +177,7 @@
             </Frame>
 
             <!-- N-back -->
-            <Frame Grid.Row="2" Style="{StaticResource CardFrame}">
+            <Frame Grid.Row="3" Style="{StaticResource ModernCard}">
                 <StackLayout Spacing="15">
                     <Grid ColumnSpacing="15">
                         <Grid.ColumnDefinitions>
@@ -125,10 +193,10 @@
 
                         <StackLayout Grid.Column="1" Spacing="5">
                             <Label Text="N-back (Pamięć)" 
-                                   FontAttributes="Bold"
+                                   Style="{StaticResource TitleStyle}"
                                    FontSize="18" />
-                            <Label Text="Reaguj gdy bodziec powtarza się sprzed n kroków. Trenuje pamięć roboczą." 
-                                   Style="{StaticResource Subtitle}"
+                            <Label Text="Reaguj gdy pozycja powtarza się sprzed N kroków. Trenuje pamięć roboczą." 
+                                   Style="{StaticResource BodyLabel}"
                                    LineBreakMode="WordWrap" />
                         </StackLayout>
 
@@ -137,7 +205,7 @@
                                CornerRadius="15"
                                Padding="8"
                                HasShadow="False">
-                            <Label Text="60s" 
+                            <Label Text="2min" 
                                    TextColor="White" 
                                    FontAttributes="Bold"
                                    FontSize="12" />
@@ -154,24 +222,27 @@
                         <Button Grid.Column="0"
                                 Text="1-back"
                                 Style="{StaticResource OutlineButton}"
-                                FontSize="12" />
+                                FontSize="12"
+                                Clicked="OnNBackGameClicked" />
 
                         <Button Grid.Column="1"
                                 Text="2-back"
                                 Style="{StaticResource PrimaryButton}"
-                                FontSize="12" />
+                                FontSize="12"
+                                Clicked="OnNBackGameClicked" />
 
                         <Frame Grid.Column="2" 
-                               BackgroundColor="{StaticResource Gray100}"
+                               BackgroundColor="{StaticResource SurfaceBackground}"
+                               CornerRadius="12"
                                Padding="10"
                                HasShadow="False">
                             <StackLayout Spacing="2">
                                 <Label Text="Poziom" 
-                                       FontSize="10" 
+                                       Style="{StaticResource CaptionLabel}" 
                                        HorizontalTextAlignment="Center" />
                                 <Label Text="2" 
+                                       Style="{StaticResource BodyLabel}"
                                        FontAttributes="Bold"
-                                       FontSize="14"
                                        HorizontalTextAlignment="Center" />
                             </StackLayout>
                         </Frame>
@@ -179,8 +250,8 @@
                 </StackLayout>
             </Frame>
 
-            <!-- PVT już jest w głównej stronie, ale dodajmy Task Switching -->
-            <Frame Grid.Row="3" Style="{StaticResource CardFrame}">
+            <!-- Task Switching -->
+            <Frame Grid.Row="4" Style="{StaticResource ModernCard}">
                 <StackLayout Spacing="15">
                     <Grid ColumnSpacing="15">
                         <Grid.ColumnDefinitions>
@@ -196,20 +267,20 @@
 
                         <StackLayout Grid.Column="1" Spacing="5">
                             <Label Text="Task Switching" 
-                                   FontAttributes="Bold"
+                                   Style="{StaticResource TitleStyle}"
                                    FontSize="18" />
-                            <Label Text="Przełączanie między regułami. Trenuje elastyczność poznawczą." 
-                                   Style="{StaticResource Subtitle}"
+                            <Label Text="Przełączaj się między zadaniami. Trenuje elastyczność umysłu."
+                                   Style="{StaticResource BodyLabel}"
                                    LineBreakMode="WordWrap" />
                         </StackLayout>
 
                         <Frame Grid.Column="2" 
-                               BackgroundColor="{StaticResource Warning}"
+                               BackgroundColor="{StaticResource Secondary}"
                                CornerRadius="15"
                                Padding="8"
                                HasShadow="False">
-                            <Label Text="45s" 
-                                   TextColor="White" 
+                            <Label Text="90s" 
+                                   TextColor="{StaticResource TextPrimary}" 
                                    FontAttributes="Bold"
                                    FontSize="12" />
                         </Frame>
@@ -222,20 +293,22 @@
                         </Grid.ColumnDefinitions>
 
                         <Button Grid.Column="0"
-                                Text="🔄 Rozpocznij Switching"
-                                Style="{StaticResource SecondaryButton}" />
+                                Text="🔄 Rozpocznij Task Switch"
+                                Style="{StaticResource SecondaryButton}"
+                                Clicked="OnTaskSwitchingClicked" />
 
                         <Frame Grid.Column="1" 
-                               BackgroundColor="{StaticResource Gray100}"
+                               BackgroundColor="{StaticResource SurfaceBackground}"
+                               CornerRadius="12"
                                Padding="10"
                                HasShadow="False">
                             <StackLayout Spacing="2">
-                                <Label Text="Średnia" 
-                                       FontSize="10" 
+                                <Label Text="Dokładność" 
+                                       Style="{StaticResource CaptionLabel}" 
                                        HorizontalTextAlignment="Center" />
-                                <Label Text="430ms" 
+                                <Label Text="87%" 
+                                       Style="{StaticResource BodyLabel}"
                                        FontAttributes="Bold"
-                                       FontSize="12"
                                        HorizontalTextAlignment="Center" />
                             </StackLayout>
                         </Frame>
@@ -243,62 +316,6 @@
                 </StackLayout>
             </Frame>
 
-            <!-- Statystyki ogólne -->
-            <Frame Grid.Row="4" Style="{StaticResource CardFrame}">
-                <StackLayout Spacing="15">
-                    <Label Text="📊 Twoje postępy" 
-                           Style="{StaticResource SectionTitle}" />
-                    
-                    <Grid ColumnSpacing="20" RowSpacing="15">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-
-                        <!-- Dziś -->
-                        <StackLayout Grid.Row="0" Grid.Column="0">
-                            <Label Text="Dziś" Style="{StaticResource StatDescription}" />
-                            <Label Text="4" Style="{StaticResource StatLabel}" FontSize="24" />
-                            <Label Text="sesje" Style="{StaticResource StatDescription}" />
-                        </StackLayout>
-
-                        <!-- Ten tydzień -->
-                        <StackLayout Grid.Row="0" Grid.Column="1">
-                            <Label Text="Ten tydzień" Style="{StaticResource StatDescription}" />
-                            <Label Text="23" Style="{StaticResource StatLabel}" FontSize="24" />
-                            <Label Text="sesje" Style="{StaticResource StatDescription}" />
-                        </StackLayout>
-
-                        <!-- Średnia poprawa -->
-                        <StackLayout Grid.Row="0" Grid.Column="2">
-                            <Label Text="Poprawa" Style="{StaticResource StatDescription}" />
-                            <Label Text="+15%" Style="{StaticResource StatLabel}" FontSize="24" TextColor="{StaticResource Success}" />
-                            <Label Text="RT" Style="{StaticResource StatDescription}" />
-                        </StackLayout>
-
-                        <!-- Pasek postępu -->
-                        <StackLayout Grid.Row="1" Grid.ColumnSpan="3" Spacing="10">
-                            <Label Text="Postęp do następnego poziomu" 
-                                   Style="{StaticResource Subtitle}"
-                                   HorizontalTextAlignment="Center" />
-                            
-                            <ProgressBar Progress="0.65"
-                                         ProgressColor="{StaticResource Success}"
-                                         BackgroundColor="{StaticResource Gray200}"
-                                         HeightRequest="12" />
-                            
-                            <Label Text="13/20 sesji do poziomu Expert" 
-                                   Style="{StaticResource StatDescription}"
-                                   HorizontalTextAlignment="Center" />
-                        </StackLayout>
-                    </Grid>
-                </StackLayout>
-            </Frame>
         </Grid>
     </ScrollView>
 </ContentPage>

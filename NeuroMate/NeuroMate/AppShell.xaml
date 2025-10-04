@@ -6,49 +6,94 @@
     xmlns:local="clr-namespace:NeuroMate"
     xmlns:views="clr-namespace:NeuroMate.Views"
     Title="NeuroMate"
-    FlyoutBehavior="Flyout">
+    Shell.BackgroundColor="{StaticResource PageBackground}"
+    Shell.TabBarBackgroundColor="{StaticResource CardBackground}"
+    Shell.TabBarForegroundColor="{StaticResource Primary}"
+    Shell.TabBarTitleColor="{StaticResource TextPrimary}"
+    Shell.TabBarUnselectedColor="{StaticResource TextSecondary}">
 
-    <Shell.FlyoutHeader>
-        <Grid BackgroundColor="{StaticResource Primary}" HeightRequest="200" Padding="20">
-            <StackLayout VerticalOptions="Center" Spacing="10">
-                <Frame WidthRequest="80" 
-                       HeightRequest="80" 
-                       CornerRadius="40"
-                       Padding="0"
-                       BackgroundColor="{StaticResource White}"
-                       HorizontalOptions="Center">
-                    <Label Text="🤖" 
-                           FontSize="40" 
-                           HorizontalTextAlignment="Center" 
-                           VerticalTextAlignment="Center" />
-                </Frame>
-                <Label Text="NeuroMate" 
-                       FontSize="24" 
-                       FontAttributes="Bold"
-                       TextColor="White"
-                       HorizontalTextAlignment="Center" />
-                <Label Text="Twój asystent biohackingu" 
-                       FontSize="14" 
-                       TextColor="White"
-                       HorizontalTextAlignment="Center" />
-            </StackLayout>
-        </Grid>
-    </Shell.FlyoutHeader>
+    <Shell.Resources>
+        <ResourceDictionary>
+            <!-- Definicja stylów dla zakładek -->
+            <Style x:Key="BaseShellItemStyle" TargetType="BaseShellItem">
+                <Setter Property="Shell.BackgroundColor" Value="{StaticResource CardBackground}" />
+                <Setter Property="Shell.ForegroundColor" Value="{StaticResource Primary}" />
+                <Setter Property="Shell.TitleColor" Value="{StaticResource TextPrimary}" />
+                <Setter Property="Shell.DisabledColor" Value="{StaticResource TextMuted}" />
+                <Setter Property="Shell.UnselectedColor" Value="{StaticResource TextSecondary}" />
+                <Setter Property="Shell.TabBarBackgroundColor" Value="{StaticResource CardBackground}" />
+                <Setter Property="Shell.TabBarForegroundColor" Value="{StaticResource Primary}" />
+                <Setter Property="Shell.TabBarTitleColor" Value="{StaticResource TextPrimary}" />
+                <Setter Property="Shell.TabBarUnselectedColor" Value="{StaticResource TextSecondary}" />
+            </Style>
+            
+            <!-- Style dla TabBar -->
+            <Style TargetType="TabBar" BasedOn="{StaticResource BaseShellItemStyle}">
+                <Setter Property="Shell.TabBarBackgroundColor" Value="{StaticResource CardBackground}" />
+                <Setter Property="Shell.TabBarForegroundColor" Value="{StaticResource Primary}" />
+                <Setter Property="Shell.TabBarTitleColor" Value="{StaticResource TextPrimary}" />
+                <Setter Property="Shell.TabBarUnselectedColor" Value="{StaticResource TextSecondary}" />
+            </Style>
+            
+            <!-- Style dla Tab -->
+            <Style TargetType="Tab" BasedOn="{StaticResource BaseShellItemStyle}">
+                <Setter Property="Shell.BackgroundColor" Value="Transparent" />
+                <Setter Property="Shell.ForegroundColor" Value="{StaticResource Primary}" />
+                <Setter Property="Shell.TitleColor" Value="{StaticResource TextPrimary}" />
+                <Setter Property="Shell.UnselectedColor" Value="{StaticResource TextSecondary}" />
+            </Style>
+            
+            <!-- Style dla ShellContent -->
+            <Style TargetType="ShellContent" BasedOn="{StaticResource BaseShellItemStyle}">
+                <Setter Property="Shell.BackgroundColor" Value="Transparent" />
+                <Setter Property="Shell.ForegroundColor" Value="{StaticResource Primary}" />
+                <Setter Property="Shell.TitleColor" Value="{StaticResource TextPrimary}" />
+                <Setter Property="Shell.UnselectedColor" Value="{StaticResource TextSecondary}" />
+            </Style>
+        </ResourceDictionary>
+    </Shell.Resources>
 
-    <FlyoutItem Title="Dashboard" Icon="🏠">
-        <ShellContent ContentTemplate="{DataTemplate local:MainPage}" />
-    </FlyoutItem>
+    <!-- Dolna nawigacja z poprawionymi stylami -->
+    <TabBar>
+        <ShellContent Title="Dashboard"
+                      Icon="🏠"
+                      Route="MainPage"
+                      ContentTemplate="{DataTemplate local:MainPage}"
+                      Shell.ForegroundColor="{StaticResource Primary}"
+                      Shell.TitleColor="{StaticResource TextPrimary}"
+                      Shell.UnselectedColor="{StaticResource TextSecondary}" />
 
-    <FlyoutItem Title="Gry Kognitywne" Icon="🧠">
-        <ShellContent ContentTemplate="{DataTemplate views:CognitiveGamesPage}" />
-    </FlyoutItem>
+        <ShellContent Title="Gry"
+                      Icon="🧠"
+                      Route="CognitiveGamesPage"
+                      ContentTemplate="{DataTemplate views:CognitiveGamesPage}"
+                      Shell.ForegroundColor="{StaticResource Primary}"
+                      Shell.TitleColor="{StaticResource TextPrimary}"
+                      Shell.UnselectedColor="{StaticResource TextSecondary}" />
 
-    <FlyoutItem Title="Podsumowanie" Icon="📊">
-        <ShellContent ContentTemplate="{DataTemplate views:DailySummaryPage}" />
-    </FlyoutItem>
+        <ShellContent Title="Interwencje"
+                      Icon="🎯"
+                      Route="InterventionPage"
+                      ContentTemplate="{DataTemplate views:InterventionPage}"
+                      Shell.ForegroundColor="{StaticResource Primary}"
+                      Shell.TitleColor="{StaticResource TextPrimary}"
+                      Shell.UnselectedColor="{StaticResource TextSecondary}" />
 
-    <FlyoutItem Title="Ustawienia" Icon="⚙️">
-        <ShellContent ContentTemplate="{DataTemplate views:OnboardingPage}" />
-    </FlyoutItem>
+        <ShellContent Title="Podsumowanie"
+                      Icon="📊"
+                      Route="DailySummaryPage"
+                      ContentTemplate="{DataTemplate views:DailySummaryPage}"
+                      Shell.ForegroundColor="{StaticResource Primary}"
+                      Shell.TitleColor="{StaticResource TextPrimary}"
+                      Shell.UnselectedColor="{StaticResource TextSecondary}" />
+
+        <ShellContent Title="Ustawienia"
+                      Icon="⚙️"
+                      Route="OnboardingPage"
+                      ContentTemplate="{DataTemplate views:OnboardingPage}"
+                      Shell.ForegroundColor="{StaticResource Primary}"
+                      Shell.TitleColor="{StaticResource TextPrimary}"
+                      Shell.UnselectedColor="{StaticResource TextSecondary}" />
+    </TabBar>
 
 </Shell>

@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="NeuroMate.Views.FloatingAvatarView"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:skia="clr-namespace:SkiaSharp.Extended.UI.Controls;assembly=SkiaSharp.Extended.UI"
+             Title="Avatar Assistant"
+             BackgroundColor="Transparent">
+
+    <!-- Główny kontener z overlay -->
+    <Grid x:Name="DialogOverlay" Style="{StaticResource DialogOverlay}">
+        <Grid.GestureRecognizers>
+            <TapGestureRecognizer Tapped="OnOverlayTapped" />
+        </Grid.GestureRecognizers>
+
+        <!-- Okno dialogowe z avatarem -->
+        <Frame x:Name="DialogCard" Style="{StaticResource DialogCard}">
+            <Frame.GestureRecognizers>
+                <TapGestureRecognizer />
+            </Frame.GestureRecognizers>
+            
+            <StackLayout Spacing="20">
+                <!-- Avatar i animacja -->
+                <Grid>
+                    <Frame Style="{StaticResource AvatarFrame}" 
+                           WidthRequest="80" 
+                           HeightRequest="80"
+                           HorizontalOptions="Center">
+                        <skia:SKLottieView x:Name="DialogAvatarLottie"
+                                           Source="turtle.json"
+                                           RepeatCount="-1"
+                                           IsAnimationEnabled="True"
+                                           WidthRequest="64"
+                                           HeightRequest="64" />
+                    </Frame>
+                    
+                    <!-- Indicator mówiącej postaci -->
+                    <Ellipse x:Name="SpeechIndicator"
+                             Fill="{StaticResource Success}"
+                             WidthRequest="16"
+                             HeightRequest="16"
+                             HorizontalOptions="End"
+                             VerticalOptions="Start"
+                             Margin="8"
+                             Opacity="0.8" />
+                </Grid>
+
+                <!-- Imię assistenta -->
+                <Label Text="NeuroMate Assistant 🧠"
+                       Style="{StaticResource TitleStyle}"
+                       FontSize="20"
+                       HorizontalOptions="Center"
+                       TextColor="{StaticResource Primary}" />
+
+                <!-- Wiadomość od avatara -->
+                <Frame BackgroundColor="{StaticResource SurfaceBackground}"
+                       CornerRadius="16"
+                       Padding="16"
+                       BorderColor="Transparent">
+                    <Label x:Name="AvatarMessageLabel"
+                           Text="Cześć! Jestem twoim asystentem neurokognitywnym. Mogę pomóc Ci w treningu mózgu i monitorowaniu wydajności!"
+                           Style="{StaticResource BodyLabel}"
+                           FontSize="15"
+                           HorizontalOptions="Center"
+                           HorizontalTextAlignment="Center"
+                           LineBreakMode="WordWrap" />
+                </Frame>
+
+                <!-- Przyciski akcji -->
+                <StackLayout Spacing="12">
+                    <Button x:Name="StartTrainingButton"
+                            Text="🎯 Rozpocznij trening"
+                            Style="{StaticResource PrimaryButton}"
+                            Clicked="OnStartTrainingClicked" />
+                    
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                        <Button Grid.Column="0"
+                                x:Name="ShowStatsButton"
+                                Text="📊 Statystyki"
+                                Style="{StaticResource SecondaryButton}"
+                                Clicked="OnShowStatsClicked" />
+                        
+                        <Button Grid.Column="1"
+                                x:Name="SettingsButton"
+                                Text="⚙️ Ustawienia"
+                                Style="{StaticResource OutlineButton}"
+                                Clicked="OnSettingsClicked" />
+                    </Grid>
+                </StackLayout>
+
+                <!-- Przycisk zamknij -->
+                <Button Text="✕ Zamknij"
+                        x:Name="CloseButton"
+                        Style="{StaticResource OutlineButton}"
+                        TextColor="{StaticResource TextSecondary}"
+                        BorderColor="{StaticResource BorderMedium}"
+                        Clicked="OnCloseClicked"
+                        FontSize="14"
+                        Padding="12,8" />
+            </StackLayout>
+        </Frame>
+    </Grid>
+</ContentPage>

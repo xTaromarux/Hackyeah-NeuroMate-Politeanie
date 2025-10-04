@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:skia="clr-namespace:SkiaSharp.Extended.UI.Controls;assembly=SkiaSharp.Extended.UI"
+             x:Class="NeuroMate.Views.TaskSwitchingGamePage"
+             Title="Task Switching"
+             BackgroundColor="{StaticResource PageBackground}">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Header z awatarem i timerem -->
+        <Frame Grid.Row="0" Style="{StaticResource ElevatedCard}" Margin="20,40,20,20">
+            <Grid ColumnSpacing="20">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Awatar -->
+                <Frame Grid.Column="0" Style="{StaticResource AvatarFrame}">
+                    <skia:SKLottieView x:Name="TaskAvatarLottie"
+                                       Source="turtle.json"
+                                       RepeatCount="-1"
+                                       IsAnimationEnabled="True"
+                                       WidthRequest="56"
+                                       HeightRequest="56" />
+                </Frame>
+
+                <StackLayout Grid.Column="1" VerticalOptions="Center" Spacing="4">
+                    <Label Text="🔄 Task Switching" Style="{StaticResource HeadlineLabel}" />
+                    <Label x:Name="InstructionLabel"
+                           Text="Przełączaj między regułami: kolor vs kształt"
+                           Style="{StaticResource SubtitleLabel}" />
+                </StackLayout>
+
+                <!-- Timer -->
+                <Frame Grid.Column="2" 
+                       Background="{StaticResource SecondaryGradient}"
+                       CornerRadius="20"
+                       Padding="16,12"
+                       HasShadow="True">
+                    <Label x:Name="TimerLabel" 
+                           Text="45s"
+                           FontSize="20"
+                           FontAttributes="Bold"
+                           TextColor="White"
+                           HorizontalOptions="Center" />
+                </Frame>
+            </Grid>
+        </Frame>
+
+        <!-- Główna zawartość gry -->
+        <ScrollView Grid.Row="1" Padding="20,0">
+            <StackLayout Spacing="24">
+                
+                <!-- Aktualna zasada -->
+                <Frame x:Name="RuleFrame" Style="{StaticResource ElevatedCard}">
+                    <StackLayout Spacing="12">
+                        <Label Text="📋 Aktualna zasada:" Style="{StaticResource SubtitleLabel}" HorizontalOptions="Center" />
+                        <Label x:Name="CurrentRuleLabel" 
+                               Text="KOLOR"
+                               Style="{StaticResource TitleLabel}"
+                               HorizontalOptions="Center"
+                               TextColor="{StaticResource Primary}" />
+                    </StackLayout>
+                </Frame>
+
+                <!-- Bodziec -->
+                <Frame Style="{StaticResource ElevatedCard}" 
+                       HeightRequest="180"
+                       Background="{StaticResource AccentGradient}">
+                    <Label x:Name="StimulusLabel"
+                           Text="●"
+                           FontSize="80"
+                           FontAttributes="Bold"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center"
+                           TextColor="White" />
+                </Frame>
+
+                <!-- Przyciski odpowiedzi -->
+                <Grid ColumnSpacing="16" RowSpacing="16">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Button Grid.Row="0" Grid.Column="1"
+                            x:Name="UpButton"
+                            Text="⬆️"
+                            Style="{StaticResource PrimaryButton}"
+                            FontSize="24"
+                            HeightRequest="70"
+                            Clicked="OnDirectionButtonClicked" />
+
+                    <Button Grid.Row="1" Grid.Column="0"
+                            x:Name="LeftButton"
+                            Text="⬅️"
+                            Style="{StaticResource PrimaryButton}"
+                            FontSize="24"
+                            HeightRequest="70"
+                            Clicked="OnDirectionButtonClicked" />
+
+                    <Button Grid.Row="1" Grid.Column="2"
+                            x:Name="RightButton"
+                            Text="➡️"
+                            Style="{StaticResource PrimaryButton}"
+                            FontSize="24"
+                            HeightRequest="70"
+                            Clicked="OnDirectionButtonClicked" />
+
+                    <Button Grid.Row="2" Grid.Column="1"
+                            x:Name="DownButton"
+                            Text="⬇️"
+                            Style="{StaticResource PrimaryButton}"
+                            FontSize="24"
+                            HeightRequest="70"
+                            Clicked="OnDirectionButtonClicked" />
+                </Grid>
+
+                <!-- Statystyki -->
+                <Frame Style="{StaticResource CardFrame}">
+                    <Grid ColumnSpacing="20" RowSpacing="16">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <Label Grid.Row="0" Grid.ColumnSpan="3" 
+                               Text="📊 Statystyki" 
+                               Style="{StaticResource HeadlineLabel}" 
+                               HorizontalOptions="Center" />
+
+                        <StackLayout Grid.Row="1" Grid.Column="0" Spacing="4">
+                            <Label Text="Postęp" Style="{StaticResource CaptionLabel}" HorizontalOptions="Center" />
+                            <Label x:Name="ProgressLabel" Text="0/20" Style="{StaticResource BodyLabel}" HorizontalOptions="Center" />
+                            <ProgressBar x:Name="GameProgressBar" Progress="0" ProgressColor="{StaticResource Primary}" />
+                        </StackLayout>
+
+                        <StackLayout Grid.Row="1" Grid.Column="1" Spacing="4">
+                            <Label Text="Wynik" Style="{StaticResource CaptionLabel}" HorizontalOptions="Center" />
+                            <Label x:Name="ScoreLabel" Text="0" Style="{StaticResource BodyLabel}" HorizontalOptions="Center" />
+                        </StackLayout>
+
+                        <StackLayout Grid.Row="1" Grid.Column="2" Spacing="4">
+                            <Label Text="Śr. czas" Style="{StaticResource CaptionLabel}" HorizontalOptions="Center" />
+                            <Label x:Name="AvgRTLabel" Text="0ms" Style="{StaticResource BodyLabel}" HorizontalOptions="Center" />
+                        </StackLayout>
+
+                        <StackLayout Grid.Row="2" Grid.ColumnSpan="3" Spacing="4">
+                            <Label Text="Switch Cost" Style="{StaticResource CaptionLabel}" HorizontalOptions="Center" />
+                            <Label x:Name="SwitchCostLabel" Text="0ms" Style="{StaticResource BodyLabel}" HorizontalOptions="Center" />
+                        </StackLayout>
+                    </Grid>
+                </Frame>
+
+            </StackLayout>
+        </ScrollView>
+
+        <!-- Kontrolki gry -->
+        <Frame Grid.Row="2" Style="{StaticResource CardFrame}" Margin="20,10,20,30">
+            <Grid ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Button Grid.Column="0"
+                        x:Name="PauseButton"
+                        Text="⏸️ Pauza"
+                        Style="{StaticResource OutlineButton}"
+                        Clicked="OnPauseClicked"
+                        IsVisible="False" />
+
+                <Button Grid.Column="1"
+                        x:Name="StartStopButton"
+                        Text="🚀 Start"
+                        Style="{StaticResource PrimaryButton}"
+                        Clicked="OnStartStopClicked" />
+
+                <Button Grid.Column="2"
+                        Text="❌ Wyjdź"
+                        Style="{StaticResource OutlineButton}"
+                        Clicked="OnExitClicked" />
+            </Grid>
+        </Frame>
+
+    </Grid>
+</ContentPage>
