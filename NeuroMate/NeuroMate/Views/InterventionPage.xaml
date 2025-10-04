@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="NeuroMate.Views.InterventionPage"
+             Title="Mikro-interwencja"
+             BackgroundColor="{StaticResource PageBackground}">
+
+    <Grid>
+        <!-- Tło z półprzezroczystą nakładką -->
+        <Frame BackgroundColor="Black" Opacity="0.7" />
+        
+        <!-- Główny pop-up -->
+        <Frame Style="{StaticResource CardFrame}" 
+               Margin="30"
+               VerticalOptions="Center"
+               BackgroundColor="{StaticResource White}">
+            
+            <StackLayout Spacing="20">
+                <!-- Header z awatarem -->
+                <Grid ColumnSpacing="15">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="60" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Awatar z emocją -->
+                    <Frame Grid.Column="0" 
+                           WidthRequest="50" 
+                           HeightRequest="50" 
+                           CornerRadius="25"
+                           Padding="0"
+                           BackgroundColor="{StaticResource Warning}">
+                        <Label Text="😊" 
+                               FontSize="25" 
+                               HorizontalTextAlignment="Center" 
+                               VerticalTextAlignment="Center" />
+                    </Frame>
+
+                    <!-- Tytuł interwencji -->
+                    <StackLayout Grid.Column="1" Spacing="5">
+                        <Label Text="Czas na przerwę!" 
+                               Style="{StaticResource SectionTitle}" />
+                        <Label Text="Zauważyłem spadek Twojej koncentracji" 
+                               Style="{StaticResource Subtitle}" />
+                    </StackLayout>
+
+                    <!-- Licznik czasu -->
+                    <Frame Grid.Column="2" 
+                           BackgroundColor="{StaticResource Info}"
+                           CornerRadius="20"
+                           Padding="10"
+                           HasShadow="False">
+                        <Label Text="0:45" 
+                               TextColor="White" 
+                               FontAttributes="Bold" />
+                    </Frame>
+                </Grid>
+
+                <!-- Opis interwencji -->
+                <Frame BackgroundColor="{StaticResource PrimaryLight}"
+                       CornerRadius="10"
+                       Padding="15"
+                       HasShadow="False">
+                    <Label Text="Zrobimy szybki test Stroop - to pomoże zresetować Twoją uwagę i poprawić koncentrację."
+                           Style="{StaticResource Subtitle}"
+                           TextColor="{StaticResource Primary}"
+                           HorizontalTextAlignment="Center" />
+                </Frame>
+
+                <!-- Obszar gry/aktywności -->
+                <Frame BackgroundColor="{StaticResource Gray100}"
+                       CornerRadius="15"
+                       Padding="30"
+                       HeightRequest="200"
+                       HasShadow="False">
+                    
+                    <StackLayout Spacing="20" VerticalOptions="Center">
+                        <!-- Stroop Test -->
+                        <Label Text="NIEBIESKI" 
+                               FontSize="32"
+                               FontAttributes="Bold"
+                               TextColor="{StaticResource Error}"
+                               HorizontalTextAlignment="Center" />
+                        
+                        <Label Text="Kliknij kolor słowa, nie jego znaczenie!"
+                               Style="{StaticResource Subtitle}"
+                               HorizontalTextAlignment="Center" />
+                        
+                        <!-- Przyciski kolorów -->
+                        <Grid ColumnSpacing="10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            
+                            <Button Grid.Column="0" 
+                                    Text="🔴"
+                                    BackgroundColor="{StaticResource Error}"
+                                    TextColor="White"
+                                    CornerRadius="25"
+                                    HeightRequest="50" />
+                            
+                            <Button Grid.Column="1" 
+                                    Text="🟢"
+                                    BackgroundColor="{StaticResource Success}"
+                                    TextColor="White"
+                                    CornerRadius="25"
+                                    HeightRequest="50" />
+                            
+                            <Button Grid.Column="2" 
+                                    Text="🔵"
+                                    BackgroundColor="{StaticResource Info}"
+                                    TextColor="White"
+                                    CornerRadius="25"
+                                    HeightRequest="50" />
+                            
+                            <Button Grid.Column="3" 
+                                    Text="🟡"
+                                    BackgroundColor="{StaticResource Warning}"
+                                    TextColor="White"
+                                    CornerRadius="25"
+                                    HeightRequest="50" />
+                        </Grid>
+                    </StackLayout>
+                </Frame>
+
+                <!-- Postęp -->
+                <StackLayout Spacing="10">
+                    <Label Text="Postęp: 3/10" 
+                           Style="{StaticResource Subtitle}"
+                           HorizontalTextAlignment="Center" />
+                    
+                    <ProgressBar Progress="0.3"
+                                 ProgressColor="{StaticResource Success}"
+                                 BackgroundColor="{StaticResource Gray200}" />
+                </StackLayout>
+
+                <!-- Statystyki na żywo -->
+                <Grid ColumnSpacing="20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackLayout Grid.Column="0">
+                        <Label Text="Czas reakcji" Style="{StaticResource StatDescription}" />
+                        <Label Text="347ms" Style="{StaticResource StatLabel}" FontSize="16" />
+                    </StackLayout>
+
+                    <StackLayout Grid.Column="1">
+                        <Label Text="Dokładność" Style="{StaticResource StatDescription}" />
+                        <Label Text="89%" Style="{StaticResource StatLabel}" FontSize="16" />
+                    </StackLayout>
+
+                    <StackLayout Grid.Column="2">
+                        <Label Text="Serie" Style="{StaticResource StatDescription}" />
+                        <Label Text="3/3" Style="{StaticResource StatLabel}" FontSize="16" />
+                    </StackLayout>
+                </Grid>
+
+                <!-- Przyciski akcji -->
+                <Grid ColumnSpacing="10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="2*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Button Grid.Column="0"
+                            Text="⏸️ Pauza"
+                            Style="{StaticResource OutlineButton}"
+                            FontSize="12" />
+
+                    <Button Grid.Column="1"
+                            Text="✅ Zakończ interwencję"
+                            Style="{StaticResource PrimaryButton}"
+                            FontSize="12" />
+                </Grid>
+
+                <!-- Motywujący komunikat od awatara -->
+                <Frame BackgroundColor="{StaticResource SecondaryLight}"
+                       CornerRadius="10"
+                       Padding="15"
+                       HasShadow="False">
+                    <Label Text="💪 Świetnie! Widzę poprawę o 12%. Jeszcze kilka odpowiedzi i będziesz gotowy na powrót do pracy!"
+                           Style="{StaticResource Subtitle}"
+                           TextColor="{StaticResource SecondaryDark}"
+                           HorizontalTextAlignment="Center" />
+                </Frame>
+            </StackLayout>
+        </Frame>
+    </Grid>
+</ContentPage>

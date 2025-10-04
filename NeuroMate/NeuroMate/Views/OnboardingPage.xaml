@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="NeuroMate.Views.OnboardingPage"
+             Title="Witaj w NeuroMate"
+             BackgroundColor="{StaticResource PageBackground}">
+
+    <ScrollView>
+        <Grid Padding="30" RowSpacing="30">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <!-- Header z awatarem -->
+            <StackLayout Grid.Row="0" Spacing="20">
+                <Frame WidthRequest="100" 
+                       HeightRequest="100" 
+                       CornerRadius="50"
+                       Padding="0"
+                       BackgroundColor="{StaticResource PrimaryLight}"
+                       HorizontalOptions="Center">
+                    <Label Text="🤖" 
+                           FontSize="50" 
+                           HorizontalTextAlignment="Center" 
+                           VerticalTextAlignment="Center" />
+                </Frame>
+                
+                <Label Text="Cześć, jestem NeuroMate!" 
+                       Style="{StaticResource PageTitle}"
+                       HorizontalTextAlignment="Center" />
+                
+                <Label Text="Pomogę Ci utrzymać fokus i energię przez cały dzień za pomocą spersonalizowanych mikro-interwencji."
+                       Style="{StaticResource Subtitle}"
+                       HorizontalTextAlignment="Center"
+                       LineBreakMode="WordWrap" />
+            </StackLayout>
+
+            <!-- Wybór celu -->
+            <Frame Grid.Row="1" Style="{StaticResource CardFrame}">
+                <StackLayout Spacing="20">
+                    <Label Text="🎯 Jaki jest Twój główny cel?" 
+                           Style="{StaticResource SectionTitle}"
+                           HorizontalTextAlignment="Center" />
+                    
+                    <Grid ColumnSpacing="10" RowSpacing="10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <Frame Grid.Row="0" Grid.Column="0" 
+                               BackgroundColor="{StaticResource PrimaryLight}"
+                               Padding="15"
+                               HasShadow="False">
+                            <StackLayout Spacing="8">
+                                <Label Text="🎯" FontSize="24" HorizontalTextAlignment="Center" />
+                                <Label Text="Koncentracja" 
+                                       FontAttributes="Bold" 
+                                       HorizontalTextAlignment="Center" />
+                                <Label Text="Poprawa uwagi i focus" 
+                                       FontSize="12" 
+                                       HorizontalTextAlignment="Center" />
+                            </StackLayout>
+                            <Frame.GestureRecognizers>
+                                <TapGestureRecognizer />
+                            </Frame.GestureRecognizers>
+                        </Frame>
+
+                        <Frame Grid.Row="0" Grid.Column="1" 
+                               BackgroundColor="{StaticResource SecondaryLight}"
+                               Padding="15"
+                               HasShadow="False">
+                            <StackLayout Spacing="8">
+                                <Label Text="😌" FontSize="24" HorizontalTextAlignment="Center" />
+                                <Label Text="Redukcja stresu" 
+                                       FontAttributes="Bold" 
+                                       HorizontalTextAlignment="Center" />
+                                <Label Text="Relaksacja i spokój" 
+                                       FontSize="12" 
+                                       HorizontalTextAlignment="Center" />
+                            </StackLayout>
+                            <Frame.GestureRecognizers>
+                                <TapGestureRecognizer />
+                            </Frame.GestureRecognizers>
+                        </Frame>
+
+                        <Frame Grid.Row="1" Grid.Column="0" 
+                               BackgroundColor="{StaticResource Warning}"
+                               Padding="15"
+                               HasShadow="False">
+                            <StackLayout Spacing="8">
+                                <Label Text="⚡" FontSize="24" HorizontalTextAlignment="Center" />
+                                <Label Text="Energia" 
+                                       FontAttributes="Bold" 
+                                       HorizontalTextAlignment="Center" />
+                                <Label Text="Więcej energii" 
+                                       FontSize="12" 
+                                       HorizontalTextAlignment="Center" />
+                            </StackLayout>
+                            <Frame.GestureRecognizers>
+                                <TapGestureRecognizer />
+                            </Frame.GestureRecognizers>
+                        </Frame>
+
+                        <Frame Grid.Row="1" Grid.Column="1" 
+                               BackgroundColor="{StaticResource Success}"
+                               Padding="15"
+                               HasShadow="False">
+                            <StackLayout Spacing="8">
+                                <Label Text="🧠" FontSize="24" HorizontalTextAlignment="Center" />
+                                <Label Text="Pamięć" 
+                                       FontAttributes="Bold" 
+                                       HorizontalTextAlignment="Center" />
+                                <Label Text="Poprawa pamięci" 
+                                       FontSize="12" 
+                                       HorizontalTextAlignment="Center" />
+                            </StackLayout>
+                            <Frame.GestureRecognizers>
+                                <TapGestureRecognizer />
+                            </Frame.GestureRecognizers>
+                        </Frame>
+                    </Grid>
+                </StackLayout>
+            </Frame>
+
+            <!-- Ustawienia godzin -->
+            <Frame Grid.Row="2" Style="{StaticResource CardFrame}">
+                <StackLayout Spacing="15">
+                    <Label Text="⏰ Kiedy pracujesz?" 
+                           Style="{StaticResource SectionTitle}" />
+                    
+                    <Grid ColumnSpacing="20">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackLayout Grid.Column="0">
+                            <Label Text="Początek pracy" Style="{StaticResource Subtitle}" />
+                            <Frame BackgroundColor="{StaticResource Gray100}" 
+                                   CornerRadius="8" 
+                                   Padding="15"
+                                   HasShadow="False">
+                                <Label Text="09:00" 
+                                       FontAttributes="Bold"
+                                       HorizontalTextAlignment="Center" />
+                            </Frame>
+                        </StackLayout>
+
+                        <StackLayout Grid.Column="1">
+                            <Label Text="Koniec pracy" Style="{StaticResource Subtitle}" />
+                            <Frame BackgroundColor="{StaticResource Gray100}" 
+                                   CornerRadius="8" 
+                                   Padding="15"
+                                   HasShadow="False">
+                                <Label Text="17:00" 
+                                       FontAttributes="Bold"
+                                       HorizontalTextAlignment="Center" />
+                            </Frame>
+                        </StackLayout>
+                    </Grid>
+                </StackLayout>
+            </Frame>
+
+            <!-- Import danych -->
+            <Frame Grid.Row="3" Style="{StaticResource CardFrame}">
+                <StackLayout Spacing="15">
+                    <Label Text="📊 Chcesz importować dane z zegarka?" 
+                           Style="{StaticResource SectionTitle}" />
+                    
+                    <Label Text="Możesz zaimportować dane o HRV, śnie i krokach z pliku CSV"
+                           Style="{StaticResource Subtitle}"
+                           HorizontalTextAlignment="Center" />
+
+                    <Grid ColumnSpacing="10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <Button Grid.Column="0"
+                                Text="📱 Tak, importuj"
+                                Style="{StaticResource PrimaryButton}"
+                                FontSize="14" />
+
+                        <Button Grid.Column="1"
+                                Text="⏭️ Pomiń na razie"
+                                Style="{StaticResource OutlineButton}"
+                                FontSize="14" />
+                    </Grid>
+                </StackLayout>
+            </Frame>
+
+            <!-- Preferencje interwencji -->
+            <Frame Grid.Row="4" Style="{StaticResource CardFrame}">
+                <StackLayout Spacing="15">
+                    <Label Text="⚙️ Jakie interwencje preferujesz?" 
+                           Style="{StaticResource SectionTitle}" />
+                    
+                    <Grid ColumnSpacing="10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <Frame Grid.Column="0" 
+                               BackgroundColor="{StaticResource PrimaryLight}"
+                               Padding="15"
+                               HasShadow="False">
+                            <StackLayout Spacing="8">
+                                <Label Text="⚡ Krótkie" 
+                                       FontAttributes="Bold" 
+                                       HorizontalTextAlignment="Center" />
+                                <Label Text="30-60 sekund" 
+                                       FontSize="12" 
+                                       HorizontalTextAlignment="Center" />
+                                <Label Text="Szybkie, nie przerywają pracy" 
+                                       FontSize="10" 
+                                       HorizontalTextAlignment="Center" />
+                            </StackLayout>
+                        </Frame>
+
+                        <Frame Grid.Column="1" 
+                               BackgroundColor="{StaticResource Gray200}"
+                               Padding="15"
+                               HasShadow="False">
+                            <StackLayout Spacing="8">
+                                <Label Text="🎯 Dłuższe" 
+                                       FontAttributes="Bold" 
+                                       HorizontalTextAlignment="Center" />
+                                <Label Text="2-5 minut" 
+                                       FontSize="12" 
+                                       HorizontalTextAlignment="Center" />
+                                <Label Text="Głębsze, bardziej skuteczne" 
+                                       FontSize="10" 
+                                       HorizontalTextAlignment="Center" />
+                            </StackLayout>
+                        </Frame>
+                    </Grid>
+                </StackLayout>
+            </Frame>
+
+            <!-- Przycisk zakończenia -->
+            <StackLayout Grid.Row="5" Spacing="20" VerticalOptions="End">
+                <Frame BackgroundColor="{StaticResource SecondaryLight}"
+                       CornerRadius="10"
+                       Padding="15"
+                       HasShadow="False">
+                    <Label Text="🎉 Świetnie! Teraz jestem gotowy, aby pomóc Ci osiągnąć szczytową wydajność!"
+                           Style="{StaticResource Subtitle}"
+                           TextColor="{StaticResource SecondaryDark}"
+                           HorizontalTextAlignment="Center" />
+                </Frame>
+
+                <Button Text="🚀 Rozpocznij z NeuroMate"
+                        Style="{StaticResource PrimaryButton}"
+                        HeightRequest="60"
+                        FontSize="18" />
+            </StackLayout>
+        </Grid>
+    </ScrollView>
+</ContentPage>

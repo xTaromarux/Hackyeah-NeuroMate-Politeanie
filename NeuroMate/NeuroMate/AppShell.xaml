@@ -4,12 +4,51 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:local="clr-namespace:NeuroMate"
-    Shell.FlyoutBehavior="Disabled"
-    Title="NeuroMate">
+    xmlns:views="clr-namespace:NeuroMate.Views"
+    Title="NeuroMate"
+    FlyoutBehavior="Flyout">
 
-    <ShellContent
-        Title="Home"
-        ContentTemplate="{DataTemplate local:MainPage}"
-        Route="MainPage" />
+    <Shell.FlyoutHeader>
+        <Grid BackgroundColor="{StaticResource Primary}" HeightRequest="200" Padding="20">
+            <StackLayout VerticalOptions="Center" Spacing="10">
+                <Frame WidthRequest="80" 
+                       HeightRequest="80" 
+                       CornerRadius="40"
+                       Padding="0"
+                       BackgroundColor="{StaticResource White}"
+                       HorizontalOptions="Center">
+                    <Label Text="🤖" 
+                           FontSize="40" 
+                           HorizontalTextAlignment="Center" 
+                           VerticalTextAlignment="Center" />
+                </Frame>
+                <Label Text="NeuroMate" 
+                       FontSize="24" 
+                       FontAttributes="Bold"
+                       TextColor="White"
+                       HorizontalTextAlignment="Center" />
+                <Label Text="Twój asystent biohackingu" 
+                       FontSize="14" 
+                       TextColor="White"
+                       HorizontalTextAlignment="Center" />
+            </StackLayout>
+        </Grid>
+    </Shell.FlyoutHeader>
+
+    <FlyoutItem Title="Dashboard" Icon="🏠">
+        <ShellContent ContentTemplate="{DataTemplate local:MainPage}" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="Gry Kognitywne" Icon="🧠">
+        <ShellContent ContentTemplate="{DataTemplate views:CognitiveGamesPage}" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="Podsumowanie" Icon="📊">
+        <ShellContent ContentTemplate="{DataTemplate views:DailySummaryPage}" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="Ustawienia" Icon="⚙️">
+        <ShellContent ContentTemplate="{DataTemplate views:OnboardingPage}" />
+    </FlyoutItem>
 
 </Shell>
