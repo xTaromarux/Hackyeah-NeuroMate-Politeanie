@@ -138,13 +138,13 @@ public partial class FloatingAvatarView : ContentPage
     private async void OnStartTrainingClicked(object sender, EventArgs e)
     {
         await HideAsync();
-        await Shell.Current.GoToAsync("///CognitiveGames");
+        await Shell.Current.GoToAsync(nameof(CognitiveGamesPage));
     }
 
     private async void OnShowStatsClicked(object sender, EventArgs e)
     {
         await HideAsync();
-        await Shell.Current.GoToAsync("///DailySummary");
+        await Shell.Current.GoToAsync(nameof(DailySummaryPage));
     }
 
     private async void OnSettingsClicked(object sender, EventArgs e)

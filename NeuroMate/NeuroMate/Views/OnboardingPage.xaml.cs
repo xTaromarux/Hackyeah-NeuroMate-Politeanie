@@ -81,7 +81,7 @@ namespace NeuroMate.Views
                     "OK");
 
                 // Wróć do Dashboard
-                await Shell.Current.GoToAsync("///MainPage");
+                await Shell.Current.GoToAsync(nameof(MainPage));
             }
             catch (Exception ex)
             {

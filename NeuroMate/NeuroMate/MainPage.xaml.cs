@@ -123,13 +123,13 @@ namespace NeuroMate
         private async void OnDialogStartTrainingClicked(object sender, EventArgs e)
         {
             await HideAvatarDialog();
-            await Shell.Current.GoToAsync("///CognitiveGames");
+            await Shell.Current.GoToAsync(nameof(CognitiveGamesPage));
         }
 
         private async void OnDialogShowStatsClicked(object sender, EventArgs e)
         {
             await HideAvatarDialog();
-            await Shell.Current.GoToAsync("///DailySummary");
+            await Shell.Current.GoToAsync(nameof(DailySummaryPage));
         }
 
         private async void OnDialogSettingsClicked(object sender, EventArgs e)
@@ -140,22 +140,22 @@ namespace NeuroMate
         // Event handlers dla przycisków głównych
         private async void OnStroopTestClicked(object sender, EventArgs e)
         {
-            await Shell.Current.GoToAsync("///StroopGame");
+            await Shell.Current.GoToAsync(nameof(StroopGamePage));
         }
 
         private async void OnPvtTestClicked(object sender, EventArgs e)
         {
-            await Shell.Current.GoToAsync("///PvtGame");
+            await Shell.Current.GoToAsync(nameof(PvtGamePage));
         }
 
         private async void OnTaskSwitchClicked(object sender, EventArgs e)
         {
-            await Shell.Current.GoToAsync("///TaskSwitchingGame");
+            await Shell.Current.GoToAsync(nameof(TaskSwitchingGamePage));
         }
 
         private async void OnSummaryClicked(object sender, EventArgs e)
         {
-            await Shell.Current.GoToAsync("///DailySummary");
+            await Shell.Current.GoToAsync(nameof(DailySummaryPage));
         }
 
         private async void OnToggleAvatarClicked(object sender, EventArgs e)
@@ -168,7 +168,7 @@ namespace NeuroMate
 
         private async void OnStartRecommendationClicked(object sender, EventArgs e)
         {
-            await Shell.Current.GoToAsync("///StroopGame");
+            await Shell.Current.GoToAsync(nameof(StroopGamePage));
         }
 
         private async void OnMoreRecommendationsClicked(object sender, EventArgs e)
