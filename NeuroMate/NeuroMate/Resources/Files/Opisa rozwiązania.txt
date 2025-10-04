@@ -1,0 +1,101 @@
+Nazwa:
+NeuroMate – asystent biohackingu z awatarem
+
+One-liner:
+NeuroPilot wykrywa spadki koncentracji i przeciążenie, uruchamia krótkie gry kognitywne oraz mikro-interwencje prozdrowotne, a wszystko prowadzi sympatyczny awatar-asystent, który reaguje na Twoje wyniki w czasie rzeczywistym i nagradza za postępy.
+
+Cel i zakres:
+- Wpływ na funkcje poznawcze: uwaga, pamięć robocza, czas reakcji, elastyczność poznawcza.
+- Wpływ na samopoczucie i kondycję: higiena pracy, ruch, sen (pośrednio).
+- System desktopowy (Windows/macOS/Linux) z opcjonalnym importem danych z opaski/smartwatcha.
+- Aplikacja działa w tle i uruchamia się automatycznie przy logowaniu.
+
+ARCHITEKTURA PRODUKTU (3 STREFY)
+
+1) Wywiad (personalizacja)
+- Użytkownik wybiera cel: koncentracja / redukcja stresu / energia / pamięć.
+- Ustawienia: długość sesji, preferowane interwencje (krótkie do 60 s vs dłuższe do 5 min), godziny pracy/snu.
+- Opcjonalne źródła danych: smartband (HR/HRV, kroki, sen), kalendarz (Google/MS), aktywność na komputerze (czas bez przerwy).
+
+2) Kontrola i monitoring
+- Dashboard: czas pracy bez przerwy, liczba interwencji, sen (jeśli dostępny), poziom stresu (HRV lub self-report), trend wyników gier kognitywnych.
+- Neuro-Score (0–100): łączy wyniki mini-gier (RT, accuracy), aktywność, sen i/lub HRV; z-normalizowany per użytkownik.
+- Detekcja spadku formy: progi na podstawie odchyleń od średniej (np. spadek Neuro-Score o >15% lub 120 minut bez przerwy).
+
+3) Propozycje polepszenia i „hacking” mózgu
+- Automatyczne wyzwalanie: przy spadku uwagi lub długim siedzeniu awatar uruchamia nieodrzucalny pop-up z krótką interwencją.
+- Mikro-interwencje (30–90 s): mini-gra poznawcza, krótka aktywizacja ruchowa, reset oczu i postawy, szybka sugestia żywieniowa lub „coffee-nap” w odpowiednim oknie.
+- Zamknięcie pop-upu wymaga ukończenia zadania (np. mini-gra do końca lub potwierdzony mikro-ruch).
+
+MINI-GRY KOGNITYWNE (30–60 s)
+- Stroop: kliknij kolor słowa, nie treść. Trenuje uwagę i hamowanie reakcji.
+- N-back (1–2-back): reaguj, gdy bodziec powtarza się sprzed n kroków. Trenuje pamięć roboczą.
+- PVT (reaction time): kliknij jak najszybciej po pojawieniu bodźca. Wrażliwy na senność i zmęczenie.
+- Task switching: przełączanie reguł (cyfra parzysta/nieparzysta vs litera/samogłoska). Trenuje elastyczność poznawczą.
+- Adaptacja trudności: poziom rośnie/maleje co 10–15 s w zależności od bieżącego wyniku.
+
+NEURO-SCORE (przykładowa formuła MVP)
+- Wejścia: z-score z RT (odwrócony), accuracy z gier, czas bez przerwy, ewentualnie HRV lub sen.
+- Wagi startowe: RT 0.4, accuracy 0.3, czas bez przerwy 0.2, HRV/sen 0.1.
+- Skala: 0–100 po normalizacji per użytkownik. Progi alertów: <40 niski; 40–60 średni; >60 dobry.
+
+AWATAR-ASYSTENT
+
+Rola i zachowanie:
+- Stały „coach” w rogu ekranu; animowany (proste mikroruchy, zmiana wyrazu twarzy).
+- Reaguje emocjami na wyniki (spadek – zatroskany, wzrost – uśmiech, pochwała).
+- Prowadzi onboarding, objaśnia interwencje, domyka pętlę feedbacku (przed/po).
+
+Personalizacja:
+- Style do wyboru: „Profesor”, „Trener”, „AI-robot”.
+- Ton komunikacji: poważny / neutralny / humorystyczny.
+- Opcja wyciszenia dźwięku i tryb „dyskretne biuro” (komunikaty tylko tekstowe).
+
+Dialogi (przykłady do wklejenia):
+1. Powitanie: „Cześć! Jestem NeuroPilot. Pomogę Ci utrzymać koncentrację i energię w ciągu dnia. Wybierz cel, a ja dobiorę interwencje.”
+2. Wykryty spadek: „Widzę spadek Twojej uwagi. Zróbmy 40-sekundowy Stroop – szybki reset dla kory przedczołowej. Gotowa/y?”
+3. Po mini-grze (sukces): „Super! Czas reakcji poprawił się o 18%, a dokładność wzrosła o 12%. Wstań na 60 sekund i rozruszaj barki – doładujemy tlen.”
+4. Po mini-grze (brak poprawy): „Dziś może być cięższy dzień. Zróbmy 5 głębokich wdechów nosem i 5 kroków w miejscu. Spróbujemy jeszcze raz za 20 minut.”
+5. Plan dnia: „Masz 3 spotkania pod rząd. Wstawiłem Ci 3-min przerwę na reset oczu między 11:55–11:58. Potwierdź, proszę.”
+6. Podsumowanie dnia: „Dziś 4 interwencje, średnia poprawa RT 11%. Jutro proponuję pierwszą głęboką sesję fokusową o 10:00.”
+
+INTERWENCJE (przykłady)
+- MicroFocus (gra): Stroop / N-back / PVT, 30–60 s, adaptacyjny poziom.
+- Reset oczu: 20× mrugnięcie + patrzenie w dal 20 s, sygnalizowane animacją awatara.
+- Mikro-ruch: 5 przysiadów lub 30 s marszu w miejscu (odliczanie w pop-upie).
+- Sugestia żywieniowa: szybki snack białkowy/woda; timing kofeiny zależnie od godziny i snu.
+- Coffee-nap: gdy sen <6 h – sugestia 10–15 min drzemki i kawa przed (na popołudniowy rebound).
+
+GAMIFIKACJA
+- Użytkownik zbiera punkty za wykonywanie zadań i interwencji (mini-gier, przerw, aktywności ruchowych).
+- Punkty można wydawać na personalizację asystenta (np. outfity, akcesoria, style komunikacji).
+- Wersja demo: 2–3 proste skórki awatara do odblokowania.
+- Dodatkowe nagrody: odznaki za serie dni bez przerw, poprawę wyników Neuro-Score, utrzymanie rytmu snu.
+
+INTEGRACJE I DANE
+- Smartwatch/opaska: opcjonalny import CSV (HR, HRV, sen, kroki).
+- Kalendarz: Google/Microsoft – odczyt zdarzeń, propozycje mikro-przerw między spotkaniami.
+- Aktywność desktop: licznik nieprzerwanych minut pracy, wykrywanie „kaskady alt-tab”.
+
+DEMO (5 minut – scenariusz)
+1) Onboarding: wybór celu „koncentracja”.
+2) Dashboard: Neuro-Score 72/100, 85 min bez przerwy.
+3) Spadek: awatar uruchamia pop-up z 40 s Stroopem.
+4) Wynik: poprawa RT o 17% – awatar gratuluje; wymusza 45 s mikro-ruchu (odlicza).
+5) Gamifikacja: użytkownik zdobywa punkty, odblokowuje nowy outfit dla awatara.
+6) Kalendarz: dodaje 3-min przerwę przed następnym spotkaniem.
+7) Podsumowanie: wykres przed/po, zapis do trendu tygodniowego.
+
+TECHNICZNE MVP
+- Desktop: Electron + React (alternatywnie Tauri + React).
+- UI: React + animacje Lottie dla awatara.
+- Gry: czysty JS/TS (performance.now do RT), brak frameworków ciężkich.
+- Backend: lokalnie SQLite lub Firebase (auth + Firestore) dla prostoty.
+- Import CSV: parser (Papaparse) z walidacją kolumn: timestamp, hr, hrv, steps, sleep_minutes.
+- Wykresy: Recharts/Chart.js.
+- Prywatność: dane lokalne domyślnie; eksport/erase one-click.
+
+METRYKI (co pokazujemy jury)
+- Pre/Post: średni RT (ms) i accuracy (%) na sesję interwencji.
+- Trend Neuro-Score 7 dni (mock + dane live z demo).
+... (Pozostałe wiersze: 26)

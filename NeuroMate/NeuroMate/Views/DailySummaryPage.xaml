@@ -1,0 +1,370 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="NeuroMate.Views.DailySummaryPage"
+             Title="Podsumowanie Dnia"
+             BackgroundColor="{StaticResource PageBackground}">
+
+    <ScrollView>
+        <Grid Padding="20" RowSpacing="20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <!-- Header z awatarem -->
+            <Frame Grid.Row="0" Style="{StaticResource CardFrame}">
+                <Grid ColumnSpacing="15">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="70" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <Frame Grid.Column="0" 
+                           WidthRequest="60" 
+                           HeightRequest="60" 
+                           CornerRadius="30"
+                           Padding="0"
+                           BackgroundColor="{StaticResource Success}">
+                        <Label Text="🎉" 
+                               FontSize="30" 
+                               HorizontalTextAlignment="Center" 
+                               VerticalTextAlignment="Center" />
+                    </Frame>
+
+                    <StackLayout Grid.Column="1" Spacing="5">
+                        <Label Text="Świetny dzień!" 
+                               Style="{StaticResource SectionTitle}" />
+                        <Label Text="Dziś 4 interwencje, poprawa reakcji o 12%. Jutro spróbuj dodać drzemkę."
+                               Style="{StaticResource Subtitle}"
+                               LineBreakMode="WordWrap" />
+                    </StackLayout>
+
+                    <Frame Grid.Column="2" 
+                           BackgroundColor="{StaticResource Success}"
+                           CornerRadius="15"
+                           Padding="10,5"
+                           HasShadow="False">
+                        <Label Text="A+" 
+                               TextColor="White" 
+                               FontAttributes="Bold"
+                               FontSize="16" />
+                    </Frame>
+                </Grid>
+            </Frame>
+
+            <!-- Główne metryki -->
+            <Frame Grid.Row="1" Style="{StaticResource CardFrame}">
+                <Grid ColumnSpacing="20" RowSpacing="15">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <!-- Neuro-Score -->
+                    <StackLayout Grid.Row="0" Grid.Column="0" Spacing="5">
+                        <Label Text="Neuro-Score" Style="{StaticResource StatDescription}" />
+                        <Label Text="78" Style="{StaticResource StatLabel}" TextColor="{StaticResource Success}" />
+                        <Label Text="↗️ +6 pkt" 
+                               Style="{StaticResource StatDescription}" 
+                               TextColor="{StaticResource Success}"
+                               HorizontalTextAlignment="Center" />
+                    </StackLayout>
+
+                    <!-- Interwencje -->
+                    <StackLayout Grid.Row="0" Grid.Column="1" Spacing="5">
+                        <Label Text="Interwencje" Style="{StaticResource StatDescription}" />
+                        <Label Text="4" Style="{StaticResource StatLabel}" TextColor="{StaticResource Primary}" />
+                        <Label Text="ukończone" 
+                               Style="{StaticResource StatDescription}"
+                               HorizontalTextAlignment="Center" />
+                    </StackLayout>
+
+                    <!-- Czas skupienia -->
+                    <StackLayout Grid.Row="0" Grid.Column="2" Spacing="5">
+                        <Label Text="Skupienie" Style="{StaticResource StatDescription}" />
+                        <Label Text="6.2h" Style="{StaticResource StatLabel}" TextColor="{StaticResource Info}" />
+                        <Label Text="czas pracy" 
+                               Style="{StaticResource StatDescription}"
+                               HorizontalTextAlignment="Center" />
+                    </StackLayout>
+
+                    <!-- Postęp ogólny -->
+                    <StackLayout Grid.Row="1" Grid.ColumnSpan="3" Spacing="10">
+                        <Label Text="Postęp dzienny" 
+                               Style="{StaticResource Subtitle}"
+                               HorizontalTextAlignment="Center" />
+                        
+                        <ProgressBar Progress="0.78"
+                                     ProgressColor="{StaticResource Success}"
+                                     BackgroundColor="{StaticResource Gray200}"
+                                     HeightRequest="12" />
+                    </StackLayout>
+                </Grid>
+            </Frame>
+
+            <!-- Wykres poprawy RT/Accuracy -->
+            <Frame Grid.Row="2" Style="{StaticResource CardFrame}">
+                <StackLayout Spacing="15">
+                    <Label Text="📈 Poprawa w ciągu dnia" 
+                           Style="{StaticResource SectionTitle}" />
+                    
+                    <Grid ColumnSpacing="20">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Czas reakcji -->
+                        <StackLayout Grid.Column="0" Spacing="10">
+                            <Label Text="Czas reakcji" 
+                                   Style="{StaticResource Subtitle}"
+                                   HorizontalTextAlignment="Center" />
+                            
+                            <Frame BackgroundColor="{StaticResource PrimaryLight}"
+                                   CornerRadius="10"
+                                   Padding="15"
+                                   HasShadow="False">
+                                <StackLayout Spacing="5">
+                                    <Label Text="Początek: 389ms" 
+                                           FontSize="12" 
+                                           HorizontalTextAlignment="Center" />
+                                    <Label Text="Koniec: 341ms" 
+                                           FontSize="12" 
+                                           HorizontalTextAlignment="Center" />
+                                    <Label Text="📉 -12%" 
+                                           FontAttributes="Bold"
+                                           TextColor="{StaticResource Success}"
+                                           HorizontalTextAlignment="Center" />
+                                </StackLayout>
+                            </Frame>
+                        </StackLayout>
+
+                        <!-- Dokładność -->
+                        <StackLayout Grid.Column="1" Spacing="10">
+                            <Label Text="Dokładność" 
+                                   Style="{StaticResource Subtitle}"
+                                   HorizontalTextAlignment="Center" />
+                            
+                            <Frame BackgroundColor="{StaticResource SecondaryLight}"
+                                   CornerRadius="10"
+                                   Padding="15"
+                                   HasShadow="False">
+                                <StackLayout Spacing="5">
+                                    <Label Text="Początek: 84%" 
+                                           FontSize="12" 
+                                           HorizontalTextAlignment="Center" />
+                                    <Label Text="Koniec: 92%" 
+                                           FontSize="12" 
+                                           HorizontalTextAlignment="Center" />
+                                    <Label Text="📈 +8%" 
+                                           FontAttributes="Bold"
+                                           TextColor="{StaticResource Success}"
+                                           HorizontalTextAlignment="Center" />
+                                </StackLayout>
+                            </Frame>
+                        </StackLayout>
+                    </Grid>
+                </StackLayout>
+            </Frame>
+
+            <!-- Lista wykonanych interwencji -->
+            <Frame Grid.Row="3" Style="{StaticResource CardFrame}">
+                <StackLayout Spacing="15">
+                    <Label Text="✅ Dzisiejsze interwencje" 
+                           Style="{StaticResource SectionTitle}" />
+                    
+                    <!-- Interwencja 1 -->
+                    <Frame BackgroundColor="{StaticResource Gray100}"
+                           CornerRadius="8"
+                           Padding="15"
+                           HasShadow="False">
+                        <Grid ColumnSpacing="10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <Label Grid.Column="0" 
+                                   Text="🎯" 
+                                   FontSize="20" 
+                                   VerticalTextAlignment="Center" />
+
+                            <StackLayout Grid.Column="1" Spacing="2">
+                                <Label Text="Test Stroop - 09:30" 
+                                       FontAttributes="Bold"
+                                       FontSize="14" />
+                                <Label Text="Poprawa RT: +18%, Dokładność: +12%" 
+                                       FontSize="12"
+                                       TextColor="{StaticResource Success}" />
+                            </StackLayout>
+
+                            <Label Grid.Column="2" 
+                                   Text="✅" 
+                                   FontSize="16" 
+                                   VerticalTextAlignment="Center" />
+                        </Grid>
+                    </Frame>
+
+                    <!-- Interwencja 2 -->
+                    <Frame BackgroundColor="{StaticResource Gray100}"
+                           CornerRadius="8"
+                           Padding="15"
+                           HasShadow="False">
+                        <Grid ColumnSpacing="10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <Label Grid.Column="0" 
+                                   Text="🧘" 
+                                   FontSize="20" 
+                                   VerticalTextAlignment="Center" />
+
+                            <StackLayout Grid.Column="1" Spacing="2">
+                                <Label Text="Oddychanie 4-7-8 - 12:15" 
+                                       FontAttributes="Bold"
+                                       FontSize="14" />
+                                <Label Text="Redukcja stresu, reset mentalny" 
+                                       FontSize="12"
+                                       TextColor="{StaticResource Info}" />
+                            </StackLayout>
+
+                            <Label Grid.Column="2" 
+                                   Text="✅" 
+                                   FontSize="16" 
+                                   VerticalTextAlignment="Center" />
+                        </Grid>
+                    </Frame>
+
+                    <!-- Interwencja 3 -->
+                    <Frame BackgroundColor="{StaticResource Gray100}"
+                           CornerRadius="8"
+                           Padding="15"
+                           HasShadow="False">
+                        <Grid ColumnSpacing="10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <Label Grid.Column="0" 
+                                   Text="🚶" 
+                                   FontSize="20" 
+                                   VerticalTextAlignment="Center" />
+
+                            <StackLayout Grid.Column="1" Spacing="2">
+                                <Label Text="Mikro-aktywność - 15:45" 
+                                       FontAttributes="Bold"
+                                       FontSize="14" />
+                                <Label Text="5 przysiadów + rozciąganie" 
+                                       FontSize="12"
+                                       TextColor="{StaticResource Warning}" />
+                            </StackLayout>
+
+                            <Label Grid.Column="2" 
+                                   Text="✅" 
+                                   FontSize="16" 
+                                   VerticalTextAlignment="Center" />
+                        </Grid>
+                    </Frame>
+
+                    <!-- Interwencja 4 -->
+                    <Frame BackgroundColor="{StaticResource Gray100}"
+                           CornerRadius="8"
+                           Padding="15"
+                           HasShadow="False">
+                        <Grid ColumnSpacing="10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <Label Grid.Column="0" 
+                                   Text="👁️" 
+                                   FontSize="20" 
+                                   VerticalTextAlignment="Center" />
+
+                            <StackLayout Grid.Column="1" Spacing="2">
+                                <Label Text="Reset oczu - 17:20" 
+                                       FontAttributes="Bold"
+                                       FontSize="14" />
+                                <Label Text="Patrzenie w dal, mruganie" 
+                                       FontSize="12"
+                                       TextColor="{StaticResource Secondary}" />
+                            </StackLayout>
+
+                            <Label Grid.Column="2" 
+                                   Text="✅" 
+                                   FontSize="16" 
+                                   VerticalTextAlignment="Center" />
+                        </Grid>
+                    </Frame>
+                </StackLayout>
+            </Frame>
+
+            <!-- Rekomendacje na jutro -->
+            <Frame Grid.Row="4" Style="{StaticResource CardFrame}">
+                <StackLayout Spacing="15">
+                    <Label Text="💡 Rekomendacje na jutro" 
+                           Style="{StaticResource SectionTitle}" />
+                    
+                    <Frame BackgroundColor="{StaticResource PrimaryLight}"
+                           CornerRadius="10"
+                           Padding="15"
+                           HasShadow="False">
+                        <StackLayout Spacing="10">
+                            <Label Text="🌟 Świetne wyniki dziś! Na podstawie Twoich danych:" 
+                                   FontAttributes="Bold"
+                                   TextColor="{StaticResource Primary}"
+                                   HorizontalTextAlignment="Center" />
+                            
+                            <Label Text="• Spróbuj dodać 15-min drzemkę między 13:00-14:00"
+                                   FontSize="14" />
+                            <Label Text="• Zwiększ częstotliwość N-back do 2 razy dziennie"
+                                   FontSize="14" />
+                            <Label Text="• Zaplanuj pierwszą sesję fokusową na 9:30"
+                                   FontSize="14" />
+                        </StackLayout>
+                    </Frame>
+                </StackLayout>
+            </Frame>
+
+            <!-- Przyciski akcji -->
+            <StackLayout Grid.Row="5" Spacing="15" VerticalOptions="End">
+                <Grid ColumnSpacing="10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Button Grid.Column="0"
+                            Text="📤 Eksportuj raport"
+                            Style="{StaticResource OutlineButton}" />
+
+                    <Button Grid.Column="1"
+                            Text="📅 Plan na jutro"
+                            Style="{StaticResource PrimaryButton}" />
+                </Grid>
+
+                <Button Text="🏠 Powrót do głównej"
+                        Style="{StaticResource SecondaryButton}" />
+            </StackLayout>
+        </Grid>
+    </ScrollView>
+</ContentPage>
