@@ -8,7 +8,7 @@ namespace NeuroMate.Views;
 public partial class FloatingAvatarView : ContentPage
 {
     private bool _isAnimating = true;
-    
+
     private readonly List<string> _motivationalMessages = new()
     {
         "Czas na przerwę! Wykonajmy razem szybki test Stroop 🎨",
@@ -45,13 +45,13 @@ public partial class FloatingAvatarView : ContentPage
     {
         // Prosta animacja reakcji
         ShowReactionAnimation("tap");
-        
+
         // Opcjonalna akcja przy kliknięciu
         AvatarTapped?.Invoke(this, EventArgs.Empty);
     }
-    
+
     public event EventHandler? AvatarTapped;
-    
+
     public void ShowFeedback(string message)
     {
         // Uproszczona wersja - tylko animacja skalowania avatara
@@ -66,7 +66,7 @@ public partial class FloatingAvatarView : ContentPage
             });
         });
     }
-    
+
     public void UpdateAnimationState(bool shouldAnimate)
     {
         MainThread.BeginInvokeOnMainThread(() =>
@@ -74,7 +74,7 @@ public partial class FloatingAvatarView : ContentPage
             DialogAvatarLottie.IsAnimationEnabled = shouldAnimate;
         });
     }
-    
+
     public void ShowReactionAnimation(string reactionType)
     {
         MainThread.BeginInvokeOnMainThread(() =>
@@ -93,13 +93,13 @@ public partial class FloatingAvatarView : ContentPage
     public async Task ShowAsync()
     {
         DialogOverlay.IsVisible = true;
-        
+
         // Animacja wejścia
         await Task.WhenAll(
             DialogOverlay.FadeTo(1, 300, Easing.CubicOut),
             DialogCard.ScaleTo(1, 300, Easing.SpringOut)
         );
-        
+
         // Animacja pulsowania indicator
         StartSpeechIndicatorAnimation();
     }
@@ -111,7 +111,7 @@ public partial class FloatingAvatarView : ContentPage
             DialogOverlay.FadeTo(0, 250, Easing.CubicIn),
             DialogCard.ScaleTo(0.9, 250, Easing.CubicIn)
         );
-        
+
         DialogOverlay.IsVisible = false;
         await Navigation.PopModalAsync();
     }
@@ -138,13 +138,13 @@ public partial class FloatingAvatarView : ContentPage
     private async void OnStartTrainingClicked(object sender, EventArgs e)
     {
         await HideAsync();
-        await Shell.Current.GoToAsync("//CognitiveGames");
+        await Shell.Current.GoToAsync("///CognitiveGames");
     }
 
     private async void OnShowStatsClicked(object sender, EventArgs e)
     {
         await HideAsync();
-        await Shell.Current.GoToAsync("//DailySummary");
+        await Shell.Current.GoToAsync("///DailySummary");
     }
 
     private async void OnSettingsClicked(object sender, EventArgs e)
@@ -156,7 +156,7 @@ public partial class FloatingAvatarView : ContentPage
     protected override void OnAppearing()
     {
         base.OnAppearing();
-        
+
         // Reset animacji
         DialogOverlay.Opacity = 0;
         DialogCard.Scale = 0.8;

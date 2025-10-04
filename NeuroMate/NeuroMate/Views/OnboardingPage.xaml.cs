@@ -17,7 +17,7 @@ namespace NeuroMate.Views
         {
             // Załaduj zapisane ustawienia użytkownika
             // W przyszłości to będzie z bazy danych/preferencji
-            
+
             // Domyślne ustawienia - sprawdź czy Resources nie są null
             if (Application.Current?.Resources != null)
             {
@@ -29,7 +29,7 @@ namespace NeuroMate.Views
         private void OnGoalSelected(object sender, EventArgs e)
         {
             if (Application.Current?.Resources == null) return;
-            
+
             // Reset wszystkich przycisków celów
             ConcentrationGoalBtn.Style = (Style)Application.Current.Resources["OutlineButton"];
             StressGoalBtn.Style = (Style)Application.Current.Resources["OutlineButton"];
@@ -76,12 +76,12 @@ namespace NeuroMate.Views
                 await SaveUserSettings(settings);
 
                 // Pokaż potwierdzenie
-                await DisplayAlert("✅ Zapisano!", 
-                    $"Twoje ustawienia zostały zapisane.\nCel: {_selectedGoal}\nSesje: {_selectedSessionLength}\nPraca: {WorkStartTime.Time:hh\\:mm} - {WorkEndTime.Time:hh\\:mm}", 
+                await DisplayAlert("✅ Zapisano!",
+                    $"Twoje ustawienia zostały zapisane.\nCel: {_selectedGoal}\nSesje: {_selectedSessionLength}\nPraca: {WorkStartTime.Time:hh\\:mm} - {WorkEndTime.Time:hh\\:mm}",
                     "OK");
 
                 // Wróć do Dashboard
-                await Shell.Current.GoToAsync("//MainPage");
+                await Shell.Current.GoToAsync("///MainPage");
             }
             catch (Exception ex)
             {
@@ -93,7 +93,7 @@ namespace NeuroMate.Views
         {
             // Symulacja zapisu - w przyszłości będzie to prawdziwa baza danych
             await Task.Delay(500);
-            
+
             // Zapisz do Preferences
             Preferences.Set("MainGoal", settings.MainGoal);
             Preferences.Set("SessionLength", settings.SessionLength);
