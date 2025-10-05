@@ -17,7 +17,7 @@
         {
             var exception = e.ExceptionObject as Exception;
             LogException(exception, "UnhandledException");
-            
+
             // W trybie debug, zatrzymaj aplikację aby można było debugować
             if (System.Diagnostics.Debugger.IsAttached)
             {
@@ -46,9 +46,9 @@
             System.Diagnostics.Debug.WriteLine(errorMessage);
 
             // W środowisku produkcyjnym, można dodać logowanie do pliku lub serwisu
-            #if DEBUG
+#if DEBUG
             Console.WriteLine(errorMessage);
-            #endif
+#endif
 
             // Opcjonalnie: wyświetl alert użytkownikowi (tylko dla krytycznych błędów)
             if (MainPage != null)
@@ -57,7 +57,7 @@
                 {
                     try
                     {
-                        await MainPage.DisplayAlert("Błąd aplikacji", 
+                        await MainPage.DisplayAlert("Błąd aplikacji",
                             $"Wystąpił nieoczekiwany błąd: {exception.Message}", "OK");
                     }
                     catch
@@ -71,17 +71,25 @@
         protected override Window CreateWindow(IActivationState? activationState)
         {
             var window = base.CreateWindow(activationState);
-            
+
             var displayInfo = DeviceDisplay.MainDisplayInfo;
-            
+
             window.Created += (s, e) => System.Diagnostics.Debug.WriteLine("Window Created");
-            
+
             window.Width = 390;
             window.Height = 640;
-            
-            window.X =  displayInfo.Width-window.Width;
-            window.Y =  displayInfo.Height-window.Height-40;
-            
+
+            // Uwzględnij DPI oraz orientację ekranu
+            var screenWidth = displayInfo.Width / displayInfo.Density;
+            var screenHeight = displayInfo.Height / displayInfo.Density;
+
+            window.X = screenWidth - window.Width;
+            window.Y = screenHeight - window.Height - 40;
+
+            // Zapewnij, że okno nie wyjdzie poza ekran
+            if (window.X < 0) window.X = 0;
+            if (window.Y < 0) window.Y = 0;
+
             return window;
         }
     }
