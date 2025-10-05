@@ -1,5 +1,4 @@
 using SQLite;
-using System;
 
 namespace NeuroMate.Database.Entities
 {
@@ -7,12 +6,10 @@ namespace NeuroMate.Database.Entities
     {
         [PrimaryKey, AutoIncrement]
         public int Id { get; set; }
+        public DateTime ImportDate { get; set; }
+        public string Source { get; set; } = string.Empty;
+        public int RecordsImported { get; set; }
         public bool Success { get; set; }
-        public int RecordsCount { get; set; }
-        public int AverageHRV { get; set; }
-        public int TotalSteps { get; set; }
-        public int AverageSleepMinutes { get; set; }
         public string ErrorMessage { get; set; } = string.Empty;
-        public string RecordsJson { get; set; } = string.Empty;
     }
 }

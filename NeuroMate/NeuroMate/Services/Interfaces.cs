@@ -142,7 +142,7 @@ namespace NeuroMate.Services
         /// <summary>
         /// Parsuje pojedynczy rekord z CSV
         /// </summary>
-        HealthRecord ParseHealthRecord(string[] csvRow, string[] headers);
+        Database.Entities.HealthRecord ParseHealthRecord(string[] csvRow, string[] headers);
 
         /// <summary>
         /// Importuje dane z Google Fit (opcjonalnie)
@@ -156,35 +156,22 @@ namespace NeuroMate.Services
     }
 
     /// <summary>
-    /// Serwis zarządzający systemem punktów i nagród
+    /// Serwis zarządzający punktami gracza
     /// </summary>
     public interface IPointsService
     {
-        event Action OnProfileChanged;
-        /// <summary>
-        /// Dodaje punkty za wykonanie gry
-        /// </summary>
-        Task<int> AddPointsForGameAsync(string gameType, int gameScore, int reactionTimeMs = 0);
-
-        /// <summary>
-        /// Pobiera aktualny profil gracza
-        /// </summary>
-        Task<PlayerProfile> GetPlayerProfileAsync();
-
-        /// <summary>
-        /// Pobiera historię punktów
-        /// </summary>
-        Task<List<PointsHistory>> GetPointsHistoryAsync(int days = 30);
-
-        /// <summary>
-        /// Zapisuje profil gracza
-        /// </summary>
-        Task SavePlayerProfileAsync(PlayerProfile profile);
-
-        /// <summary>
-        /// Wydaje punkty
-        /// </summary>
+        Task<PlayerProfileData> GetCurrentPlayerAsync();
         Task<bool> SpendPointsAsync(int amount);
+        Task AddPointsAsync(int amount);
+        Task<int> GetCurrentPointsAsync();
+        
+        // Dodatkowe metody dla AvatarShopPage
+        Task<NeuroMate.Models.PlayerProfile> GetPlayerProfileAsync();
+        event Action OnProfileChanged;
+        
+        // Dodatkowe metody dla MainViewModel
+        Task<List<PointsHistory>> GetPointsHistoryAsync(int days);
+        Task<int> AddPointsForGameAsync(string gameType, int gameScore, int avgReactionMs);
     }
 
     /// <summary>
@@ -192,35 +179,16 @@ namespace NeuroMate.Services
     /// </summary>
     public interface IAvatarService
     {
-        /// <summary>
-        /// Pobiera wszystkie dostępne awatary
-        /// </summary>
-        Task<List<Avatar>> GetAllAvatarsAsync();
-
-        /// <summary>
-        /// Pobiera odblokowane awatary gracza
-        /// </summary>
-        Task<List<Avatar>> GetUnlockedAvatarsAsync();
-
-        /// <summary>
-        /// Kupuje awatara za punkty
-        /// </summary>
-        Task<bool> PurchaseAvatarAsync(string avatarId);
-
-        /// <summary>
-        /// Zmienia aktualnego awatara
-        /// </summary>
+        Task<List<NeuroMate.Database.Entities.Avatar>> GetAvailableAvatarsAsync();
+        Task<NeuroMate.Database.Entities.Avatar?> GetAvatarByIdAsync(int avatarId);
+        Task UnlockAvatarAsync(int avatarId);
+        Task SelectAvatarAsync(int avatarId);
+        Task<NeuroMate.Database.Entities.Avatar?> GetSelectedAvatarAsync();
+        
+        // Dodatkowe metody dla AvatarShopPage
+        Task<List<NeuroMate.Database.Entities.Avatar>> GetAllAvatarsAsync();
         Task<bool> ChangeAvatarAsync(string avatarId);
-
-        /// <summary>
-        /// Pobiera aktualnego awatara
-        /// </summary>
-        Task<Avatar> GetCurrentAvatarAsync();
-
-        /// <summary>
-        /// Sprawdza czy awatar jest odblokowany
-        /// </summary>
-        Task<bool> IsAvatarUnlockedAsync(string avatarId);
+        Task<bool> PurchaseAvatarAsync(string avatarId);
     }
 
     /// <summary>
@@ -228,25 +196,10 @@ namespace NeuroMate.Services
     /// </summary>
     public interface ILootBoxService
     {
-        /// <summary>
-        /// Pobiera dostępne lootboxy
-        /// </summary>
-        Task<List<LootBox>> GetAvailableLootBoxesAsync();
-
-        /// <summary>
-        /// Otwiera lootbox
-        /// </summary>
-        Task<LootBoxResult> OpenLootBoxAsync(string lootBoxId);
-
-        /// <summary>
-        /// Sprawdza czy gracz może kupić lootbox
-        /// </summary>
-        Task<bool> CanAffordLootBoxAsync(string lootBoxId);
-
-        /// <summary>
-        /// Generuje nagrodę z lootboxa
-        /// </summary>
-        Task<Avatar> GenerateRewardAsync(LootBox lootBox);
+        Task InitializeDefaultLootBoxesAsync();
+        Task<List<NeuroMate.Database.Entities.LootBox>> GetAvailableLootBoxesAsync();
+        Task<NeuroMate.Database.Entities.LootBoxResult> OpenLootBoxAsync(int lootBoxId);
+        Task<NeuroMate.Database.Entities.Avatar?> GetAvatarByIdAsync(int avatarId);
     }
 
     /// <summary>

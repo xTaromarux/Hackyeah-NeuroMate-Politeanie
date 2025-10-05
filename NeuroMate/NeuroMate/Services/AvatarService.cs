@@ -1,234 +1,122 @@
+using NeuroMate.Database;
+using NeuroMate.Database.Entities;
 using NeuroMate.Models;
 
 namespace NeuroMate.Services
 {
     public class AvatarService : IAvatarService
     {
-        private readonly IPointsService _pointsService;
-        private readonly List<Avatar> _allAvatars;
+        private readonly DatabaseService _database;
+        private readonly PointsService _pointsService;
 
-        public AvatarService(IPointsService pointsService)
+        public AvatarService(DatabaseService database, PointsService pointsService)
         {
+            _database = database;
             _pointsService = pointsService;
-            _allAvatars = InitializeAvatars();
-            _pointsService.OnProfileChanged += _pointsService_OnProfileChanged;
         }
 
-        private void _pointsService_OnProfileChanged()
+        public async Task<List<Database.Entities.Avatar>> GetAvailableAvatarsAsync()
         {
-            // Asynchronicznie odświeżamy status awatarów
-            _ = Task.Run(async () =>
-            {
-                try
-                {
-                    var profile = await _pointsService.GetPlayerProfileAsync();
-
-                    // Aktualizujemy status odblokowania dla wszystkich awatarów
-                    foreach (var avatar in _allAvatars)
-                    {
-                        avatar.IsUnlocked = profile.UnlockedAvatarIds.Contains(avatar.Id);
-                    }
-
-                    // Wywołujemy na głównym wątku, jeśli ktoś nasłuchuje
-                    if (OnAvatarsUpdated != null)
-                    {
-                        Microsoft.Maui.Controls.Application.Current?.Dispatcher.Dispatch(() =>
-                        {
-                            OnAvatarsUpdated.Invoke();
-                        });
-                    }
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Error updating avatars: {ex.Message}");
-                }
-            });
+            return await _database.GetAllAvatarsAsync();
         }
 
-        private List<Avatar> InitializeAvatars()
+        public async Task<Database.Entities.Avatar?> GetAvatarByIdAsync(int avatarId)
         {
-            return new List<Avatar>
-            {
-                // Domyślny awatar
-                new Avatar
-                {
-                    Id = "hackyeah_default",
-                    Name = "Hackyeah Mistrz",
-                    Description = "Podstawowy awatar Hackyeah - twój przewodnik w biohackingu",
-                    LottieFileName = "hackyeah_default.png",
-                    Price = 0,
-                    IsUnlocked = true,
-                    IsDefault = true,
-                    Rarity = AvatarRarity.Common,
-                    PreviewImagePath = "hackyeah_default.png"
-                },
-
-                // Common Avatars (100-200 pkt)
-                new Avatar
-                {
-                    Id = "it_guy",
-                    Name = "IT Specjalista",
-                    Description = "Techniczny ekspert gotowy na wyzwania programistyczne",
-                    LottieFileName = "it_guy.png",
-                    Price = 150,
-                    IsUnlocked = false,
-                    IsDefault = false,
-                    Rarity = AvatarRarity.Common,
-                    PreviewImagePath = "it_guy.png"
-                },
-                new Avatar
-                {
-                    Id = "hackyeah_happy",
-                    Name = "Hackyeah Szczęśliwy",
-                    Description = "Pozytywny awatar pełen energii i entuzjazmu",
-                    LottieFileName = "hackyeah_happy.png",
-                    Price = 120,
-                    IsUnlocked = false,
-                    IsDefault = false,
-                    Rarity = AvatarRarity.Common,
-                    PreviewImagePath = "hackyeah_happy.png"
-                },
-
-                // Rare Avatars (300-500 pkt)
-                new Avatar
-                {
-                    Id = "hackyeah_sad",
-                    Name = "Hackyeah Zamyślony",
-                    Description = "Refleksyjny awatar do momentów głębokiego myślenia",
-                    LottieFileName = "hackyeah_sad.png",
-                    Price = 400,
-                    IsUnlocked = false,
-                    IsDefault = false,
-                    Rarity = AvatarRarity.Rare,
-                    PreviewImagePath = "hackyeah_sad.png"
-                },
-                new Avatar
-                {
-                    Id = "gray_tshirt",
-                    Name = "Casual Style",
-                    Description = "Zwykły awatar w szarej koszulce dla codziennych zadań",
-                    LottieFileName = "gray_tshirt.png",
-                    Price = 350,
-                    IsUnlocked = false,
-                    IsDefault = false,
-                    Rarity = AvatarRarity.Rare,
-                    PreviewImagePath = "gray_tshirt.png"
-                },
-
-                // Epic Avatar (600-800 pkt)
-                new Avatar
-                {
-                    Id = "hackyeah_wave",
-                    Name = "Hackyeah Pozdrowienia",
-                    Description = "Przyjazny awatar machający na powitanie",
-                    LottieFileName = "hackyeah_wave.png",
-                    Price = 700,
-                    IsUnlocked = false,
-                    IsDefault = false,
-                    Rarity = AvatarRarity.Epic,
-                    PreviewImagePath = "hackyeah_wave.png"
-                }
-            };
+            var avatars = await _database.GetAllAvatarsAsync();
+            return avatars.FirstOrDefault(a => a.Id == avatarId);
         }
 
-        public async Task<List<Avatar>> GetAllAvatarsAsync()
+        public async Task UnlockAvatarAsync(int avatarId)
         {
-            await Task.Delay(1);
-            var profile = await _pointsService.GetPlayerProfileAsync();
-
-            // Ustaw status odblokowania
-            foreach (var avatar in _allAvatars)
+            var avatar = await GetAvatarByIdAsync(avatarId);
+            if (avatar != null && !avatar.IsUnlocked)
             {
-                avatar.IsUnlocked = profile.UnlockedAvatarIds.Contains(avatar.Id);
+                avatar.IsUnlocked = true;
+                avatar.UnlockedAt = DateTime.Now;
+                await _database.SaveAvatarAsync(avatar);
             }
-
-            return _allAvatars.ToList();
         }
 
-        public async Task<List<Avatar>> GetUnlockedAvatarsAsync()
+        public async Task SelectAvatarAsync(int avatarId)
         {
-            var allAvatars = await GetAllAvatarsAsync();
-            return allAvatars.Where(a => a.IsUnlocked).ToList();
-        }
-
-        public async Task<bool> PurchaseAvatarAsync(string avatarId)
-        {
-            var avatar = _allAvatars.FirstOrDefault(a => a.Id == avatarId);
-            if (avatar == null || avatar.IsUnlocked)
-                return false;
-
-            var profile = await _pointsService.GetPlayerProfileAsync();
-
-            if (profile.TotalPoints >= avatar.Price)
+            var player = await _pointsService.GetCurrentPlayerAsync();
+            var avatar = await GetAvatarByIdAsync(avatarId);
+            
+            if (avatar != null && avatar.IsUnlocked)
             {
-                // Odejmij punkty
-                profile.TotalPoints -= avatar.Price;
-                profile.PointsSpent += avatar.Price;
+                // Odznacz poprzednio wybrany awatar
+                var currentSelected = await GetSelectedAvatarAsync();
+                if (currentSelected != null)
+                {
+                    currentSelected.IsSelected = false;
+                    await _database.SaveAvatarAsync(currentSelected);
+                }
 
-                // Odblokuj awatara
-                profile.UnlockedAvatarIds.Add(avatarId);
+                // Zaznacz nowy awatar
+                avatar.IsSelected = true;
+                await _database.SaveAvatarAsync(avatar);
 
-                // Zapisz profil
-                await _pointsService.SavePlayerProfileAsync(profile);
-
-                return true;
+                // Zaktualizuj profil gracza
+                player.SelectedAvatarId = avatarId;
+                await _database.SavePlayerProfileDataAsync(player);
             }
+        }
 
-            return false;
+        public async Task<Database.Entities.Avatar?> GetSelectedAvatarAsync()
+        {
+            var avatars = await _database.GetAllAvatarsAsync();
+            return avatars.FirstOrDefault(a => a.IsSelected);
+        }
+
+        // Dodatkowe metody dla AvatarShopPage
+        public async Task<List<Database.Entities.Avatar>> GetAllAvatarsAsync()
+        {
+            return await _database.GetAllAvatarsAsync();
         }
 
         public async Task<bool> ChangeAvatarAsync(string avatarId)
         {
-            var profile = await _pointsService.GetPlayerProfileAsync();
+            if (!int.TryParse(avatarId, out int id))
+                return false;
 
-            if (profile.UnlockedAvatarIds.Contains(avatarId))
-            {
-                profile.CurrentAvatarId = avatarId;
-                await _pointsService.SavePlayerProfileAsync(profile);
-                return true;
-            }
-
-            return false;
+            return await ChangeAvatarAsync(id);
         }
 
-        public async Task<Avatar> GetCurrentAvatarAsync()
+        public async Task<bool> ChangeAvatarAsync(int avatarId)
         {
-            var profile = await _pointsService.GetPlayerProfileAsync();
-            var currentAvatar = _allAvatars.FirstOrDefault(a => a.Id == profile.CurrentAvatarId);
-            return currentAvatar ?? _allAvatars.First(a => a.IsDefault);
+            var avatar = await GetAvatarByIdAsync(avatarId);
+            if (avatar == null || !avatar.IsUnlocked)
+                return false;
+
+            await SelectAvatarAsync(avatarId);
+            return true;
         }
 
-        public async Task<bool> IsAvatarUnlockedAsync(string avatarId)
+        public async Task<bool> PurchaseAvatarAsync(string avatarId)
         {
-            var profile = await _pointsService.GetPlayerProfileAsync();
-            return profile.UnlockedAvatarIds.Contains(avatarId);
-        }
+            if (!int.TryParse(avatarId, out int id))
+                return false;
 
-        public string GetRarityColor(AvatarRarity rarity)
-        {
-            return rarity switch
-            {
-                AvatarRarity.Common => "#8E8E93",     // Szary
-                AvatarRarity.Rare => "#007AFF",       // Niebieski
-                AvatarRarity.Epic => "#AF52DE",       // Fioletowy
-                AvatarRarity.Legendary => "#FF9500",  // Pomarańczowy
-                _ => "#8E8E93"
-            };
-        }
+            var avatar = await GetAvatarByIdAsync(id);
+            if (avatar == null || avatar.IsUnlocked)
+                return false;
 
-        public string GetRarityIcon(AvatarRarity rarity)
-        {
-            return rarity switch
-            {
-                AvatarRarity.Common => "⚪",
-                AvatarRarity.Rare => "🔵",
-                AvatarRarity.Epic => "🟣",
-                AvatarRarity.Legendary => "🟠",
-                _ => "⚪"
-            };
-        }
+            var player = await _pointsService.GetCurrentPlayerAsync();
+            if (player.Points < avatar.Price)
+                return false;
 
-        // Dodajemy event dla nasłuchiwania zmian w awatarach
-        public event Action? OnAvatarsUpdated;
+            // Spend points
+            var success = await _pointsService.SpendPointsAsync(avatar.Price);
+            if (!success)
+                return false;
+
+            // Unlock avatar
+            await UnlockAvatarAsync(id);
+            
+            // Auto-select purchased avatar
+            await SelectAvatarAsync(id);
+
+            return true;
+        }
     }
 }

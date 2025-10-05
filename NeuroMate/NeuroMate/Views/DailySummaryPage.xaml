@@ -107,7 +107,7 @@
                         
                         <ProgressBar Progress="0.78"
                                      ProgressColor="{StaticResource Success}"
-                                     BackgroundColor="{StaticResource Gray200}"
+                                     BackgroundColor="{StaticResource BorderLight}"
                                      HeightRequest="12" />
                     </StackLayout>
                 </Grid>

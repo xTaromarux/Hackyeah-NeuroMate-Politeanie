@@ -32,10 +32,10 @@ namespace NeuroMate
             builder.Services.AddSingleton<IPVTGameService, PvtGameService>();
             builder.Services.AddSingleton<IDataImportService, DataImportService>();
             
-            // Nowe serwisy dla systemu punktów i awatarów
-            builder.Services.AddSingleton<IPointsService, PointsService>();
-            builder.Services.AddSingleton<IAvatarService, AvatarService>();
-            builder.Services.AddSingleton<ILootBoxService, LootBoxService>();
+            // Nowe serwisy dla systemu punktów i lootboxów
+            builder.Services.AddSingleton<PointsService>();
+            builder.Services.AddSingleton<LootBoxService>();
+            builder.Services.AddSingleton<AvatarService>();
 
             // Rejestracja stron
             builder.Services.AddTransient<Views.AvatarShopPage>();

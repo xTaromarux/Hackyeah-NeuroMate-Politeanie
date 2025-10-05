@@ -1,180 +1,233 @@
+using NeuroMate.Database;
+using NeuroMate.Database.Entities;
 using NeuroMate.Models;
+using CommunityToolkit.Mvvm.Messaging;
+using NeuroMate.Messages;
 
 namespace NeuroMate.Services
 {
     public class LootBoxService : ILootBoxService
     {
-        private readonly IPointsService _pointsService;
-        private readonly IAvatarService _avatarService;
-        private readonly List<LootBox> _availableLootBoxes;
-        private readonly Random _random = new();
+        private readonly DatabaseService _database;
+        private readonly PointsService _pointsService;
+        private readonly Random _random = new Random();
 
-        public LootBoxService(IPointsService pointsService, IAvatarService avatarService)
+        public LootBoxService(DatabaseService database, PointsService pointsService)
         {
+            _database = database;
             _pointsService = pointsService;
-            _avatarService = avatarService;
-            _availableLootBoxes = InitializeLootBoxes();
         }
 
-        private List<LootBox> InitializeLootBoxes()
+        public async Task InitializeDefaultLootBoxesAsync()
         {
-            return new List<LootBox>
+            var existingBoxes = await _database.GetAllLootBoxesAsync();
+            if (!existingBoxes.Any())
             {
-                new LootBox
+                var defaultBoxes = new List<Database.Entities.LootBox>
                 {
-                    Id = "bronze_box",
-                    Name = "Brązowa Skrzynia",
-                    Description = "Podstawowa skrzynia z szansą na zwykłe i rzadkie awatary",
-                    Price = 200,
-                    IconPath = "bronze_box.png",
-                    PossibleRewards = new List<LootBoxReward>
-                    {
-                        new LootBoxReward { AvatarId = "robot_blue", DropChance = 0.4, Rarity = AvatarRarity.Common },
-                        new LootBoxReward { AvatarId = "cat_smart", DropChance = 0.4, Rarity = AvatarRarity.Common },
-                        new LootBoxReward { AvatarId = "owl_professor", DropChance = 0.15, Rarity = AvatarRarity.Rare },
-                        new LootBoxReward { AvatarId = "fox_zen", DropChance = 0.05, Rarity = AvatarRarity.Rare }
+                    new Database.Entities.LootBox 
+                    { 
+                        Name = "Podstawowa Skrzynka", 
+                        Description = "Zawiera podstawowe nagrody", 
+                        Price = 50, 
+                        Rarity = "Common",
+                        ImagePath = "lootbox_common.png"
+                    },
+                    new Database.Entities.LootBox 
+                    { 
+                        Name = "Srebrna Skrzynka", 
+                        Description = "Lepsze szanse na rzadkie nagrody", 
+                        Price = 100, 
+                        Rarity = "Rare",
+                        ImagePath = "lootbox_rare.png"
+                    },
+                    new Database.Entities.LootBox 
+                    { 
+                        Name = "Złota Skrzynka", 
+                        Description = "Najlepsze nagrody w grze!", 
+                        Price = 200, 
+                        Rarity = "Epic",
+                        ImagePath = "lootbox_epic.png"
                     }
-                },
-                
-                new LootBox
+                };
+
+                foreach (var box in defaultBoxes)
                 {
-                    Id = "silver_box",
-                    Name = "Srebrna Skrzynia",
-                    Description = "Zaawansowana skrzynia z wyższą szansą na rzadkie awatary",
-                    Price = 400,
-                    IconPath = "silver_box.png",
-                    PossibleRewards = new List<LootBoxReward>
+                    await _database.SaveLootBoxAsync(box);
+                }
+
+                await InitializeDefaultAvatarsAsync();
+                await InitializeDefaultRewardsAsync();
+            }
+        }
+
+        private async Task InitializeDefaultAvatarsAsync()
+        {
+            var player = await _pointsService.GetCurrentPlayerAsync();
+            var existingAvatars = await _database.GetAllAvatarsAsync();
+            
+            if (!existingAvatars.Any())
+            {
+                var defaultAvatars = new List<Database.Entities.Avatar>
+                {
+                    new Database.Entities.Avatar { Name = "Robocik Podstawowy", Description = "Twój pierwszy awatar", ImagePath = "avatar_robot_basic.png", Rarity = "Common", IsUnlocked = true, IsSelected = true, PlayerId = player.Id },
+                    new Database.Entities.Avatar { Name = "Koteczek", Description = "Słodki kotek", ImagePath = "avatar_cat.png", Rarity = "Common", PlayerId = player.Id },
+                    new Database.Entities.Avatar { Name = "Mysz Laboratoryjna", Description = "Mądra mysz", ImagePath = "avatar_mouse.png", Rarity = "Rare", PlayerId = player.Id },
+                    new Database.Entities.Avatar { Name = "Robocik Srebrny", Description = "Ulepszony robot", ImagePath = "avatar_robot_silver.png", Rarity = "Rare", PlayerId = player.Id },
+                    new Database.Entities.Avatar { Name = "Smok Mały", Description = "Młody smok", ImagePath = "avatar_dragon.png", Rarity = "Epic", PlayerId = player.Id },
+                    new Database.Entities.Avatar { Name = "Robocik Złoty", Description = "Najlepszy robot", ImagePath = "avatar_robot_gold.png", Rarity = "Epic", PlayerId = player.Id },
+                    new Database.Entities.Avatar { Name = "Feniks", Description = "Legendarna istota", ImagePath = "avatar_phoenix.png", Rarity = "Legendary", PlayerId = player.Id }
+                };
+
+                foreach (var avatar in defaultAvatars)
+                {
+                    await _database.SaveAvatarAsync(avatar);
+                }
+            }
+        }
+
+        private async Task InitializeDefaultRewardsAsync()
+        {
+            var boxes = await _database.GetAllLootBoxesAsync();
+            
+            foreach (var box in boxes)
+            {
+                var rewards = new List<Database.Entities.LootBoxReward>();
+                
+                if (box.Rarity == "Common")
+                {
+                    rewards.AddRange(new[]
                     {
-                        new LootBoxReward { AvatarId = "owl_professor", DropChance = 0.3, Rarity = AvatarRarity.Rare },
-                        new LootBoxReward { AvatarId = "fox_zen", DropChance = 0.3, Rarity = AvatarRarity.Rare },
-                        new LootBoxReward { AvatarId = "dragon_wisdom", DropChance = 0.25, Rarity = AvatarRarity.Epic },
-                        new LootBoxReward { AvatarId = "phoenix_energy", DropChance = 0.15, Rarity = AvatarRarity.Epic }
+                        new Database.Entities.LootBoxReward { LootBoxId = box.Id, RewardType = "Points", RewardValue = "25", DropChance = 0.4f, Rarity = "Common" },
+                        new Database.Entities.LootBoxReward { LootBoxId = box.Id, RewardType = "Avatar", RewardValue = "2", DropChance = 0.3f, Rarity = "Common" },
+                        new Database.Entities.LootBoxReward { LootBoxId = box.Id, RewardType = "Avatar", RewardValue = "3", DropChance = 0.2f, Rarity = "Rare" },
+                        new Database.Entities.LootBoxReward { LootBoxId = box.Id, RewardType = "Points", RewardValue = "10", DropChance = 0.1f, Rarity = "Common" }
+                    });
+                }
+                else if (box.Rarity == "Rare")
+                {
+                    rewards.AddRange(new[]
+                    {
+                        new Database.Entities.LootBoxReward { LootBoxId = box.Id, RewardType = "Avatar", RewardValue = "4", DropChance = 0.3f, Rarity = "Rare" },
+                        new Database.Entities.LootBoxReward { LootBoxId = box.Id, RewardType = "Avatar", RewardValue = "5", DropChance = 0.25f, Rarity = "Epic" },
+                        new Database.Entities.LootBoxReward { LootBoxId = box.Id, RewardType = "Points", RewardValue = "75", DropChance = 0.25f, Rarity = "Rare" },
+                        new Database.Entities.LootBoxReward { LootBoxId = box.Id, RewardType = "Points", RewardValue = "50", DropChance = 0.2f, Rarity = "Common" }
+                    });
+                }
+                else if (box.Rarity == "Epic")
+                {
+                    rewards.AddRange(new[]
+                    {
+                        new Database.Entities.LootBoxReward { LootBoxId = box.Id, RewardType = "Avatar", RewardValue = "6", DropChance = 0.4f, Rarity = "Epic" },
+                        new Database.Entities.LootBoxReward { LootBoxId = box.Id, RewardType = "Avatar", RewardValue = "7", DropChance = 0.2f, Rarity = "Legendary" },
+                        new Database.Entities.LootBoxReward { LootBoxId = box.Id, RewardType = "Points", RewardValue = "150", DropChance = 0.3f, Rarity = "Epic" },
+                        new Database.Entities.LootBoxReward { LootBoxId = box.Id, RewardType = "Points", RewardValue = "100", DropChance = 0.1f, Rarity = "Rare" }
+                    });
+                }
+
+                foreach (var reward in rewards)
+                {
+                    await _database.SaveLootBoxRewardAsync(reward);
+                }
+            }
+        }
+
+        public async Task<List<Database.Entities.LootBox>> GetAvailableLootBoxesAsync()
+        {
+            return await _database.GetAllLootBoxesAsync();
+        }
+
+        public async Task<Database.Entities.Avatar?> GetAvatarByIdAsync(int avatarId)
+        {
+            var avatars = await _database.GetAllAvatarsAsync();
+            return avatars.FirstOrDefault(a => a.Id == avatarId);
+        }
+
+        public async Task<Database.Entities.LootBoxResult> OpenLootBoxAsync(int lootBoxId)
+        {
+            var lootBox = (await _database.GetAllLootBoxesAsync()).FirstOrDefault(lb => lb.Id == lootBoxId);
+            if (lootBox == null)
+                throw new ArgumentException("LootBox nie istnieje");
+
+            // Sprawdź czy gracz ma wystarczająco punktów
+            var canAfford = await _pointsService.SpendPointsAsync(lootBox.Price);
+            if (!canAfford)
+                throw new InvalidOperationException("Niewystarczająco punktów");
+
+            var player = await _pointsService.GetCurrentPlayerAsync();
+            var rewards = await GetLootBoxRewardsAsync(lootBoxId);
+            
+            // Losuj nagrodę
+            var selectedReward = SelectRandomReward(rewards);
+            var result = new Database.Entities.LootBoxResult
+            {
+                LootBoxId = lootBoxId,
+                PlayerId = player.Id,
+                RewardType = selectedReward.RewardType,
+                RewardValue = selectedReward.RewardValue,
+                IsWin = true,
+                PointsSpent = lootBox.Price
+            };
+
+            // Przetwórz nagrodę
+            if (selectedReward.RewardType == "Avatar")
+            {
+                var avatarId = int.Parse(selectedReward.RewardValue);
+                var avatar = await GetAvatarByIdAsync(avatarId);
+                
+                if (avatar != null)
+                {
+                    if (avatar.IsUnlocked)
+                    {
+                        // Jeśli awatar już odblokowany, daj punkty zwrotne
+                        result.RewardType = "Points";
+                        result.RewardValue = "50";
+                        result.PointsGained = 50;
+                        await _pointsService.AddPointsAsync(50);
                     }
-                },
-                
-                new LootBox
-                {
-                    Id = "gold_box",
-                    Name = "Złota Skrzynia",
-                    Description = "Ekskluzywna skrzynia z szansą na legendarne awatary!",
-                    Price = 800,
-                    IconPath = "gold_box.png",
-                    PossibleRewards = new List<LootBoxReward>
+                    else
                     {
-                        new LootBoxReward { AvatarId = "dragon_wisdom", DropChance = 0.4, Rarity = AvatarRarity.Epic },
-                        new LootBoxReward { AvatarId = "phoenix_energy", DropChance = 0.35, Rarity = AvatarRarity.Epic },
-                        new LootBoxReward { AvatarId = "cosmic_brain", DropChance = 0.15, Rarity = AvatarRarity.Legendary },
-                        new LootBoxReward { AvatarId = "time_master", DropChance = 0.1, Rarity = AvatarRarity.Legendary }
+                        // Odblokuj awatar
+                        avatar.IsUnlocked = true;
+                        avatar.UnlockedAt = DateTime.Now;
+                        await _database.SaveAvatarAsync(avatar);
+                        WeakReferenceMessenger.Default.Send(new AvatarChangedMessage());
                     }
                 }
-            };
-        }
-
-        public async Task<List<LootBox>> GetAvailableLootBoxesAsync()
-        {
-            await Task.Delay(1);
-            return _availableLootBoxes.ToList();
-        }
-
-        public async Task<bool> CanAffordLootBoxAsync(string lootBoxId)
-        {
-            var lootBox = _availableLootBoxes.FirstOrDefault(lb => lb.Id == lootBoxId);
-            if (lootBox == null) return false;
-
-            var profile = await _pointsService.GetPlayerProfileAsync();
-            return profile.TotalPoints >= lootBox.Price;
-        }
-
-        public async Task<LootBoxResult> OpenLootBoxAsync(string lootBoxId)
-        {
-            var lootBox = _availableLootBoxes.FirstOrDefault(lb => lb.Id == lootBoxId);
-            if (lootBox == null)
-                throw new ArgumentException("Nieznany lootbox", nameof(lootBoxId));
-
-            var profile = await _pointsService.GetPlayerProfileAsync();
-            if (profile.TotalPoints < lootBox.Price)
-                throw new InvalidOperationException("Niewystarczająca liczba punktów");
-
-            // Odejmij punkty
-            profile.TotalPoints -= lootBox.Price;
-            profile.PointsSpent += lootBox.Price;
-            profile.TotalLootBoxesOpened++;
-
-            // Wygeneruj nagrodę
-            var reward = await GenerateRewardAsync(lootBox);
-            
-            var result = new LootBoxResult
-            {
-                UnlockedAvatar = reward,
-                OpenedAt = DateTime.Now
-            };
-
-            // Sprawdź czy awatar już był odblokowany
-            if (profile.UnlockedAvatarIds.Contains(reward.Id))
-            {
-                result.WasNewAvatar = false;
-                // Zwróć część punktów jako kompensację
-                result.PointsRefunded = reward.Price / 2;
-                profile.TotalPoints += result.PointsRefunded;
             }
-            else
+            else if (selectedReward.RewardType == "Points")
             {
-                result.WasNewAvatar = true;
-                profile.UnlockedAvatarIds.Add(reward.Id);
+                var pointsAmount = int.Parse(selectedReward.RewardValue);
+                result.PointsGained = pointsAmount;
+                await _pointsService.AddPointsAsync(pointsAmount);
             }
 
-            await _pointsService.SavePlayerProfileAsync(profile);
+            await _database.SaveLootBoxResultAsync(result);
             return result;
         }
 
-        public async Task<Avatar> GenerateRewardAsync(LootBox lootBox)
+        private async Task<List<Database.Entities.LootBoxReward>> GetLootBoxRewardsAsync(int lootBoxId)
         {
-            await Task.Delay(1);
+            var allRewards = await _database.GetAllLootBoxRewardsAsync();
+            return allRewards.Where(r => r.LootBoxId == lootBoxId && r.IsActive).ToList();
+        }
+
+        private Database.Entities.LootBoxReward SelectRandomReward(List<Database.Entities.LootBoxReward> rewards)
+        {
+            var totalChance = rewards.Sum(r => r.DropChance);
+            var randomValue = _random.NextSingle() * totalChance;
             
-            // Wybierz nagrodę na podstawie prawdopodobieństwa
-            var totalChance = lootBox.PossibleRewards.Sum(r => r.DropChance);
-            var randomValue = _random.NextDouble() * totalChance;
-            
-            double currentChance = 0;
-            foreach (var reward in lootBox.PossibleRewards)
+            float currentChance = 0;
+            foreach (var reward in rewards)
             {
                 currentChance += reward.DropChance;
                 if (randomValue <= currentChance)
                 {
-                    var allAvatars = await _avatarService.GetAllAvatarsAsync();
-                    var selectedAvatar = allAvatars.FirstOrDefault(a => a.Id == reward.AvatarId);
-                    return selectedAvatar ?? allAvatars.First();
+                    return reward;
                 }
             }
             
-            // Fallback - zwróć pierwszy dostępny awatar
-            var avatars = await _avatarService.GetAllAvatarsAsync();
-            return avatars.First();
-        }
-
-        public string GetLootBoxRarityDescription(string lootBoxId)
-        {
-            var lootBox = _availableLootBoxes.FirstOrDefault(lb => lb.Id == lootBoxId);
-            if (lootBox == null) return "";
-
-            var commonChance = lootBox.PossibleRewards.Where(r => r.Rarity == AvatarRarity.Common).Sum(r => r.DropChance);
-            var rareChance = lootBox.PossibleRewards.Where(r => r.Rarity == AvatarRarity.Rare).Sum(r => r.DropChance);
-            var epicChance = lootBox.PossibleRewards.Where(r => r.Rarity == AvatarRarity.Epic).Sum(r => r.DropChance);
-            var legendaryChance = lootBox.PossibleRewards.Where(r => r.Rarity == AvatarRarity.Legendary).Sum(r => r.DropChance);
-
-            var description = "Szanse na nagrody:\n";
-            if (commonChance > 0) description += $"⚪ Zwykłe: {commonChance * 100:F0}%\n";
-            if (rareChance > 0) description += $"🔵 Rzadkie: {rareChance * 100:F0}%\n";
-            if (epicChance > 0) description += $"🟣 Epickie: {epicChance * 100:F0}%\n";
-            if (legendaryChance > 0) description += $"🟠 Legendarne: {legendaryChance * 100:F0}%\n";
-
-            return description.TrimEnd('\n');
-        }
-
-        public async Task<int> GetTotalLootBoxesOpenedAsync()
-        {
-            var profile = await _pointsService.GetPlayerProfileAsync();
-            return profile.TotalLootBoxesOpened;
+            return rewards.Last(); // Fallback
         }
     }
 }

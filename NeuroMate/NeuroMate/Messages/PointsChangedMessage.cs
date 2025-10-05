@@ -4,11 +4,11 @@ namespace NeuroMate.Messages
 {
     public class PointsChangedMessage
     {
-        public int Points { get; }
+        public int NewPoints { get; }
 
-        public PointsChangedMessage(int points)
+        public PointsChangedMessage(int newPoints)
         {
-            Points = points;
+            NewPoints = newPoints;
         }
     }
 }

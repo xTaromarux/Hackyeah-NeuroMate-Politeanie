@@ -1,5 +1,4 @@
 using SQLite;
-using System;
 
 namespace NeuroMate.Database.Entities
 {
@@ -13,6 +12,6 @@ namespace NeuroMate.Database.Entities
         public bool Completed { get; set; }
         public int ScoreBeforeIntervention { get; set; }
         public int ScoreAfterIntervention { get; set; }
-        public string MetricsJson { get; set; } = string.Empty;
+        public string MetricsJson { get; set; } = string.Empty; // Stored as JSON string
     }
 }

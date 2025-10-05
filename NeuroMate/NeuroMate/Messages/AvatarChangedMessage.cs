@@ -4,9 +4,9 @@ namespace NeuroMate.Messages
 {
     public class AvatarChangedMessage
     {
-        public string AvatarId { get; }
+        public int? AvatarId { get; }
 
-        public AvatarChangedMessage(string avatarId)
+        public AvatarChangedMessage(int? avatarId = null)
         {
             AvatarId = avatarId;
         }

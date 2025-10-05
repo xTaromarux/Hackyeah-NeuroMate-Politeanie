@@ -79,6 +79,14 @@
                       Shell.TitleColor="{StaticResource TextPrimary}"
                       Shell.UnselectedColor="{StaticResource TextSecondary}" />
 
+        <ShellContent Title="Skrzynki"
+                      Icon="🎁"
+                      Route="LootBoxPage"
+                      ContentTemplate="{DataTemplate views:LootBoxPage}"
+                      Shell.ForegroundColor="{StaticResource Primary}"
+                      Shell.TitleColor="{StaticResource TextPrimary}"
+                      Shell.UnselectedColor="{StaticResource TextSecondary}" />
+
         <ShellContent Title="Podsumowanie"
                       Icon="📊"
                       Route="DailySummaryPage"
@@ -110,4 +118,3 @@
         Route="SleepPage" />
 
 </Shell>
-

@@ -1,14 +1,15 @@
 using NeuroMate.Models;
 using NeuroMate.Database;
+using NeuroMate.Database.Entities;
 
 namespace NeuroMate.Services
 {
     public class NeuroScoreService : INeuroScoreService
     {
         private readonly DatabaseService _db;
-        private UserData _currentUserData;
-        private NeuroScoreComponents _lastComponents;
-        private readonly List<NeuroScoreHistory> _scoreHistory = new();
+        private Models.UserData _currentUserData;
+        private Models.NeuroScoreComponents _lastComponents;
+        private readonly List<Models.NeuroScoreHistory> _scoreHistory = new();
 
         // Wartości referencyjne dla normalizacji
         private const int OPTIMAL_REACTION_TIME_MS = 250;
@@ -21,14 +22,14 @@ namespace NeuroMate.Services
         {
             _db = db;
 
-            _currentUserData = new UserData
+            _currentUserData = new Models.UserData
             {
                 NeuroScore = 50,
                 MinutesNoBreak = 0,
                 HRV = 0,
                 LastUpdate = DateTime.Now
             };
-            _lastComponents = new NeuroScoreComponents();
+            _lastComponents = new Models.NeuroScoreComponents();
         }
 
         public Task<int> CalculateNeuroScoreAsync(
@@ -37,7 +38,7 @@ namespace NeuroMate.Services
             int hrv,
             int? sleepMinutes = null)
         {
-            var components = new NeuroScoreComponents();
+            var components = new Models.NeuroScoreComponents();
 
             // 1. Reaction Time Score (0-1, mniejszy = lepszy)
             if (pvtStats.AverageReactionMs > 0)
@@ -82,7 +83,7 @@ namespace NeuroMate.Services
                     sleepMinutes.Value / (double)OPTIMAL_SLEEP_MINUTES,
                     0, 1
                 );
-                components.SleepScore = sleepScore;
+                components.SleepScoreNormalized = sleepScore;
             }
 
             // Oblicz końcowy score (0-100) używając wag
@@ -98,8 +99,8 @@ namespace NeuroMate.Services
             // Zapisz komponenty
             _lastComponents = components;
 
-            // Zapisz do historii
-            var historyRecord = new NeuroScoreHistory
+            // Zapisz do historii - używam modelu z namespace Models
+            var historyRecord = new Models.NeuroScoreHistory
             {
                 Timestamp = DateTime.Now,
                 Score = finalScore,
@@ -117,7 +118,7 @@ namespace NeuroMate.Services
             return Task.FromResult(finalScore);
         }
 
-        public UserData GetCurrentUserData()
+        public Models.UserData GetCurrentUserData()
         {
             return _currentUserData;
         }
@@ -125,30 +126,27 @@ namespace NeuroMate.Services
         public async Task SaveUserGoalAsync(string goal)
         {
             _currentUserData.SelectedGoal = goal;
-            await Task.CompletedTask; // Symulacja operacji async
+            // Można zapisać do bazy danych jeśli potrzeba
         }
 
         public async Task ResetAllDataAsync()
         {
-            _currentUserData = new UserData
+            _currentUserData = new Models.UserData
             {
                 NeuroScore = 50,
                 MinutesNoBreak = 0,
                 HRV = 0,
                 LastUpdate = DateTime.Now
             };
-            _lastComponents = new NeuroScoreComponents();
             _scoreHistory.Clear();
-            await Task.CompletedTask;
         }
 
-        public async Task<List<NeuroScoreHistory>> GetScoreHistoryAsync(int days = 7)
+        public async Task<List<Models.NeuroScoreHistory>> GetScoreHistoryAsync(int days = 7)
         {
-            var cutoffDate = DateTime.Now.AddDays(-days);
-            return await Task.FromResult(_scoreHistory.Where(h => h.Timestamp >= cutoffDate).ToList());
+            return _scoreHistory.Where(h => h.Timestamp >= DateTime.Now.AddDays(-days)).ToList();
         }
 
-        public NeuroScoreComponents GetLastScoreComponents()
+        public Models.NeuroScoreComponents GetLastScoreComponents()
         {
             return _lastComponents;
         }

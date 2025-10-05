@@ -1,215 +1,32 @@
-using NeuroMate.Models;
+using Microsoft.Maui.Controls;
 using NeuroMate.Services;
+using NeuroMate.Database.Entities;
 using System.Collections.ObjectModel;
-using SkiaSharp.Extended.UI.Controls;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
+using NeuroMate.Messages;
 
 namespace NeuroMate.Views
 {
     public partial class LootBoxPage : ContentPage
     {
-        private readonly ILootBoxService _lootBoxService;
-        private readonly IPointsService _pointsService;
-        private readonly ObservableCollection<LootBoxShopItem> _lootBoxes = new();
+        private readonly LootBoxViewModel _viewModel;
 
-        public LootBoxPage(ILootBoxService lootBoxService, IPointsService pointsService)
+        public LootBoxPage(LootBoxService lootBoxService, PointsService pointsService)
         {
             InitializeComponent();
-            _lootBoxService = lootBoxService;
-            _pointsService = pointsService;
-            LootBoxesCollection.ItemsSource = _lootBoxes;
-            _pointsService.OnProfileChanged += () => _ = LoadDataAsync();
-
+            _viewModel = new LootBoxViewModel(lootBoxService, pointsService);
+            BindingContext = _viewModel;
         }
 
         protected override async void OnAppearing()
         {
             base.OnAppearing();
-            await LoadDataAsync();
-        }
-
-        private async Task LoadDataAsync()
-        {
-            LoadingIndicator.IsVisible = true;
-            LoadingIndicator.IsRunning = true;
-
-            try
-            {
-                // Załaduj punkty gracza
-                var profile = await _pointsService.GetPlayerProfileAsync();
-                PointsLabel.Text = $"💎 Punkty: {profile.TotalPoints}";
-                BoxesOpenedLabel.Text = $"Otwarto: {profile.TotalLootBoxesOpened}";
-
-                // Załaduj dostępne lootboxy
-                var lootBoxes = await _lootBoxService.GetAvailableLootBoxesAsync();
-                _lootBoxes.Clear();
-
-                foreach (var lootBox in lootBoxes)
-                {
-                    var canAfford = await _lootBoxService.CanAffordLootBoxAsync(lootBox.Id);
-                    var dropRates = GetDropRatesText(lootBox);
-
-                    _lootBoxes.Add(new LootBoxShopItem(lootBox, canAfford, dropRates));
-                }
-            }
-            catch (Exception ex)
-            {
-                await DisplayAlert("Błąd", $"Nie udało się załadować danych: {ex.Message}", "OK");
-            }
-            finally
-            {
-                LoadingIndicator.IsVisible = false;
-                LoadingIndicator.IsRunning = false;
-            }
-        }
-
-        private string GetDropRatesText(LootBox lootBox)
-        {
-            var commonChance = lootBox.PossibleRewards.Where(r => r.Rarity == AvatarRarity.Common).Sum(r => r.DropChance);
-            var rareChance = lootBox.PossibleRewards.Where(r => r.Rarity == AvatarRarity.Rare).Sum(r => r.DropChance);
-            var epicChance = lootBox.PossibleRewards.Where(r => r.Rarity == AvatarRarity.Epic).Sum(r => r.DropChance);
-            var legendaryChance = lootBox.PossibleRewards.Where(r => r.Rarity == AvatarRarity.Legendary).Sum(r => r.DropChance);
-
-            var parts = new List<string>();
-            if (commonChance > 0) parts.Add($"⚪ {commonChance * 100:F0}%");
-            if (rareChance > 0) parts.Add($"🔵 {rareChance * 100:F0}%");
-            if (epicChance > 0) parts.Add($"🟣 {epicChance * 100:F0}%");
-            if (legendaryChance > 0) parts.Add($"🟠 {legendaryChance * 100:F0}%");
-
-            return string.Join(" | ", parts);
-        }
-
-        private async void OnOpenLootBoxClicked(object sender, EventArgs e)
-        {
-            if (sender is Button button && button.CommandParameter is string lootBoxId)
-            {
-                var lootBoxItem = _lootBoxes.FirstOrDefault(lb => lb.Id == lootBoxId);
-                if (lootBoxItem == null) return;
-
-                // Potwierdzenie zakupu
-                var confirmed = await DisplayAlert("Potwierdzenie",
-                    $"Czy chcesz otworzyć '{lootBoxItem.Name}' za {lootBoxItem.Price} punktów?",
-                    "Otwórz", "Anuluj");
-
-                if (!confirmed) return;
-
-                try
-                {
-                    // Rozpocznij animację otwierania
-                    await StartOpeningAnimationAsync();
-
-                    // Otwórz lootbox (z opóźnieniem dla efektu)
-                    await Task.Delay(2000);
-                    var result = await _lootBoxService.OpenLootBoxAsync(lootBoxId);
-
-                    // Pokaż wynik
-                    await ShowResultAsync(result);
-
-                    // Odśwież dane
-                    await LoadDataAsync();
-                }
-                catch (Exception ex)
-                {
-                    HideOverlays();
-                    await DisplayAlert("Błąd", $"Nie udało się otworzyć skrzynki: {ex.Message}", "OK");
-                }
-            }
-        }
-
-        private async Task StartOpeningAnimationAsync()
-        {
-            // Ukryj wszystkie overlaye
-            HideOverlays();
-
-            // Pokaż overlay z animacją otwierania
-            OpeningOverlay.IsVisible = true;
-            OpeningLabel.Text = "Otwieranie skrzynki...";
-
-            // Uruchom animację
-            OpeningAnimation.IsAnimationEnabled = true;
-
-            // Symulacja procesu otwierania z różnymi tekstami
-            await Task.Delay(500);
-            OpeningLabel.Text = "Losowanie nagrody...";
-
-            await Task.Delay(800);
-            OpeningLabel.Text = "Już prawie...";
-
-            await Task.Delay(700);
-        }
-
-        private async Task ShowResultAsync(LootBoxResult result)
-        {
-            // Ukryj animację otwierania
-            OpeningOverlay.IsVisible = false;
-
-            // Przygotuj dane wyniku
-            RewardAvatarLottie.Source = (SKLottieImageSource)SKLottieImageSource.FromFile(result.UnlockedAvatar.LottieFileName);
-            RewardNameLabel.Text = result.UnlockedAvatar.Name;
-            RewardDescriptionLabel.Text = result.UnlockedAvatar.Description;
-
-            // Ustaw header i status w zależności od wyniku
-            if (result.WasNewAvatar)
-            {
-                ResultHeaderLabel.Text = "🎉 Nowy Awatar!";
-                RewardStatusLabel.Text = $"{GetRarityIcon(result.UnlockedAvatar.Rarity)} {result.UnlockedAvatar.Rarity}";
-                RewardStatusLabel.TextColor = GetRarityColor(result.UnlockedAvatar.Rarity);
-            }
-            else
-            {
-                ResultHeaderLabel.Text = "📦 Duplikat";
-                RewardStatusLabel.Text = $"Zwrócono: {result.PointsRefunded} punktów";
-                RewardStatusLabel.TextColor = Colors.Orange;
-            }
-
-            // Pokaż overlay z wynikiem
-            ResultOverlay.IsVisible = true;
-
-            // Uruchom animację awatara
-            RewardAvatarLottie.IsAnimationEnabled = true;
-
-            // Dodaj efekt dźwiękowy lub wibracje (opcjonalnie)
-            if (result.WasNewAvatar && result.UnlockedAvatar.Rarity >= AvatarRarity.Epic)
-            {
-                // Wibracja dla rzadkich awatarów
-                try
-                {
-                    var duration = TimeSpan.FromMilliseconds(500);
-                    Vibration.Default.Vibrate(duration);
-                }
-                catch { } // Ignoruj błędy wibracji
-            }
-        }
-
-        private string GetRarityIcon(AvatarRarity rarity)
-        {
-            return rarity switch
-            {
-                AvatarRarity.Common => "⚪",
-                AvatarRarity.Rare => "🔵",
-                AvatarRarity.Epic => "🟣",
-                AvatarRarity.Legendary => "🟠",
-                _ => "⚪"
-            };
-        }
-
-        private Color GetRarityColor(AvatarRarity rarity)
-        {
-            return rarity switch
-            {
-                AvatarRarity.Common => Colors.Gray,
-                AvatarRarity.Rare => Colors.Blue,
-                AvatarRarity.Epic => Colors.Purple,
-                AvatarRarity.Legendary => Colors.Orange,
-                _ => Colors.Gray
-            };
-        }
-
-        private void HideOverlays()
-        {
-            OpeningOverlay.IsVisible = false;
-            ResultOverlay.IsVisible = false;
-            OpeningAnimation.IsAnimationEnabled = false;
-            RewardAvatarLottie.IsAnimationEnabled = false;
+            await _viewModel.LoadDataAsync();
+            
+            // Zaktualizuj punkty w headerze
+            PointsLabel.Text = $"💎 Punkty: {_viewModel.CurrentPoints}";
         }
 
         private async void OnBackClicked(object sender, EventArgs e)
@@ -217,37 +34,255 @@ namespace NeuroMate.Views
             await Shell.Current.GoToAsync("..");
         }
 
-        private void OnContinueClicked(object sender, EventArgs e)
+        private async void OnAvatarShopClicked(object sender, EventArgs e)
         {
-            HideOverlays();
+            await Shell.Current.GoToAsync("AvatarShopPage");
         }
 
-        private async void OnGoToShopClicked(object sender, EventArgs e)
+        private async void OnLootBoxImageTapped(object sender, EventArgs e)
         {
-            HideOverlays();
-            await Shell.Current.GoToAsync("//AvatarShopPage");
+            if (sender is Image image && image.BindingContext is LootBoxDisplayModel lootBoxModel)
+            {
+                await ShowLootBoxPreview(lootBoxModel);
+            }
+        }
+
+        private async Task ShowLootBoxPreview(LootBoxDisplayModel lootBoxModel)
+        {
+            var confirmed = await DisplayAlert("Podgląd skrzynki",
+                $"🎁 {lootBoxModel.Name}\n\n" +
+                $"💰 Cena: {lootBoxModel.Price} punktów\n" +
+                $"🌟 Rzadkość: {lootBoxModel.Rarity}\n\n" +
+                $"📝 {lootBoxModel.Description}\n\n" +
+                "Czy chcesz otworzyć tę skrzynkę?",
+                "Otwórz", "Anuluj");
+
+            if (confirmed)
+            {
+                await _viewModel.OpenLootBoxCommand.ExecuteAsync(lootBoxModel);
+            }
+        }
+
+        private void OnOverlayTapped(object sender, EventArgs e)
+        {
+            OnClosePopupClicked(sender, e);
+        }
+
+        private async void OnClosePopupClicked(object sender, EventArgs e)
+        {
+            await CloseResultPopup();
+        }
+
+        private async Task CloseResultPopup()
+        {
+            // Animacja zamknięcia
+            var popup = ResultPopup.Children[0] as Frame;
+            if (popup != null)
+            {
+                await Task.WhenAll(
+                    popup.ScaleTo(0.8, 200, Easing.CubicIn),
+                    popup.FadeTo(0, 200)
+                );
+            }
+            
+            ResultPopup.IsVisible = false;
+            
+            // Odśwież dane po zamknięciu popup'a
+            await _viewModel.LoadDataAsync();
+            PointsLabel.Text = $"💎 Punkty: {_viewModel.CurrentPoints}";
+        }
+
+        public async Task ShowRewardAsync(LootBoxResult result, LootBox lootBox)
+        {
+            try
+            {
+                // Pokaż animację otwierania
+                LoadingIndicator.IsVisible = true;
+                LoadingIndicator.IsRunning = true;
+                
+                await ShowOpeningAnimationAsync();
+                
+                LoadingIndicator.IsVisible = false;
+                LoadingIndicator.IsRunning = false;
+
+                // Przygotuj dane nagrody
+                if (result.RewardType == "Avatar")
+                {
+                    var avatarId = int.Parse(result.RewardValue);
+                    var avatar = await _viewModel.GetAvatarByIdAsync(avatarId);
+                    
+                    if (avatar != null)
+                    {
+                        RewardImage.Source = avatar.LottieFileName ?? avatar.PreviewImagePath ?? "avatar_robot_basic.png";
+                        RewardName.Text = avatar.Name;
+                        RewardDescription.Text = avatar.Description;
+                        RewardLabel.Text = result.PointsGained > 0 ? 
+                            $"🎁 Otrzymałeś {result.PointsGained} punktów (duplikat):" : 
+                            "🎊 Odblokowałeś nowego awatara:";
+                    }
+                }
+                else
+                {
+                    RewardImage.Source = "coin_icon.png";
+                    RewardName.Text = $"{result.RewardValue} Punktów";
+                    RewardDescription.Text = "Dodano do Twojego konta";
+                    RewardLabel.Text = "💰 Wygrałeś punkty:";
+                }
+
+                // Pokaż popup z animacją
+                ResultPopup.IsVisible = true;
+                var popup = ResultPopup.Children[0] as Frame;
+                if (popup != null)
+                {
+                    popup.Scale = 0.5;
+                    popup.Opacity = 0;
+                    
+                    await Task.WhenAll(
+                        popup.ScaleTo(1.0, 400, Easing.BounceOut),
+                        popup.FadeTo(1.0, 300)
+                    );
+                }
+            }
+            catch (Exception ex)
+            {
+                LoadingIndicator.IsVisible = false;
+                LoadingIndicator.IsRunning = false;
+                await DisplayAlert("Błąd", $"Wystąpił problem podczas pokazywania nagrody: {ex.Message}", "OK");
+            }
+        }
+
+        private async Task ShowOpeningAnimationAsync()
+        {
+            // Symulacja animacji otwierania z lepszymi efektami
+            await Task.Delay(1500);
         }
     }
 
-    // Helper class dla bindowania danych w CollectionView
-    public class LootBoxShopItem : LootBox
+    public partial class LootBoxViewModel : ObservableObject
     {
-        public LootBoxShopItem(LootBox lootBox, bool canAfford, string dropRatesText)
+        private readonly LootBoxService _lootBoxService;
+        private readonly PointsService _pointsService;
+
+        [ObservableProperty]
+        private ObservableCollection<LootBoxDisplayModel> lootBoxes = new();
+
+        [ObservableProperty]
+        private int currentPoints;
+
+        public LootBoxViewModel(LootBoxService lootBoxService, PointsService pointsService)
+        {
+            _lootBoxService = lootBoxService;
+            _pointsService = pointsService;
+
+            // Subskrybuj zmiany punktów - ale odśwież dane z PlayerProfile
+            WeakReferenceMessenger.Default.Register<PointsChangedMessage>(this, async (r, m) =>
+            {
+                // Po zmianie punktów, odśwież punkty z PlayerProfile.TotalPoints
+                var playerProfile = await _pointsService.GetPlayerProfileAsync();
+                CurrentPoints = playerProfile.TotalPoints;
+            });
+        }
+
+        public async Task LoadDataAsync()
+        {
+            await _lootBoxService.InitializeDefaultLootBoxesAsync();
+            
+            var lootBoxData = await _lootBoxService.GetAvailableLootBoxesAsync();
+            var displayModels = lootBoxData.Select(lb => new LootBoxDisplayModel(lb)).ToList();
+            
+            LootBoxes.Clear();
+            foreach (var model in displayModels)
+            {
+                LootBoxes.Add(model);
+            }
+
+            // Pobierz punkty z Models.PlayerProfile.TotalPoints
+            var playerProfile = await _pointsService.GetPlayerProfileAsync();
+            CurrentPoints = playerProfile.TotalPoints;
+        }
+
+        [RelayCommand]
+        private async Task OpenLootBoxAsync(LootBoxDisplayModel lootBoxModel)
+        {
+            try
+            {
+                var result = await _lootBoxService.OpenLootBoxAsync(lootBoxModel.Id);
+                
+                // Znajdź stronę i pokaż animację
+                if (Application.Current?.MainPage is AppShell shell)
+                {
+                    var navigation = shell.Navigation;
+                    var currentPage = navigation.NavigationStack.LastOrDefault();
+                    if (currentPage is LootBoxPage lootBoxPage)
+                    {
+                        await lootBoxPage.ShowRewardAsync(result, lootBoxModel.ToLootBox());
+                    }
+                }
+            }
+            catch (InvalidOperationException ex) when (ex.Message.Contains("punktów"))
+            {
+                await Application.Current.MainPage.DisplayAlert("Błąd", "Nie masz wystarczająco punktów!", "OK");
+            }
+            catch (Exception ex)
+            {
+                await Application.Current.MainPage.DisplayAlert("Błąd", $"Wystąpił błąd: {ex.Message}", "OK");
+            }
+        }
+
+        public async Task<Avatar?> GetAvatarByIdAsync(int avatarId)
+        {
+            return await _lootBoxService.GetAvatarByIdAsync(avatarId);
+        }
+    }
+
+    public class LootBoxDisplayModel
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public int Price { get; set; }
+        public string ImagePath { get; set; } = string.Empty;
+        public string Rarity { get; set; } = string.Empty;
+
+        public string RarityColor => Rarity switch
+        {
+            "Common" => "#808080",
+            "Rare" => "#0066cc",
+            "Epic" => "#9933cc",
+            "Legendary" => "#ff6600",
+            _ => "#808080"
+        };
+
+        public string RarityBackgroundColor => Rarity switch
+        {
+            "Common" => "#40808080",
+            "Rare" => "#400066cc",
+            "Epic" => "#409933cc",
+            "Legendary" => "#40ff6600",
+            _ => "#40808080"
+        };
+
+        public LootBoxDisplayModel(LootBox lootBox)
         {
             Id = lootBox.Id;
             Name = lootBox.Name;
             Description = lootBox.Description;
             Price = lootBox.Price;
-            PossibleRewards = lootBox.PossibleRewards;
-            IconPath = lootBox.IconPath;
-
-            CanAfford = canAfford;
-            DropRatesText = dropRatesText;
+            ImagePath = lootBox.ImagePath;
+            Rarity = lootBox.Rarity;
         }
 
-        public bool CanAfford { get; set; }
-        public string DropRatesText { get; set; } = string.Empty;
-        public string PriceText => $"{Price} pkt";
-        public string ButtonStyle => CanAfford ? "PrimaryButton" : "DisabledButton";
+        public LootBox ToLootBox()
+        {
+            return new LootBox
+            {
+                Id = Id,
+                Name = Name,
+                Description = Description,
+                Price = Price,
+                ImagePath = ImagePath,
+                Rarity = Rarity
+            };
+        }
     }
 }

@@ -98,32 +98,175 @@ namespace NeuroMate.Models
 
     #endregion
 
-    #region Import Models
+    #region Player Profile Models
 
     /// <summary>
-    /// Wynik importu CSV
+    /// Dane profilu gracza do bazy danych
     /// </summary>
-    public class ImportResult
+    public class PlayerProfileData
     {
-        public bool Success { get; set; }
-        public int RecordsCount { get; set; }
-        public int AverageHRV { get; set; }
-        public int TotalSteps { get; set; }
-        public int AverageSleepMinutes { get; set; }
-        public string ErrorMessage { get; set; } = string.Empty;
-        public List<HealthRecord> Records { get; set; } = new();
+        public int Id { get; set; }
+        public string Username { get; set; } = string.Empty;
+        public int Points { get; set; } = 0;
+        public int Level { get; set; } = 1;
+        public int Experience { get; set; } = 0;
+        public int SelectedAvatarId { get; set; } = 0;
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime LastLogin { get; set; } = DateTime.Now;
+        public bool IsActive { get; set; } = true;
     }
 
     /// <summary>
-    /// Pojedynczy rekord zdrowotny z CSV
+    /// Historia punktów gracza
+    /// </summary>
+    public class PointsHistoryData
+    {
+        public int Id { get; set; }
+        public int PlayerId { get; set; }
+        public int PointsChange { get; set; }
+        public string Reason { get; set; } = string.Empty;
+        public DateTime Timestamp { get; set; } = DateTime.Now;
+    }
+
+    /// <summary>
+    /// Profil gracza z punktami (dla UI)
+    /// </summary>
+    public class PlayerProfile
+    {
+        public int TotalPoints { get; set; }
+        public int PointsSpent { get; set; }
+        public string CurrentAvatarId { get; set; } = "1";
+        public List<string> UnlockedAvatarIds { get; set; } = new();
+        public int TotalGamesPlayed { get; set; }
+        public int TotalLootBoxesOpened { get; set; }
+        public DateTime LastPointsEarned { get; set; }
+    }
+
+    /// <summary>
+    /// Historia zdobywania punktów
+    /// </summary>
+    public class PointsHistory
+    {
+        public DateTime Timestamp { get; set; }
+        public int PointsEarned { get; set; }
+        public string Source { get; set; } = string.Empty; // "PVT_Game", "Stroop_Game", etc.
+        public int GameScore { get; set; }
+        public string Description { get; set; } = string.Empty;
+    }
+
+    #endregion
+
+    #region Health Data Models
+
+    /// <summary>
+    /// Dane snu
+    /// </summary>
+    public class SleepData
+    {
+        public int Id { get; set; }
+        public DateTime Date { get; set; }
+        public int SleepDurationMinutes { get; set; }
+        public int DeepSleepMinutes { get; set; }
+        public int RemSleepMinutes { get; set; }
+        public int WakeUpCount { get; set; }
+        public int SleepEfficiency { get; set; }
+    }
+
+    /// <summary>
+    /// Dane tętna
+    /// </summary>
+    public class HeartData
+    {
+        public int Id { get; set; }
+        public DateTime Timestamp { get; set; }
+        public int HeartRate { get; set; }
+        public int HRV { get; set; }
+        public string Context { get; set; } = string.Empty;
+    }
+
+    /// <summary>
+    /// Dane aktywności
+    /// </summary>
+    public class ActivityData
+    {
+        public int Id { get; set; }
+        public DateTime Date { get; set; }
+        public int Steps { get; set; }
+        public int CaloriesBurned { get; set; }
+        public int ActiveMinutes { get; set; }
+        public double DistanceKm { get; set; }
+    }
+
+    /// <summary>
+    /// Historia NeuroScore
+    /// </summary>
+    public class NeuroScoreHistory
+    {
+        public int Id { get; set; }
+        public DateTime Timestamp { get; set; }
+        public int OverallScore { get; set; }
+        public string ComponentsJson { get; set; } = string.Empty;
+        
+        // Dodatkowe właściwości używane w NeuroScoreService
+        public int Score { get; set; }
+        public NeuroScoreComponents Components { get; set; } = new();
+        public string Trigger { get; set; } = string.Empty; // Co spowodowało wyliczenie
+    }
+
+    /// <summary>
+    /// Komponenty NeuroScore - wersja z dodatkowymi właściwościami dla obliczeń
+    /// </summary>
+    public class NeuroScoreComponents
+    {
+        // Właściwości używane w obliczeniach (0-1)
+        public double ReactionTimeScore { get; set; }  
+        public double AccuracyScore { get; set; }       
+        public double BreakTimeScore { get; set; }      
+        public double HRVScore { get; set; }            
+        public double SleepScoreNormalized { get; set; } // Zmieniam nazwę dla obliczeń          
+        
+        public Dictionary<string, double> Weights { get; set; } = new()
+        {
+            { "ReactionTime", 0.4 },
+            { "Accuracy", 0.3 },
+            { "BreakTime", 0.2 },
+            { "HRV", 0.1 }
+        };
+
+        // Właściwości z bazodanowej wersji dla kompatybilności
+        public int Id { get; set; }
+        public DateTime Date { get; set; }
+        public int SleepScore { get; set; } // To zostaje jako int dla bazy danych
+        public int ActivityScore { get; set; }
+        public int HeartScore { get; set; }
+        public int CognitiveScore { get; set; }
+        public int StressScore { get; set; }
+    }
+
+    /// <summary>
+    /// Rekord zdrowia
     /// </summary>
     public class HealthRecord
     {
-        public DateTime Timestamp { get; set; }
-        public int? HeartRate { get; set; }
-        public int? HRV { get; set; }
-        public int? Steps { get; set; }
-        public int? SleepMinutes { get; set; }
+        public int Id { get; set; }
+        public DateTime Date { get; set; }
+        public string DataType { get; set; } = string.Empty;
+        public string Value { get; set; } = string.Empty;
+        public string Unit { get; set; } = string.Empty;
+        public string Source { get; set; } = string.Empty;
+    }
+
+    /// <summary>
+    /// Wynik importu danych
+    /// </summary>
+    public class ImportResult
+    {
+        public int Id { get; set; }
+        public DateTime ImportDate { get; set; }
+        public string Source { get; set; } = string.Empty;
+        public int RecordsImported { get; set; }
+        public bool Success { get; set; }
+        public string ErrorMessage { get; set; } = string.Empty;
     }
 
     #endregion
@@ -163,42 +306,18 @@ namespace NeuroMate.Models
 
     #endregion
 
-    #region Neuro-Score Models
-
-    /// <summary>
-    /// Komponenty składające się na Neuro-Score
-    /// </summary>
-    public class NeuroScoreComponents
-    {
-        public double ReactionTimeScore { get; set; }  // 0-1
-        public double AccuracyScore { get; set; }       // 0-1
-        public double BreakTimeScore { get; set; }      // 0-1
-        public double HRVScore { get; set; }            // 0-1
-        public double SleepScore { get; set; }          // 0-1
-        
-        public Dictionary<string, double> Weights { get; set; } = new()
-        {
-            { "ReactionTime", 0.4 },
-            { "Accuracy", 0.3 },
-            { "BreakTime", 0.2 },
-            { "HRV", 0.1 }
-        };
-    }
-
-    /// <summary>
-    /// Historia Neuro-Score
-    /// </summary>
-    public class NeuroScoreHistory
-    {
-        public DateTime Timestamp { get; set; }
-        public int Score { get; set; }
-        public NeuroScoreComponents Components { get; set; } = new();
-        public string Trigger { get; set; } = string.Empty; // Co spowodowało wyliczenie
-    }
-
-    #endregion
-
     #region Avatar Models
+
+    /// <summary>
+    /// Rzadkość awatara
+    /// </summary>
+    public enum AvatarRarity
+    {
+        Common,     // Zwykły - 100-200 pkt
+        Rare,       // Rzadki - 300-500 pkt
+        Epic,       // Epicki - 600-800 pkt
+        Legendary   // Legendarny - 1000+ pkt
+    }
 
     /// <summary>
     /// Stan awatara
@@ -279,104 +398,6 @@ namespace NeuroMate.Models
         public DateTime LastActivityDate { get; set; }
     }
 
-    #endregion
-
-    #region Points & Rewards System
-
-    /// <summary>
-    /// Model awatara do wykupienia
-    /// </summary>
-    public class Avatar
-    {
-        public string Id { get; set; } = string.Empty;
-        public string Name { get; set; } = string.Empty;
-        public string Description { get; set; } = string.Empty;
-        public string LottieFileName { get; set; } = string.Empty; // Teraz zawiera ścieżkę do PNG
-        public int Price { get; set; }
-        public bool IsUnlocked { get; set; }
-        public bool IsDefault { get; set; }
-        public AvatarRarity Rarity { get; set; }
-        public string PreviewImagePath { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Zwraca ścieżkę do pliku wideo MKV dla okna dialogowego
-        /// </summary>
-        public string VideoFileName
-        {
-            get => LottieFileName.Replace(".png", ".webm");
-        }
-    }
-
-    /// <summary>
-    /// Rzadkość awatara
-    /// </summary>
-    public enum AvatarRarity
-    {
-        Common,     // Zwykły - 100-200 pkt
-        Rare,       // Rzadki - 300-500 pkt
-        Epic,       // Epicki - 600-800 pkt
-        Legendary   // Legendarny - 1000+ pkt
-    }
-
-    /// <summary>
-    /// Model lootboxa
-    /// </summary>
-    public class LootBox
-    {
-        public string Id { get; set; } = string.Empty;
-        public string Name { get; set; } = string.Empty;
-        public string Description { get; set; } = string.Empty;
-        public int Price { get; set; }
-        public List<LootBoxReward> PossibleRewards { get; set; } = new();
-        public string IconPath { get; set; } = string.Empty;
-    }
-
-    /// <summary>
-    /// Nagroda z lootboxa
-    /// </summary>
-    public class LootBoxReward
-    {
-        public string AvatarId { get; set; } = string.Empty;
-        public double DropChance { get; set; } // 0-1
-        public AvatarRarity Rarity { get; set; }
-    }
-
-    /// <summary>
-    /// Wynik otwarcia lootboxa
-    /// </summary>
-    public class LootBoxResult
-    {
-        public Avatar UnlockedAvatar { get; set; } = new();
-        public bool WasNewAvatar { get; set; }
-        public int PointsRefunded { get; set; } // Jeśli był już odblokowany
-        public DateTime OpenedAt { get; set; }
-    }
-
-    /// <summary>
-    /// Profil gracza z punktami
-    /// </summary>
-    public class PlayerProfile
-    {
-        public int TotalPoints { get; set; }
-        public int PointsSpent { get; set; }
-        public string CurrentAvatarId { get; set; } = "hackyeah_default";
-        public List<string> UnlockedAvatarIds { get; set; } = new();
-        public int TotalGamesPlayed { get; set; }
-        public int TotalLootBoxesOpened { get; set; }
-        public DateTime LastPointsEarned { get; set; }
-    }
-
-    /// <summary>
-    /// Historia zdobywania punktów
-    /// </summary>
-    public class PointsHistory
-    {
-        public DateTime Timestamp { get; set; }
-        public int PointsEarned { get; set; }
-        public string Source { get; set; } = string.Empty; // "PVT_Game", "Stroop_Game", etc.
-        public int GameScore { get; set; }
-        public string Description { get; set; } = string.Empty;
-    }
 
     #endregion
 }

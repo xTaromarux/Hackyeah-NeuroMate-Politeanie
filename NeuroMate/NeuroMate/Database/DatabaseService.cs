@@ -1,4 +1,5 @@
 ﻿using NeuroMate.Database.Entities;
+using NeuroMate.Models;
 using SQLite;
 
 namespace NeuroMate.Database
@@ -16,65 +17,65 @@ namespace NeuroMate.Database
 
             _database = new SQLiteAsyncConnection(dbPath);
 
-            // Tworzymy tabele dla wszystkich encji
-            _database.CreateTableAsync<SleepData>().Wait();
-            _database.CreateTableAsync<HeartData>().Wait();
-            _database.CreateTableAsync<ActivityData>().Wait();
-            _database.CreateTableAsync<NeuroScoreHistory>().Wait();
-            _database.CreateTableAsync<NeuroScoreComponents>().Wait();
-            _database.CreateTableAsync<UserData>().Wait();
-            _database.CreateTableAsync<PlayerProfileData>().Wait();
-            _database.CreateTableAsync<PointsHistoryData>().Wait();
+            // Tworzymy tabele dla wszystkich encji - używamy typów z Database.Entities
+            _database.CreateTableAsync<Entities.SleepData>().Wait();
+            _database.CreateTableAsync<Entities.HeartData>().Wait();
+            _database.CreateTableAsync<Entities.ActivityData>().Wait();
+            _database.CreateTableAsync<Entities.NeuroScoreHistory>().Wait();
+            _database.CreateTableAsync<Entities.NeuroScoreComponents>().Wait();
+            _database.CreateTableAsync<Entities.UserData>().Wait();
+            _database.CreateTableAsync<Models.PlayerProfileData>().Wait();
+            _database.CreateTableAsync<Models.PointsHistoryData>().Wait();
             _database.CreateTableAsync<Avatar>().Wait();
             _database.CreateTableAsync<LootBox>().Wait();
             _database.CreateTableAsync<LootBoxReward>().Wait();
             _database.CreateTableAsync<LootBoxResult>().Wait();
-            _database.CreateTableAsync<Intervention>().Wait();
-            _database.CreateTableAsync<InterventionResult>().Wait();
-            _database.CreateTableAsync<ReactionRecord>().Wait();
-            _database.CreateTableAsync<HealthRecord>().Wait();
-            _database.CreateTableAsync<ImportResult>().Wait();
+            _database.CreateTableAsync<Entities.Intervention>().Wait();
+            _database.CreateTableAsync<Entities.InterventionResult>().Wait();
+            _database.CreateTableAsync<Entities.ReactionRecord>().Wait();
+            _database.CreateTableAsync<Entities.HealthRecord>().Wait();
+            _database.CreateTableAsync<Entities.ImportResult>().Wait();
         }
 
-        // SleepData
-        public Task<List<SleepData>> GetAllSleepDataAsync() => _database.Table<SleepData>().ToListAsync();
-        public Task SaveSleepDataAsync(SleepData data) => _database.InsertOrReplaceAsync(data);
-        public Task DeleteSleepDataAsync(SleepData data) => _database.DeleteAsync(data);
+        // SleepData - używamy typów z Database.Entities
+        public Task<List<Entities.SleepData>> GetAllSleepDataAsync() => _database.Table<Entities.SleepData>().ToListAsync();
+        public Task SaveSleepDataAsync(Entities.SleepData data) => _database.InsertOrReplaceAsync(data);
+        public Task DeleteSleepDataAsync(Entities.SleepData data) => _database.DeleteAsync(data);
 
         // HeartData
-        public Task<List<HeartData>> GetAllHeartDataAsync() => _database.Table<HeartData>().ToListAsync();
-        public Task SaveHeartDataAsync(HeartData data) => _database.InsertOrReplaceAsync(data);
-        public Task DeleteHeartDataAsync(HeartData data) => _database.DeleteAsync(data);
+        public Task<List<Entities.HeartData>> GetAllHeartDataAsync() => _database.Table<Entities.HeartData>().ToListAsync();
+        public Task SaveHeartDataAsync(Entities.HeartData data) => _database.InsertOrReplaceAsync(data);
+        public Task DeleteHeartDataAsync(Entities.HeartData data) => _database.DeleteAsync(data);
 
         // ActivityData
-        public Task<List<ActivityData>> GetAllActivityDataAsync() => _database.Table<ActivityData>().ToListAsync();
-        public Task SaveActivityDataAsync(ActivityData data) => _database.InsertOrReplaceAsync(data);
-        public Task DeleteActivityDataAsync(ActivityData data) => _database.DeleteAsync(data);
+        public Task<List<Entities.ActivityData>> GetAllActivityDataAsync() => _database.Table<Entities.ActivityData>().ToListAsync();
+        public Task SaveActivityDataAsync(Entities.ActivityData data) => _database.InsertOrReplaceAsync(data);
+        public Task DeleteActivityDataAsync(Entities.ActivityData data) => _database.DeleteAsync(data);
 
         // NeuroScoreHistory
-        public Task<List<NeuroScoreHistory>> GetAllNeuroScoreHistoryAsync() => _database.Table<NeuroScoreHistory>().ToListAsync();
-        public Task SaveNeuroScoreHistoryAsync(NeuroScoreHistory data) => _database.InsertOrReplaceAsync(data);
-        public Task DeleteNeuroScoreHistoryAsync(NeuroScoreHistory data) => _database.DeleteAsync(data);
+        public Task<List<Entities.NeuroScoreHistory>> GetAllNeuroScoreHistoryAsync() => _database.Table<Entities.NeuroScoreHistory>().ToListAsync();
+        public Task SaveNeuroScoreHistoryAsync(Entities.NeuroScoreHistory data) => _database.InsertOrReplaceAsync(data);
+        public Task DeleteNeuroScoreHistoryAsync(Entities.NeuroScoreHistory data) => _database.DeleteAsync(data);
 
         // NeuroScoreComponents
-        public Task<List<NeuroScoreComponents>> GetAllNeuroScoreComponentsAsync() => _database.Table<NeuroScoreComponents>().ToListAsync();
-        public Task SaveNeuroScoreComponentsAsync(NeuroScoreComponents data) => _database.InsertOrReplaceAsync(data);
-        public Task DeleteNeuroScoreComponentsAsync(NeuroScoreComponents data) => _database.DeleteAsync(data);
+        public Task<List<Entities.NeuroScoreComponents>> GetAllNeuroScoreComponentsAsync() => _database.Table<Entities.NeuroScoreComponents>().ToListAsync();
+        public Task SaveNeuroScoreComponentsAsync(Entities.NeuroScoreComponents data) => _database.InsertOrReplaceAsync(data);
+        public Task DeleteNeuroScoreComponentsAsync(Entities.NeuroScoreComponents data) => _database.DeleteAsync(data);
 
         // UserData
-        public Task<List<UserData>> GetAllUserDataAsync() => _database.Table<UserData>().ToListAsync();
-        public Task SaveUserDataAsync(UserData data) => _database.InsertOrReplaceAsync(data);
-        public Task DeleteUserDataAsync(UserData data) => _database.DeleteAsync(data);
+        public Task<List<Entities.UserData>> GetAllUserDataAsync() => _database.Table<Entities.UserData>().ToListAsync();
+        public Task SaveUserDataAsync(Entities.UserData data) => _database.InsertOrReplaceAsync(data);
+        public Task DeleteUserDataAsync(Entities.UserData data) => _database.DeleteAsync(data);
 
-        // PlayerProfileData
-        public Task<List<PlayerProfileData>> GetAllPlayerProfileDataAsync() => _database.Table<PlayerProfileData>().ToListAsync();
-        public Task SavePlayerProfileDataAsync(PlayerProfileData data) => _database.InsertOrReplaceAsync(data);
-        public Task DeletePlayerProfileDataAsync(PlayerProfileData data) => _database.DeleteAsync(data);
+        // PlayerProfileData - używamy typu z Models
+        public Task<List<Models.PlayerProfileData>> GetAllPlayerProfileDataAsync() => _database.Table<Models.PlayerProfileData>().ToListAsync();
+        public Task SavePlayerProfileDataAsync(Models.PlayerProfileData data) => _database.InsertOrReplaceAsync(data);
+        public Task DeletePlayerProfileDataAsync(Models.PlayerProfileData data) => _database.DeleteAsync(data);
 
-        // PointsHistoryData
-        public Task<List<PointsHistoryData>> GetAllPointsHistoryDataAsync() => _database.Table<PointsHistoryData>().ToListAsync();
-        public Task SavePointsHistoryDataAsync(PointsHistoryData data) => _database.InsertOrReplaceAsync(data);
-        public Task DeletePointsHistoryDataAsync(PointsHistoryData data) => _database.DeleteAsync(data);
+        // PointsHistoryData - używamy typu z Models
+        public Task<List<Models.PointsHistoryData>> GetAllPointsHistoryDataAsync() => _database.Table<Models.PointsHistoryData>().ToListAsync();
+        public Task SavePointsHistoryDataAsync(Models.PointsHistoryData data) => _database.InsertOrReplaceAsync(data);
+        public Task DeletePointsHistoryDataAsync(Models.PointsHistoryData data) => _database.DeleteAsync(data);
 
         // Avatar
         public Task<List<Avatar>> GetAllAvatarsAsync() => _database.Table<Avatar>().ToListAsync();
@@ -97,28 +98,28 @@ namespace NeuroMate.Database
         public Task DeleteLootBoxResultAsync(LootBoxResult data) => _database.DeleteAsync(data);
 
         // Intervention
-        public Task<List<Intervention>> GetAllInterventionsAsync() => _database.Table<Intervention>().ToListAsync();
-        public Task SaveInterventionAsync(Intervention data) => _database.InsertOrReplaceAsync(data);
-        public Task DeleteInterventionAsync(Intervention data) => _database.DeleteAsync(data);
+        public Task<List<Entities.Intervention>> GetAllInterventionsAsync() => _database.Table<Entities.Intervention>().ToListAsync();
+        public Task SaveInterventionAsync(Entities.Intervention data) => _database.InsertOrReplaceAsync(data);
+        public Task DeleteInterventionAsync(Entities.Intervention data) => _database.DeleteAsync(data);
 
         // InterventionResult
-        public Task<List<InterventionResult>> GetAllInterventionResultsAsync() => _database.Table<InterventionResult>().ToListAsync();
-        public Task SaveInterventionResultAsync(InterventionResult data) => _database.InsertOrReplaceAsync(data);
-        public Task DeleteInterventionResultAsync(InterventionResult data) => _database.DeleteAsync(data);
+        public Task<List<Entities.InterventionResult>> GetAllInterventionResultsAsync() => _database.Table<Entities.InterventionResult>().ToListAsync();
+        public Task SaveInterventionResultAsync(Entities.InterventionResult data) => _database.InsertOrReplaceAsync(data);
+        public Task DeleteInterventionResultAsync(Entities.InterventionResult data) => _database.DeleteAsync(data);
 
         // ReactionRecord
-        public Task<List<ReactionRecord>> GetAllReactionRecordsAsync() => _database.Table<ReactionRecord>().ToListAsync();
-        public Task SaveReactionRecordAsync(ReactionRecord data) => _database.InsertOrReplaceAsync(data);
-        public Task DeleteReactionRecordAsync(ReactionRecord data) => _database.DeleteAsync(data);
+        public Task<List<Entities.ReactionRecord>> GetAllReactionRecordsAsync() => _database.Table<Entities.ReactionRecord>().ToListAsync();
+        public Task SaveReactionRecordAsync(Entities.ReactionRecord data) => _database.InsertOrReplaceAsync(data);
+        public Task DeleteReactionRecordAsync(Entities.ReactionRecord data) => _database.DeleteAsync(data);
 
         // HealthRecord
-        public Task<List<HealthRecord>> GetAllHealthRecordsAsync() => _database.Table<HealthRecord>().ToListAsync();
-        public Task SaveHealthRecordAsync(HealthRecord data) => _database.InsertOrReplaceAsync(data);
-        public Task DeleteHealthRecordAsync(HealthRecord data) => _database.DeleteAsync(data);
+        public Task<List<Entities.HealthRecord>> GetAllHealthRecordsAsync() => _database.Table<Entities.HealthRecord>().ToListAsync();
+        public Task SaveHealthRecordAsync(Entities.HealthRecord data) => _database.InsertOrReplaceAsync(data);
+        public Task DeleteHealthRecordAsync(Entities.HealthRecord data) => _database.DeleteAsync(data);
 
         // ImportResult
-        public Task<List<ImportResult>> GetAllImportResultsAsync() => _database.Table<ImportResult>().ToListAsync();
-        public Task SaveImportResultAsync(ImportResult data) => _database.InsertOrReplaceAsync(data);
-        public Task DeleteImportResultAsync(ImportResult data) => _database.DeleteAsync(data);
+        public Task<List<Entities.ImportResult>> GetAllImportResultsAsync() => _database.Table<Entities.ImportResult>().ToListAsync();
+        public Task SaveImportResultAsync(Entities.ImportResult data) => _database.InsertOrReplaceAsync(data);
+        public Task DeleteImportResultAsync(Entities.ImportResult data) => _database.DeleteAsync(data);
     }
 }

@@ -1,9 +1,4 @@
 ﻿using SQLite;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NeuroMate.Database.Entities
 {
@@ -11,10 +6,10 @@ namespace NeuroMate.Database.Entities
     {
         [PrimaryKey, AutoIncrement]
         public int Id { get; set; }
-
-        public DateTime Date { get; set; } // dzień, którego dane dotyczą
-
-        public int StepsTotal { get; set; }
+        public DateTime Date { get; set; }
+        public int Steps { get; set; }
+        public int CaloriesBurned { get; set; }
         public int ActiveMinutes { get; set; }
+        public double DistanceKm { get; set; }
     }
 }

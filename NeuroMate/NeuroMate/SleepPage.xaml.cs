@@ -25,11 +25,11 @@ namespace NeuroMate
             var record = new SleepData
             {
                 Date = DateTime.Now,
-                TotalSleepMinutes = int.Parse(TotalMinutesEntry.Text),
-                SleepEfficiency = double.Parse(EfficiencyEntry.Text),
-                RemMinutes = int.Parse(RemEntry.Text),
-                DeepMinutes = int.Parse(DeepEntry.Text),
-                AwakeningsCount = int.Parse(AwakeningsEntry.Text)
+                SleepDurationMinutes = int.Parse(TotalMinutesEntry.Text),
+                SleepEfficiency = (int)double.Parse(EfficiencyEntry.Text),
+                RemSleepMinutes = int.Parse(RemEntry.Text),
+                DeepSleepMinutes = int.Parse(DeepEntry.Text),
+                WakeUpCount = int.Parse(AwakeningsEntry.Text)
             };
 
             await _db.SaveSleepDataAsync(record);

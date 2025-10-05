@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+<ContentPage x:Class="NeuroMate.Views.LootBoxPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:skia="clr-namespace:SkiaSharp.Extended.UI.Controls;assembly=SkiaSharp.Extended.UI"
-             x:Class="NeuroMate.Views.LootBoxPage"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              Shell.NavBarIsVisible="False"
              BackgroundColor="{StaticResource PageBackground}">
 
@@ -12,7 +12,7 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <!-- Header -->
+        <!-- Header z punktami -->
         <Frame Grid.Row="0" Style="{StaticResource ElevatedCard}" 
                Margin="16,24,16,12"
                Background="{StaticResource CardGradient}">
@@ -30,9 +30,9 @@
                         WidthRequest="50" HeightRequest="50"
                         Clicked="OnBackClicked" />
 
-                <!-- Informacje -->
+                <!-- Informacje o sklepie -->
                 <StackLayout Grid.Column="1" VerticalOptions="Center" Spacing="4">
-                    <Label Text="📦 Skrzynki Skarbów" 
+                    <Label Text="📦 Skrzynki z Nagrodami" 
                            Style="{StaticResource TitleStyle}" 
                            FontSize="22" />
                     <Label x:Name="PointsLabel"
@@ -41,186 +41,133 @@
                            FontSize="16" />
                 </StackLayout>
 
-                <!-- Statystyki -->
-                <StackLayout Grid.Column="2" VerticalOptions="Center">
-                    <Label x:Name="BoxesOpenedLabel"
-                           Text="Otwarto: 0"
-                           Style="{StaticResource Subtitle}"
-                           FontSize="12"
-                           HorizontalTextAlignment="Center" />
-                </StackLayout>
+                <!-- Przycisk do awatarów -->
+                <Button Grid.Column="2" 
+                        Text="🛒" 
+                        Style="{StaticResource CircleButton}"
+                        WidthRequest="50" HeightRequest="50"
+                        Clicked="OnAvatarShopClicked" />
             </Grid>
         </Frame>
 
-        <!-- Main Content -->
-        <ScrollView Grid.Row="1">
-            <StackLayout Spacing="20" Margin="16">
+        <!-- Lista lootboxów -->
+        <ScrollView Grid.Row="1" Margin="16">
+            <CollectionView x:Name="LootBoxesCollectionView" 
+                            ItemsSource="{Binding LootBoxes}"
+                            ItemsLayout="VerticalGrid, 1"
+                            VerticalScrollBarVisibility="Never">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Frame Style="{StaticResource CardFrame}" Margin="8" Padding="16">
+                            <Grid RowSpacing="12">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="120" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
 
-                <!-- Dostępne lootboxy -->
-                <CollectionView x:Name="LootBoxesCollection"
-                                ItemsLayout="VerticalList"
-                                VerticalScrollBarVisibility="Never">
-                    <CollectionView.ItemTemplate>
-                        <DataTemplate>
-                            <Frame Style="{StaticResource CardFrame}" Margin="0,8">
-                                <Grid ColumnSpacing="15" RowSpacing="10">
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="Auto" />
-                                    </Grid.RowDefinitions>
+                                <!-- Nazwa i rzadkość -->
+                                <Grid Grid.Row="0">
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="80" />
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
-
-                                    <!-- Ikona lootboxa -->
-                                    <Frame Grid.RowSpan="3" Grid.Column="0" 
-                                           Style="{StaticResource AvatarFrame}"
-                                           WidthRequest="70" HeightRequest="70">
-                                        <Image Source="{Binding IconPath}"
-                                               WidthRequest="50" HeightRequest="50" />
-                                    </Frame>
-
-                                    <!-- Nazwa i opis -->
-                                    <Label Grid.Row="0" Grid.Column="1" 
-                                           Text="{Binding Name}"
-                                           Style="{StaticResource SectionTitle}"
-                                           FontSize="18" />
                                     
-                                    <Label Grid.Row="1" Grid.Column="1" 
-                                           Text="{Binding Description}"
-                                           Style="{StaticResource Subtitle}"
-                                           FontSize="14" />
-
-                                    <!-- Szanse drop -->
-                                    <Label Grid.Row="2" Grid.Column="1" 
-                                           Text="{Binding DropRatesText}"
-                                           Style="{StaticResource Subtitle}"
-                                           FontSize="12"
-                                           TextColor="{StaticResource Gray600}" />
-
-                                    <!-- Cena i przycisk -->
-                                    <StackLayout Grid.RowSpan="3" Grid.Column="2" 
-                                               VerticalOptions="Center" Spacing="8">
-                                        <Label Text="{Binding PriceText}"
-                                               Style="{StaticResource SectionTitle}"
-                                               FontSize="16"
-                                               HorizontalTextAlignment="Center" />
-                                        
-                                        <Button Text="Otwórz"
-                                                Style="{Binding ButtonStyle}"
-                                                Clicked="OnOpenLootBoxClicked"
-                                                CommandParameter="{Binding Id}"
-                                                IsEnabled="{Binding CanAfford}" />
-                                    </StackLayout>
+                                    <Label Grid.Column="0"
+                                           Text="{Binding Name}" 
+                                           Style="{StaticResource SectionTitle}"
+                                           FontSize="18"
+                                           VerticalOptions="Center" />
+                                    
+                                    <Frame Grid.Column="1" 
+                                           BackgroundColor="{Binding RarityBackgroundColor}"
+                                           BorderColor="{Binding RarityColor}"
+                                           CornerRadius="12"
+                                           Padding="8,4"
+                                           HasShadow="False">
+                                        <Label Text="{Binding Rarity}" 
+                                               TextColor="{Binding RarityColor}"
+                                               FontSize="12"
+                                               FontAttributes="Bold" />
+                                    </Frame>
                                 </Grid>
-                            </Frame>
-                        </DataTemplate>
-                    </CollectionView.ItemTemplate>
-                </CollectionView>
 
-            </StackLayout>
+                                <!-- Obrazek lootboxa -->
+                                <Frame Grid.Row="1" 
+                                       Style="{StaticResource AvatarFrame}"
+                                       BorderColor="{Binding RarityColor}"
+                                       HorizontalOptions="Center"
+                                       WidthRequest="120" 
+                                       HeightRequest="120">
+                                    <Grid>
+                                        <Image Source="{Binding ImagePath}"
+                                               Aspect="AspectFit"
+                                               WidthRequest="100"
+                                               HeightRequest="100">
+                                            <Image.GestureRecognizers>
+                                                <TapGestureRecognizer Tapped="OnLootBoxImageTapped" />
+                                            </Image.GestureRecognizers>
+                                        </Image>
+                                        
+                                        <!-- Overlay dla animacji otwierania -->
+                                        <Grid x:Name="OpeningOverlay" 
+                                              IsVisible="False" 
+                                              BackgroundColor="#B0000000">
+                                            <StackLayout VerticalOptions="Center" Spacing="10">
+                                                <ActivityIndicator IsRunning="True" 
+                                                                   Color="{StaticResource Primary}" 
+                                                                   WidthRequest="40" 
+                                                                   HeightRequest="40" />
+                                                <Label Text="Otwieranie..." 
+                                                       Style="{StaticResource Subtitle}"
+                                                       FontSize="14" 
+                                                       HorizontalOptions="Center" />
+                                            </StackLayout>
+                                        </Grid>
+                                    </Grid>
+                                </Frame>
+
+                                <!-- Opis -->
+                                <Label Grid.Row="2" 
+                                       Text="{Binding Description}" 
+                                       Style="{StaticResource Subtitle}"
+                                       FontSize="14"
+                                       HorizontalTextAlignment="Center"
+                                       MaxLines="2" />
+
+                                <!-- Cena -->
+                                <StackLayout Grid.Row="3" 
+                                             Orientation="Horizontal" 
+                                             HorizontalOptions="Center"
+                                             Spacing="8">
+                                    <Label Text="💎" FontSize="18" />
+                                    <Label Text="{Binding Price}" 
+                                           Style="{StaticResource TitleStyle}"
+                                           FontSize="18"
+                                           TextColor="{StaticResource Accent}" />
+                                    <Label Text="punktów" 
+                                           Style="{StaticResource Subtitle}"
+                                           FontSize="14"
+                                           VerticalOptions="End" />
+                                </StackLayout>
+
+                                <!-- Przycisk zakupu -->
+                                <Button Grid.Row="4" 
+                                        Text="📦 OTWÓRZ SKRZYNKĘ" 
+                                        Style="{StaticResource PrimaryButton}"
+                                        Command="{Binding Source={x:Reference LootBoxesCollectionView}, Path=BindingContext.OpenLootBoxCommand}"
+                                        CommandParameter="{Binding}"
+                                        HeightRequest="50"
+                                        FontSize="16"
+                                        Margin="0,8,0,0" />
+                            </Grid>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
         </ScrollView>
-
-        <!-- Animacja otwierania lootboxa (overlay) -->
-        <Grid x:Name="OpeningOverlay" Grid.RowSpan="2" 
-              BackgroundColor="#AA000000" 
-              IsVisible="False">
-            
-            <StackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="30">
-                
-                <!-- Animacja otwierania -->
-                <Frame Style="{StaticResource AvatarFrame}" 
-                       WidthRequest="150" HeightRequest="150"
-                       BackgroundColor="Transparent"
-                       BorderColor="Gold"
-                       HasShadow="True">
-                    <skia:SKLottieView x:Name="OpeningAnimation"
-                                       Source="box_opening.json"
-                                       RepeatCount="1"
-                                       IsAnimationEnabled="False"
-                                       WidthRequest="130"
-                                       HeightRequest="130" />
-                </Frame>
-
-                <!-- Tekst otwierania -->
-                <Label x:Name="OpeningLabel"
-                       Text="Otwieranie skrzynki..."
-                       Style="{StaticResource TitleStyle}"
-                       FontSize="24"
-                       TextColor="White"
-                       HorizontalTextAlignment="Center" />
-
-            </StackLayout>
-        </Grid>
-
-        <!-- Wynik otwarcia (overlay) -->
-        <Grid x:Name="ResultOverlay" Grid.RowSpan="2" 
-              BackgroundColor="#AA000000" 
-              IsVisible="False">
-            
-            <Frame Style="{StaticResource ElevatedCard}" 
-                   Margin="30" 
-                   Padding="30"
-                   VerticalOptions="Center">
-                
-                <StackLayout Spacing="20">
-                    
-                    <!-- Wynik header -->
-                    <Label x:Name="ResultHeaderLabel"
-                           Text="🎉 Gratulacje!"
-                           Style="{StaticResource TitleStyle}"
-                           FontSize="26"
-                           HorizontalTextAlignment="Center" />
-
-                    <!-- Zdobyty awatar -->
-                    <Frame Style="{StaticResource AvatarFrame}" 
-                           WidthRequest="100" HeightRequest="100"
-                           HorizontalOptions="Center">
-                        <skia:SKLottieView x:Name="RewardAvatarLottie"
-                                           RepeatCount="-1"
-                                           IsAnimationEnabled="True"
-                                           WidthRequest="80"
-                                           HeightRequest="80" />
-                    </Frame>
-
-                    <!-- Informacje o nagrodzie -->
-                    <StackLayout Spacing="10">
-                        <Label x:Name="RewardNameLabel"
-                               Style="{StaticResource SectionTitle}"
-                               FontSize="20"
-                               HorizontalTextAlignment="Center" />
-                        
-                        <Label x:Name="RewardDescriptionLabel"
-                               Style="{StaticResource Subtitle}"
-                               FontSize="14"
-                               HorizontalTextAlignment="Center" />
-
-                        <Label x:Name="RewardStatusLabel"
-                               Style="{StaticResource Subtitle}"
-                               FontSize="16"
-                               FontAttributes="Bold"
-                               HorizontalTextAlignment="Center" />
-                    </StackLayout>
-
-                    <!-- Przyciski -->
-                    <StackLayout Orientation="Horizontal" 
-                               HorizontalOptions="Center" 
-                               Spacing="15">
-                        <Button Text="Kontynuuj"
-                                Style="{StaticResource PrimaryButton}"
-                                Clicked="OnContinueClicked" />
-                        
-                        <Button Text="Przejdź do sklepu"
-                                Style="{StaticResource SecondaryButton}"
-                                Clicked="OnGoToShopClicked" />
-                    </StackLayout>
-
-                </StackLayout>
-            </Frame>
-        </Grid>
 
         <!-- Loading indicator -->
         <ActivityIndicator x:Name="LoadingIndicator" 
@@ -228,5 +175,89 @@
                            IsVisible="False"
                            IsRunning="False"
                            Color="{StaticResource Primary}" />
+
+        <!-- Popup z wynikiem -->
+        <Grid x:Name="ResultPopup" 
+              Style="{StaticResource DialogOverlay}"
+              Grid.RowSpan="2"
+              IsVisible="False">
+            <Grid.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnOverlayTapped" />
+            </Grid.GestureRecognizers>
+
+            <Frame Style="{StaticResource DialogCard}">
+                <Frame.GestureRecognizers>
+                    <TapGestureRecognizer />
+                </Frame.GestureRecognizers>
+                
+                <StackLayout Spacing="20">
+                    <!-- Header z przyciskiem zamknięcia -->
+                    <Grid>
+                        <Label Text="🎉 GRATULACJE! 🎉"
+                               Style="{StaticResource TitleStyle}"
+                               FontSize="24"
+                               TextColor="{StaticResource Accent}"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center" />
+                        
+                        <Button Text="✕"
+                                Style="{StaticResource CircleButton}"
+                                BackgroundColor="{StaticResource SurfaceBackground}"
+                                TextColor="{StaticResource TextSecondary}"
+                                BorderColor="{StaticResource BorderMedium}"
+                                BorderWidth="1"
+                                WidthRequest="35"
+                                HeightRequest="35"
+                                FontSize="16"
+                                HorizontalOptions="End"
+                                VerticalOptions="Start"
+                                Clicked="OnClosePopupClicked" />
+                    </Grid>
+                    
+                    <Label x:Name="RewardLabel" 
+                           Text="Wygrałeś:" 
+                           Style="{StaticResource SectionTitle}"
+                           FontSize="18"
+                           HorizontalTextAlignment="Center" />
+                    
+                    <!-- Karta z nagrodą -->
+                    <Frame Style="{StaticResource CardFrame}" 
+                           Padding="20"
+                           HorizontalOptions="Center">
+                        <StackLayout Spacing="12" HorizontalOptions="Center">
+                            <Frame Style="{StaticResource AvatarFrame}"
+                                   WidthRequest="100" 
+                                   HeightRequest="100"
+                                   HorizontalOptions="Center">
+                                <Image x:Name="RewardImage" 
+                                       Source="avatar_robot_basic.png" 
+                                       WidthRequest="80" 
+                                       HeightRequest="80" 
+                                       Aspect="AspectFit" />
+                            </Frame>
+                            
+                            <Label x:Name="RewardName" 
+                                   Text="Nazwa nagrody" 
+                                   Style="{StaticResource SectionTitle}"
+                                   FontSize="16"
+                                   HorizontalTextAlignment="Center" />
+                            
+                            <Label x:Name="RewardDescription" 
+                                   Text="Opis nagrody" 
+                                   Style="{StaticResource Subtitle}"
+                                   FontSize="14"
+                                   HorizontalTextAlignment="Center"
+                                   MaxLines="3" />
+                        </StackLayout>
+                    </Frame>
+                    
+                    <Button Text="🎊 SUPER!" 
+                            Style="{StaticResource PrimaryButton}"
+                            Clicked="OnClosePopupClicked"
+                            FontSize="16"
+                            HeightRequest="50" />
+                </StackLayout>
+            </Frame>
+        </Grid>
     </Grid>
 </ContentPage>

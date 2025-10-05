@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:skia="clr-namespace:SkiaSharp.Extended.UI.Controls;assembly=SkiaSharp.Extended.UI"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              x:Class="NeuroMate.Views.AvatarShopPage"
              Shell.NavBarIsVisible="False"
              BackgroundColor="{StaticResource PageBackground}">
@@ -87,12 +87,16 @@
                                 <!-- Avatar Preview -->
                                 <Frame Grid.Row="0" 
                                        Style="{StaticResource AvatarFrame}"
-                                       WidthRequest="70" HeightRequest="70"
+                                       WidthRequest="80" HeightRequest="80"
                                        HorizontalOptions="Center">
                                     <Image Source="{Binding LottieFileName}"
-                                           WidthRequest="54"
-                                           HeightRequest="54"
-                                           Aspect="AspectFit" />
+                                           WidthRequest="64"
+                                           HeightRequest="64"
+                                           Aspect="AspectFit">
+                                        <Image.GestureRecognizers>
+                                            <TapGestureRecognizer Tapped="OnAvatarImageTapped" />
+                                        </Image.GestureRecognizers>
+                                    </Image>
                                 </Frame>
 
                                 <!-- Nazwa awatara -->
@@ -145,5 +149,164 @@
                            IsVisible="False"
                            IsRunning="False"
                            Color="{StaticResource Primary}" />
+
+        <!-- Okno dialogowe podglądu avatara -->
+        <Grid x:Name="AvatarPreviewOverlay" 
+              Style="{StaticResource DialogOverlay}"
+              Grid.RowSpan="3"
+              IsVisible="False">
+            <Grid.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnPreviewOverlayTapped" />
+            </Grid.GestureRecognizers>
+
+            <!-- Okno dialogowe z podglądem -->
+            <Frame x:Name="AvatarPreviewCard" Style="{StaticResource DialogCard}">
+                <Frame.GestureRecognizers>
+                    <TapGestureRecognizer />
+                </Frame.GestureRecognizers>
+                
+                <StackLayout Spacing="20">
+                    <!-- Header z przyciskiem zamknięcia -->
+                    <Grid>
+                        <Label Text="Podgląd avatara"
+                               Style="{StaticResource TitleStyle}"
+                               FontSize="18"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center" />
+                        
+                        <!-- Przycisk zamknięcia w prawym górnym rogu -->
+                        <Button Text="✕"
+                                Style="{StaticResource CircleButton}"
+                                BackgroundColor="{StaticResource SurfaceBackground}"
+                                TextColor="{StaticResource TextSecondary}"
+                                BorderColor="{StaticResource BorderMedium}"
+                                BorderWidth="1"
+                                WidthRequest="35"
+                                HeightRequest="35"
+                                FontSize="16"
+                                HorizontalOptions="End"
+                                VerticalOptions="Start"
+                                Clicked="OnClosePreviewClicked"
+                                Margin="0,0,0,0" />
+                    </Grid>
+
+                    <!-- Duży podgląd avatara -->
+                    <Grid>
+                        <Frame Style="{StaticResource AvatarFrame}" 
+                               WidthRequest="180" 
+                               HeightRequest="180"
+                               HorizontalOptions="Center">
+                            <Grid>
+                                <!-- MediaElement dla animacji WebM -->
+                                <toolkit:MediaElement x:Name="PreviewAvatarVideo"
+                                             WidthRequest="160"
+                                             HeightRequest="160"
+                                             Aspect="AspectFit"
+                                             ShouldAutoPlay="True"
+                                             ShouldLoopPlayback="True"
+                                             ShouldShowPlaybackControls="False"
+                                             Volume="0"
+                                             ShouldMute="True" />
+                                
+                                <!-- Fallback Image -->
+                                <Image x:Name="PreviewAvatarImage"
+                                       WidthRequest="160"
+                                       HeightRequest="160"
+                                       Aspect="AspectFit"
+                                       IsVisible="False" />
+                            </Grid>
+                        </Frame>
+                        
+                        <!-- Rzadkość w rogu -->
+                        <Label x:Name="PreviewRarityLabel"
+                               Text="🟠"
+                               FontSize="28"
+                               HorizontalOptions="End"
+                               VerticalOptions="Start"
+                               Margin="8" />
+                    </Grid>
+
+                    <!-- Nazwa avatara -->
+                    <Label x:Name="PreviewAvatarNameLabel"
+                           Text="Nazwa Avatara"
+                           Style="{StaticResource TitleStyle}"
+                           FontSize="24"
+                           HorizontalOptions="Center"
+                           TextColor="{StaticResource Primary}" />
+
+                    <!-- Opis avatara -->
+                    <Frame BackgroundColor="{StaticResource SurfaceBackground}"
+                           CornerRadius="16"
+                           Padding="16"
+                           BorderColor="Transparent">
+                        <Label x:Name="PreviewAvatarDescriptionLabel"
+                               Text="Opis avatara"
+                               Style="{StaticResource BodyLabel}"
+                               FontSize="15"
+                               HorizontalOptions="Center"
+                               HorizontalTextAlignment="Center"
+                               LineBreakMode="WordWrap" />
+                    </Frame>
+
+                    <!-- Informacje o cenie i rzadkości -->
+                    <Grid ColumnSpacing="20">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Rzadkość -->
+                        <Frame Grid.Column="0" 
+                               BackgroundColor="{StaticResource SurfaceBackground}"
+                               CornerRadius="12"
+                               Padding="12">
+                            <StackLayout Spacing="4">
+                                <Label Text="Rzadkość" 
+                                       Style="{StaticResource CaptionLabel}"
+                                       HorizontalOptions="Center" />
+                                <Label x:Name="PreviewRarityTextLabel"
+                                       Text="Legendarna"
+                                       Style="{StaticResource SectionTitle}"
+                                       FontSize="14"
+                                       HorizontalOptions="Center" />
+                            </StackLayout>
+                        </Frame>
+
+                        <!-- Cena -->
+                        <Frame Grid.Column="1" 
+                               BackgroundColor="{StaticResource SurfaceBackground}"
+                               CornerRadius="12"
+                               Padding="12">
+                            <StackLayout Spacing="4">
+                                <Label Text="Cena" 
+                                       Style="{StaticResource CaptionLabel}"
+                                       HorizontalOptions="Center" />
+                                <Label x:Name="PreviewPriceLabel"
+                                       Text="500 pkt"
+                                       Style="{StaticResource SectionTitle}"
+                                       FontSize="14"
+                                       HorizontalOptions="Center" />
+                            </StackLayout>
+                        </Frame>
+                    </Grid>
+
+                    <!-- Przyciski akcji -->
+                    <StackLayout Spacing="12">
+                        <Button x:Name="PreviewActionButton"
+                                Text="Kup za 500 pkt"
+                                Style="{StaticResource PrimaryButton}"
+                                Clicked="OnPreviewActionClicked" />
+                        
+                        <Button Text="✕ Zamknij"
+                                Style="{StaticResource OutlineButton}"
+                                TextColor="{StaticResource TextSecondary}"
+                                BorderColor="{StaticResource BorderMedium}"
+                                Clicked="OnClosePreviewClicked"
+                                FontSize="14"
+                                Padding="12,8" />
+                    </StackLayout>
+                </StackLayout>
+            </Frame>
+        </Grid>
     </Grid>
 </ContentPage>
