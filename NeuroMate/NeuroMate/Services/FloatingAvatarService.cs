@@ -88,7 +88,12 @@ namespace NeuroMate.Services
         {
             // Pokaż dialog avatara
             var avatarDialog = new FloatingAvatarView();
-            await Application.Current?.MainPage?.Navigation.PushModalAsync(avatarDialog);
+            
+            // Sprawdź czy nawigacja jest dostępna przed wywołaniem
+            if (Application.Current?.MainPage?.Navigation != null)
+            {
+                await Application.Current.MainPage.Navigation.PushModalAsync(avatarDialog);
+            }
         }
 
         private void AddAvatarToCurrentPage()
