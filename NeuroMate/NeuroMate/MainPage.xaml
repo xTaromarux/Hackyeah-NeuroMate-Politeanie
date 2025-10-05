@@ -342,7 +342,7 @@
                             <Button
                                 Clicked="OnTaskSwitchClicked"
                                 Style="{StaticResource SecondaryButton}"
-                                Text="🔄 Task Switch" />
+                                Text="🔄 Gra kasjer" />
 
                             <Button
                                 Clicked="OnSummaryClicked"

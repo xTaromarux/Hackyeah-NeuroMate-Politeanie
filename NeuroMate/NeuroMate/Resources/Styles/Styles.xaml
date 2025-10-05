@@ -61,7 +61,7 @@
 
     <Style x:Key="Subtitle" TargetType="Label">
         <Setter Property="FontSize" Value="14" />
-        <Setter Property="TextColor" Value="{StaticResource TextSecondary}" />
+        <Setter Property="TextColor" Value="{StaticResource TextPrimary}" />
         <Setter Property="LineBreakMode" Value="WordWrap" />
     </Style>
 
@@ -357,8 +357,9 @@
     </Style>
 
     <Style x:Key="StatDescription" TargetType="Label">
-        <Setter Property="FontSize" Value="12" />
-        <Setter Property="TextColor" Value="{StaticResource TextSecondary}" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="TextColor" Value="{StaticResource TextPrimary}" />
+        <Setter Property="FontAttributes" Value="Bold" />
         <Setter Property="HorizontalOptions" Value="Center" />
     </Style>
 

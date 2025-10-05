@@ -4,8 +4,8 @@ namespace NeuroMate.Views
     {
         private readonly Random _random = new();
         private Timer? _interventionTimer;
-        private int _countdownTime = 0;
-        private bool _isInterventionRunning = false;
+        private int _countdownTime;
+        private bool _isInterventionRunning;
         private string _selectedCategory = "Kognitywne";
         
         private readonly Dictionary<string, List<Intervention>> _interventions = new()
@@ -148,30 +148,45 @@ namespace NeuroMate.Views
         private void OnCategorySelected(object sender, EventArgs e)
         {
             // Reset stylów przycisków
-            CognitiveBtn.Style = (Style)Application.Current.Resources["OutlineButton"];
-            PhysicalBtn.Style = (Style)Application.Current.Resources["OutlineButton"];
-            EyesBtn.Style = (Style)Application.Current.Resources["OutlineButton"];
-            NutritionBtn.Style = (Style)Application.Current.Resources["OutlineButton"];
+            if (Application.Current?.Resources != null)
+            {
+                CognitiveBtn.Style = (Style)Application.Current.Resources["OutlineButton"];
+                PhysicalBtn.Style = (Style)Application.Current.Resources["OutlineButton"];
+                EyesBtn.Style = (Style)Application.Current.Resources["OutlineButton"];
+                NutritionBtn.Style = (Style)Application.Current.Resources["OutlineButton"];
 
-            var button = sender as Button;
-            button.Style = (Style)Application.Current.Resources["PrimaryButton"];
+                var button = sender as Button;
+                if (button != null)
+                {
+                    button.Style = (Style)Application.Current.Resources["PrimaryButton"];
+                }
+            }
 
+            var buttonText = (sender as Button)?.Text ?? "";
             // Określ wybraną kategorię
-            _selectedCategory = button.Text.Split(' ')[1]; // Pobierz nazwę bez emoji
+            _selectedCategory = buttonText.Split(' ')[1]; // Pobierz nazwę bez emoji
 
             // Odśwież interwencje dla nowej kategorii
             LoadQuickInterventions();
             LoadRandomIntervention();
         }
 
-        private async void OnStartIntervention(object sender, EventArgs e)
+        private void OnStartIntervention(object sender, EventArgs e)
         {
-            if (_isInterventionRunning) return;
+            if (_isInterventionRunning)
+            {
+                // Jeśli interwencja jest uruchomiona, zatrzymaj ją
+                StopIntervention();
+                return;
+            }
 
             _isInterventionRunning = true;
-            StartInterventionBtn.Text = "⏸️ Stop";
-            StartInterventionBtn.Style = (Style)Application.Current.Resources["SecondaryButton"];
-            SkipInterventionBtn.IsEnabled = false;
+            if (Application.Current?.Resources != null)
+            {
+                StartInterventionBtn.Text = "⏸️ Stop";
+                StartInterventionBtn.Style = (Style)Application.Current.Resources["SecondaryButton"];
+            }
+            SkipInterventionBtn.IsEnabled = true;
 
             // Uruchom timer odliczania
             _interventionTimer = new Timer(CountdownTick, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
@@ -209,6 +224,13 @@ namespace NeuroMate.Views
 
         private void OnSkipIntervention(object sender, EventArgs e)
         {
+            // Zatrzymaj aktualną interwencję jeśli jest uruchomiona
+            if (_isInterventionRunning)
+            {
+                StopIntervention();
+            }
+            
+            // Załaduj nową losową interwencję
             LoadRandomIntervention();
         }
 
@@ -216,9 +238,13 @@ namespace NeuroMate.Views
         {
             _isInterventionRunning = false;
             _interventionTimer?.Dispose();
+            _interventionTimer = null;
             
-            StartInterventionBtn.Text = "▶️ Start";
-            StartInterventionBtn.Style = (Style)Application.Current.Resources["PrimaryButton"];
+            if (Application.Current?.Resources != null)
+            {
+                StartInterventionBtn.Text = "▶️ Start";
+                StartInterventionBtn.Style = (Style)Application.Current.Resources["PrimaryButton"];
+            }
             SkipInterventionBtn.IsEnabled = true;
         }
 
