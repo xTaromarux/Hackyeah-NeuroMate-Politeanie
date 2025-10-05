@@ -1,6 +1,6 @@
 # NeuroMate — HackYeah 2025
 
-**Krótko:** NeuroMate to desktopowy/mobilny asystent biohackingu z awatarem — wykrywa spadki koncentracji i przeciążenie, łączy dane z wearables i prostą analizę behawioralną, uruchamia krótkie gry kognitywne i mikro-interwencje (np. rozciąganie, oddech, przerwa), a wszystko prowadzi sympatyczny awatar. Repozytorium: https://github.com/xTaromarux/Hackyeah-NeuroMate-Politeanie.
+**Krótko:** NeuroMate to desktopowy/mobilny asystent biohackingu z awatarem — wykrywa spadki koncentracji i przeciążenie, łączy dane z wearables i analizę behawioralną, pozwala na uruchmianie krótkich gier kognitywnych i mikro-interwencyjnych (np. rozciąganie, oddech, przerwa), a wszystko prowadzi sympatyczny awatar.
 
 ---
 
