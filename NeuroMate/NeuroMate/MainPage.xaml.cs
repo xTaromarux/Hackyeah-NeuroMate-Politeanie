@@ -1,7 +1,14 @@
 ﻿using NeuroMate.ViewModels;
 using NeuroMate.Views;
 using NeuroMate.Services;
-
+#if WINDOWS
+using Microsoft.UI.Xaml;
+using WinRT.Interop;
+using NeuroMate.WinUI;
+#endif
+#if WINDOWS
+using WinUIWindow = Microsoft.UI.Xaml.Window;
+#endif
 namespace NeuroMate
 {
     public partial class MainPage : ContentPage
@@ -21,6 +28,10 @@ namespace NeuroMate
 
         private Timer? _interventionTimer;
         private DateTime _lastInterventionTime = DateTime.Now;
+#if WINDOWS
+        private IntPtr hWnd;
+        private WinUIWindow nativeWindow;
+#endif
 
         public MainPage()
         {
@@ -35,6 +46,15 @@ namespace NeuroMate
 
             // Inicjalizuj dialog avatara
             InitializeAvatarDialog();
+
+#if WINDOWS
+            // Pobierz natywne okno
+            nativeWindow = App.Current.Windows.First().Handler.PlatformView as WinUIWindow;
+            hWnd = WindowNative.GetWindowHandle(nativeWindow);
+
+            // Włącz automatyczne ukrywanie/pokazywanie ikony przy minimalizacji
+            Win32Helper.EnableAutoHideTaskbarIcon(nativeWindow);
+#endif
         }
 
         private void InitializeAvatarDialog()
@@ -51,7 +71,6 @@ namespace NeuroMate
 
             if (Handler != null)
             {
-                // Opóźnij inicjalizację avatara, żeby strona była w pełni załadowana
                 Dispatcher.Dispatch(async () =>
                 {
                     await Task.Delay(1000);
@@ -73,11 +92,9 @@ namespace NeuroMate
 
         private async Task ShowAvatarDialog()
         {
-            // Ustaw losową wiadomość
             var message = _avatarMessages[_random.Next(_avatarMessages.Count)];
             AvatarMessageLabel.Text = message;
 
-            // Pokaż dialog z animacją
             AvatarDialogOverlay.IsVisible = true;
 
             await Task.WhenAll(
@@ -85,7 +102,6 @@ namespace NeuroMate
                 AvatarDialogCard.ScaleTo(1, 300, Easing.SpringOut)
             );
 
-            // Rozpocznij animację wskaźnika mowy
             StartSpeechIndicatorAnimation();
         }
 
@@ -109,68 +125,35 @@ namespace NeuroMate
             }
         }
 
-        // Event handlers dla dialogu avatara
-        private async void OnDialogOverlayTapped(object sender, EventArgs e)
-        {
-            await HideAvatarDialog();
-        }
-
-        private async void OnCloseDialogClicked(object sender, EventArgs e)
-        {
-            await HideAvatarDialog();
-        }
-
+        private async void OnDialogOverlayTapped(object sender, EventArgs e) => await HideAvatarDialog();
+        private async void OnCloseDialogClicked(object sender, EventArgs e) => await HideAvatarDialog();
         private async void OnDialogStartTrainingClicked(object sender, EventArgs e)
         {
             await HideAvatarDialog();
             await Shell.Current.GoToAsync(nameof(CognitiveGamesPage));
         }
-
         private async void OnDialogShowStatsClicked(object sender, EventArgs e)
         {
             await HideAvatarDialog();
             await Shell.Current.GoToAsync(nameof(DailySummaryPage));
         }
-
         private async void OnDialogSettingsClicked(object sender, EventArgs e)
         {
             await DisplayAlert("Ustawienia", "Funkcja ustawień będzie dostępna w przyszłej wersji!", "OK");
         }
 
-        // Event handlers dla przycisków głównych
-        private async void OnStroopTestClicked(object sender, EventArgs e)
-        {
-            await Shell.Current.GoToAsync(nameof(StroopGamePage));
-        }
-
-        private async void OnPvtTestClicked(object sender, EventArgs e)
-        {
-            await Shell.Current.GoToAsync(nameof(PvtGamePage));
-        }
-
-        private async void OnTaskSwitchClicked(object sender, EventArgs e)
-        {
-            await Shell.Current.GoToAsync(nameof(TaskSwitchingGamePage));
-        }
-
-        private async void OnSummaryClicked(object sender, EventArgs e)
-        {
-            await Shell.Current.GoToAsync(nameof(DailySummaryPage));
-        }
+        private async void OnStroopTestClicked(object sender, EventArgs e) => await Shell.Current.GoToAsync(nameof(StroopGamePage));
+        private async void OnPvtTestClicked(object sender, EventArgs e) => await Shell.Current.GoToAsync(nameof(PvtGamePage));
+        private async void OnTaskSwitchClicked(object sender, EventArgs e) => await Shell.Current.GoToAsync(nameof(TaskSwitchingGamePage));
+        private async void OnSummaryClicked(object sender, EventArgs e) => await Shell.Current.GoToAsync(nameof(DailySummaryPage));
 
         private async void OnToggleAvatarClicked(object sender, EventArgs e)
         {
             if (_floatingAvatarService != null)
-            {
                 await DisplayAlert("Avatar", "Funkcja przełączania avatara będzie dostępna wkrótce!", "OK");
-            }
         }
 
-        private async void OnStartRecommendationClicked(object sender, EventArgs e)
-        {
-            await Shell.Current.GoToAsync(nameof(StroopGamePage));
-        }
-
+        private async void OnStartRecommendationClicked(object sender, EventArgs e) => await Shell.Current.GoToAsync(nameof(StroopGamePage));
         private async void OnMoreRecommendationsClicked(object sender, EventArgs e)
         {
             await DisplayAlert(
@@ -182,14 +165,12 @@ namespace NeuroMate
 
         private void UpdateDashboardData()
         {
-            // Symulacja danych dla demonstracji
             var focusLevel = _random.Next(60, 100);
             var workHours = _random.Next(1, 8);
             var workMinutes = _random.Next(0, 60);
             var sleepScore = _random.Next(50, 100);
             var stressLevel = _random.Next(20, 80);
 
-            // Aktualizuj UI
             MainThread.BeginInvokeOnMainThread(() =>
             {
                 FocusLevelLabel.Text = focusLevel > 75 ? "Wysoka" : focusLevel > 50 ? "Średnia" : "Niska";
@@ -207,7 +188,6 @@ namespace NeuroMate
                 StressLevelLabel.TextColor = stressLevel < 40 ? Colors.Green : stressLevel < 70 ? Colors.Orange : Colors.Red;
 
                 NeuroScoreLabel.Text = ((focusLevel + sleepScore + (100 - stressLevel)) / 3).ToString();
-
                 StatusLabel.Text = focusLevel > 75 ? "Gotowy do treningu!" : "Może czas na odpoczynek?";
             });
         }
@@ -239,5 +219,14 @@ namespace NeuroMate
             base.OnDisappearing();
             _interventionTimer?.Dispose();
         }
+
+#if WINDOWS
+        // Przycisk do ręcznego przywracania ikony
+        private void RestoreButton_Clicked(object sender, EventArgs e)
+        {
+            Win32Helper.SetTaskbarIconVisibility(hWnd, true);
+            nativeWindow.Activate();
+        }
+#endif
     }
 }
