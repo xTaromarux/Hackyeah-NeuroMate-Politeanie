@@ -10,6 +10,8 @@ using NeuroMate.WinUI;
 using WinUIWindow = Microsoft.UI.Xaml.Window;
 #endif
 using SkiaSharp.Extended.UI.Controls;
+using CommunityToolkit.Mvvm.Messaging;
+using NeuroMate.Messages;
 
 namespace NeuroMate
 {
@@ -30,10 +32,6 @@ namespace NeuroMate
 
         private Timer? _interventionTimer;
         private DateTime _lastInterventionTime = DateTime.Now;
-#if WINDOWS
-        private IntPtr hWnd;
-        private WinUIWindow nativeWindow;
-#endif
 
         public MainPage()
         {
@@ -44,23 +42,27 @@ namespace NeuroMate
             // Subskrypcja do zmian w ViewModelu dla aktualizacji UI
             viewModel.PropertyChanged += OnViewModelPropertyChanged;
             
-            // Nasłuchuj komunikatów o zmianach z innych stron
-            MessagingCenter.Subscribe<AvatarShopPage>(this, "AvatarChanged", async (sender) =>
+            // Używam nowoczesnego WeakReferenceMessenger zamiast przestarzałego MessagingCenter
+            WeakReferenceMessenger.Default.Register<AvatarChangedMessage>(this, (r, m) =>
             {
-                // Odśwież dane awatara po zmianie w sklepie
-                if (BindingContext is MainViewModel vm)
+                MainThread.BeginInvokeOnMainThread(async () =>
                 {
-                    await vm.RefreshDataAsync();
-                }
+                    if (BindingContext is MainViewModel vm)
+                    {
+                        await vm.RefreshDataAsync();
+                    }
+                });
             });
             
-            MessagingCenter.Subscribe<AvatarShopPage>(this, "PointsChanged", async (sender) =>
+            WeakReferenceMessenger.Default.Register<PointsChangedMessage>(this, (r, m) =>
             {
-                // Odśwież dane punktów po zakupie w sklepie
-                if (BindingContext is MainViewModel vm)
+                MainThread.BeginInvokeOnMainThread(async () =>
                 {
-                    await vm.RefreshDataAsync();
-                }
+                    if (BindingContext is MainViewModel vm)
+                    {
+                        await vm.RefreshDataAsync();
+                    }
+                });
             });
             
             // Uruchom timer interwencji
@@ -71,15 +73,6 @@ namespace NeuroMate
 
             // Inicjalizuj dialog avatara
             InitializeAvatarDialog();
-
-#if WINDOWS
-            // Pobierz natywne okno
-            nativeWindow = App.Current.Windows.First().Handler.PlatformView as WinUIWindow;
-            hWnd = WindowNative.GetWindowHandle(nativeWindow);
-
-            // Włącz automatyczne ukrywanie/pokazywanie ikony przy minimalizacji
-            Win32Helper.EnableAutoHideTaskbarIcon(nativeWindow);
-#endif
         }
 
         private void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -189,22 +182,22 @@ namespace NeuroMate
         private async void OnDialogStartTrainingClicked(object sender, EventArgs e)
         {
             await HideAvatarDialog();
-            await Shell.Current.GoToAsync(nameof(CognitiveGamesPage));
+            await Shell.Current.GoToAsync(nameof(Views.CognitiveGamesPage));
         }
         private async void OnDialogShowStatsClicked(object sender, EventArgs e)
         {
             await HideAvatarDialog();
-            await Shell.Current.GoToAsync(nameof(DailySummaryPage));
+            await Shell.Current.GoToAsync(nameof(Views.DailySummaryPage));
         }
         private async void OnDialogSettingsClicked(object sender, EventArgs e)
         {
             await DisplayAlert("Ustawienia", "Funkcja ustawień będzie dostępna w przyszłej wersji!", "OK");
         }
 
-        private async void OnStroopTestClicked(object sender, EventArgs e) => await Shell.Current.GoToAsync(nameof(StroopGamePage));
-        private async void OnPvtTestClicked(object sender, EventArgs e) => await Shell.Current.GoToAsync(nameof(PvtGamePage));
-        private async void OnTaskSwitchClicked(object sender, EventArgs e) => await Shell.Current.GoToAsync(nameof(TaskSwitchingGamePage));
-        private async void OnSummaryClicked(object sender, EventArgs e) => await Shell.Current.GoToAsync(nameof(DailySummaryPage));
+        private async void OnStroopTestClicked(object sender, EventArgs e) => await Shell.Current.GoToAsync(nameof(Views.StroopGamePage));
+        private async void OnPvtTestClicked(object sender, EventArgs e) => await Shell.Current.GoToAsync(nameof(Views.PvtGamePage));
+        private async void OnTaskSwitchClicked(object sender, EventArgs e) => await Shell.Current.GoToAsync(nameof(Views.TaskSwitchingGamePage));
+        private async void OnSummaryClicked(object sender, EventArgs e) => await Shell.Current.GoToAsync(nameof(Views.DailySummaryPage));
 
         private async void OnToggleAvatarClicked(object sender, EventArgs e)
         {
@@ -212,7 +205,7 @@ namespace NeuroMate
                 await DisplayAlert("Avatar", "Funkcja przełączania avatara będzie dostępna wkrótce!", "OK");
         }
 
-        private async void OnStartRecommendationClicked(object sender, EventArgs e) => await Shell.Current.GoToAsync(nameof(StroopGamePage));
+        private async void OnStartRecommendationClicked(object sender, EventArgs e) => await Shell.Current.GoToAsync(nameof(Views.StroopGamePage));
         private async void OnMoreRecommendationsClicked(object sender, EventArgs e)
         {
             await DisplayAlert(
@@ -283,15 +276,19 @@ namespace NeuroMate
             base.OnDisappearing();
             
             // Wyczyść subskrypcje MessagingCenter aby uniknąć memory leaks
-            MessagingCenter.Unsubscribe<AvatarShopPage>(this, "AvatarChanged");
-            MessagingCenter.Unsubscribe<AvatarShopPage>(this, "PointsChanged");
+            WeakReferenceMessenger.Default.Unregister<AvatarChangedMessage>(this);
+            WeakReferenceMessenger.Default.Unregister<PointsChangedMessage>(this);
         }
 
         private string GetAvatarAnimationBasedOnPerformance()
         {
+            // TYMCZASOWO: zawsze zwraca wave.webm dla testowania
+            return "wave.webm";
+            
+            /* Oryginalna logika - przywrócę po testach
             // Pobierz aktualne dane z ViewModelu
             if (BindingContext is not MainViewModel viewModel)
-                return "idle.mkv"; // Domyślna animacja
+                return "idle.webm"; // Domyślna animacja
 
             // Analiza wyników użytkownika
             int neuroScore = viewModel.NeuroScore;
@@ -304,10 +301,11 @@ namespace NeuroMate
             // Wybierz animację na podstawie wyniku
             return performanceScore switch
             {
-                > 0.7 => "wave.mkv",     // Dobry wynik - machanie
-                < 0.3 => "sad.mkv",      // Słaby wynik - smutek
-                _ => "idle.mkv"          // Neutralny wynik - spokojny
+                > 0.7 => "wave.webm",     // Dobry wynik - machanie
+                < 0.3 => "sad.webm",      // Słaby wynik - smutek
+                _ => "idle.webm"          // Neutralny wynik - spokojny
             };
+            */
         }
 
         private string GetAvatarMessageBasedOnPerformance()
@@ -389,14 +387,5 @@ namespace NeuroMate
 
             return factors > 0 ? score / factors : 0.5; // Domyślnie neutralny
         }
-
-#if WINDOWS
-        // Przycisk do ręcznego przywracania ikony
-        private void RestoreButton_Clicked(object sender, EventArgs e)
-        {
-            Win32Helper.SetTaskbarIconVisibility(hWnd, true);
-            nativeWindow.Activate();
-        }
-#endif
     }
 }

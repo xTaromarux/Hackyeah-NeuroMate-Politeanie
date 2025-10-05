@@ -11,19 +11,19 @@ namespace NeuroMate
             Routing.RegisterRoute(nameof(MainPage), typeof(MainPage));
 
             // Gry kognitywne
-            Routing.RegisterRoute(nameof(CognitiveGamesPage), typeof(CognitiveGamesPage));
-            Routing.RegisterRoute(nameof(StroopGamePage), typeof(StroopGamePage));
-            Routing.RegisterRoute(nameof(PvtGamePage), typeof(PvtGamePage));
-            Routing.RegisterRoute(nameof(TaskSwitchingGamePage), typeof(TaskSwitchingGamePage));
+            Routing.RegisterRoute(nameof(Views.CognitiveGamesPage), typeof(Views.CognitiveGamesPage));
+            Routing.RegisterRoute(nameof(Views.StroopGamePage), typeof(Views.StroopGamePage));
+            Routing.RegisterRoute(nameof(Views.PvtGamePage), typeof(Views.PvtGamePage));
+            Routing.RegisterRoute(nameof(Views.TaskSwitchingGamePage), typeof(Views.TaskSwitchingGamePage));
 
             // Interwencje
-            Routing.RegisterRoute(nameof(InterventionPage), typeof(InterventionPage));
+            Routing.RegisterRoute(nameof(Views.InterventionPage), typeof(Views.InterventionPage));
 
-            // Sen
-            Routing.RegisterRoute(nameof(SleepPage), typeof(SleepPage));
+            // Sen - usuwam jeśli nie istnieje
+            // Routing.RegisterRoute(nameof(SleepPage), typeof(SleepPage));
 
             // Podsumowanie
-            Routing.RegisterRoute(nameof(DailySummaryPage), typeof(DailySummaryPage));
+            Routing.RegisterRoute(nameof(Views.DailySummaryPage), typeof(Views.DailySummaryPage));
 
             // Ustawienia / Onboarding
             Routing.RegisterRoute(nameof(OnboardingPage), typeof(OnboardingPage));

@@ -301,9 +301,9 @@ namespace NeuroMate.Models
         /// <summary>
         /// Zwraca ścieżkę do pliku wideo MKV dla okna dialogowego
         /// </summary>
-        public string GetVideoPath()
+        public string VideoFileName
         {
-            return LottieFileName.Replace(".png", ".mkv");
+            get => LottieFileName.Replace(".png", ".webm");
         }
     }
 

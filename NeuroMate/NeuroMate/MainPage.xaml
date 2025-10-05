@@ -346,16 +346,17 @@
                                WidthRequest="120" 
                                HeightRequest="120"
                                HorizontalOptions="Center">
-                            <!-- MediaElement dla animacji MKV -->
+                            <!-- MediaElement dla animacji WebM -->
                             <toolkit:MediaElement x:Name="DialogAvatarVideo"
-                                         Source="idle.mkv"
+                                         Source="wave.webm"
                                          WidthRequest="100"
                                          HeightRequest="100"
                                          Aspect="AspectFit"
                                          ShouldAutoPlay="True"
                                          ShouldLoopPlayback="True"
                                          ShouldShowPlaybackControls="False"
-                                         Volume="0" />
+                                         Volume="0"
+                                         ShouldMute="True" />
                             
                             <!-- Fallback Image (ukryty domyślnie) -->
                             <Image x:Name="DialogAvatarImage"
