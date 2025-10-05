@@ -5,35 +5,50 @@ namespace NeuroMate.Views;
 public partial class TaskSwitchingGamePage : ContentPage
 {
     private readonly Random _random = new();
-    private readonly List<string> _shapes = new() { "●", "■", "▲", "♦" };
-    private readonly List<Color> _colors = new() 
-    { 
-        Color.FromArgb("#F44336"), // Czerwony
-        Color.FromArgb("#2196F3"), // Niebieski
-        Color.FromArgb("#4CAF50"), // Zielony
-        Color.FromArgb("#FFC107")  // Żółty
+    
+    // Dostępne monety w groszach (1gr, 2gr, 5gr, 10gr, 20gr, 50gr, 1zł, 2zł)
+    private readonly List<int> _availableCoins = new() { 1, 2, 5, 10, 20, 50, 100, 200 };
+    private readonly Dictionary<int, string> _coinNames = new()
+    {
+        { 1, "1gr" }, { 2, "2gr" }, { 5, "5gr" }, { 10, "10gr" },
+        { 20, "20gr" }, { 50, "50gr" }, { 100, "1zł" }, { 200, "2zł" }
     };
     
-    private string _currentRule = "KOLOR"; // KOLOR lub KSZTAŁT
-    private string _currentShape = "";
-    private Color _currentColor = Colors.Black;
-    private Stopwatch _reactionTimer = new();
+    private int _targetAmount = 0; // Kwota do wydania w groszach
+    private List<int> _selectedCoins = new();
     private Timer? _gameTimer;
-    private Timer? _stimulusTimer;
+    private Timer? _taskTimer; // Timer dla pojedynczego zadania (5 sekund)
+    private Stopwatch _responseTimer = new();
+    
     private int _currentTask = 0;
-    private int _totalTasks = 20;
+    private int _totalTasks = 15;
     private int _correctAnswers = 0;
-    private List<int> _reactionTimes = new();
-    private List<int> _switchCosts = new();
+    private List<int> _coinsUsedPerTask = new();
+    private List<int> _responseTimes = new();
     private bool _isGameRunning = false;
     private bool _isPaused = false;
-    private int _timeLeft = 45;
-    private bool _wasSwitch = false;
-    private int _lastNonSwitchRT = 0;
+    private int _gameTimeLeft = 60;
+    private int _taskTimeLeft = 5; // 5 sekund na zadanie
+    private const int TASK_TIME_LIMIT = 5; // 5 sekund na zadanie
 
     public TaskSwitchingGamePage()
     {
         InitializeComponent();
+        ResetGame();
+    }
+
+    private void ResetGame()
+    {
+        _currentTask = 0;
+        _correctAnswers = 0;
+        _coinsUsedPerTask.Clear();
+        _responseTimes.Clear();
+        _selectedCoins.Clear();
+        _gameTimeLeft = 60;
+        _taskTimeLeft = TASK_TIME_LIMIT;
+        
+        UpdateUI();
+        GenerateNewTask();
     }
 
     private void OnStartStopClicked(object sender, EventArgs e)
@@ -52,23 +67,14 @@ public partial class TaskSwitchingGamePage : ContentPage
     {
         _isGameRunning = true;
         _isPaused = false;
-        _currentTask = 0;
-        _correctAnswers = 0;
-        _reactionTimes.Clear();
-        _switchCosts.Clear();
-        _timeLeft = 45;
+        _responseTimer.Start();
 
         StartStopButton.Text = "⏹️ Zatrzymaj";
+        PauseButton.IsVisible = true;
         
-        // Bezpieczne ustawienie stylu
-        if (Application.Current?.Resources?.TryGetValue("OutlineButton", out var outlineStyle) == true)
-        {
-            StartStopButton.Style = (Style)outlineStyle;
-        }
-        
-        EnableResponseButtons(true);
-        StartTimer();
-        StartTaskSequence();
+        EnableCoinButtons(true);
+        StartGameTimer();
+        StartTaskTimer();
         
         UpdateAvatarMood("focused");
     }
@@ -77,17 +83,13 @@ public partial class TaskSwitchingGamePage : ContentPage
     {
         _isGameRunning = false;
         _gameTimer?.Dispose();
-        _stimulusTimer?.Dispose();
+        _taskTimer?.Dispose();
+        _responseTimer.Stop();
         
-        StartStopButton.Text = "🔄 Rozpocznij Switching";
+        StartStopButton.Text = "🚀 Rozpocznij Kasjer";
+        PauseButton.IsVisible = false;
         
-        // Bezpieczne ustawienie stylu
-        if (Application.Current?.Resources?.TryGetValue("PrimaryButton", out var primaryStyle) == true)
-        {
-            StartStopButton.Style = (Style)primaryStyle;
-        }
-        
-        EnableResponseButtons(false);
+        EnableCoinButtons(false);
         ShowResults();
     }
 
@@ -100,17 +102,19 @@ public partial class TaskSwitchingGamePage : ContentPage
         if (_isPaused)
         {
             _gameTimer?.Dispose();
-            _stimulusTimer?.Dispose();
+            _taskTimer?.Dispose();
+            _responseTimer.Stop();
             PauseButton.Text = "▶️ Wznów";
-            EnableResponseButtons(false);
+            EnableCoinButtons(false);
             UpdateAvatarMood("thinking");
         }
         else
         {
-            StartTimer();
-            StartTaskSequence();
+            _responseTimer.Start();
+            StartGameTimer();
+            StartTaskTimer();
             PauseButton.Text = "⏸️ Pauza";
-            EnableResponseButtons(true);
+            EnableCoinButtons(true);
             UpdateAvatarMood("focused");
         }
     }
@@ -121,159 +125,208 @@ public partial class TaskSwitchingGamePage : ContentPage
         if (result)
         {
             _gameTimer?.Dispose();
-            _stimulusTimer?.Dispose();
+            _taskTimer?.Dispose();
             await Navigation.PopAsync();
         }
     }
 
-    private void OnResponseButtonClicked(object sender, EventArgs e)
+    private void OnCoinSelected(object sender, EventArgs e)
     {
         if (!_isGameRunning || _isPaused) return;
 
         var button = sender as Button;
-        var response = button?.Text?.Contains("LEWO") == true ? "LEWO" :
-                      button?.Text?.Contains("PRAWO") == true ? "PRAWO" :
-                      button?.Text?.Contains("GÓRA") == true ? "GÓRA" : "DÓŁ";
+        var coinValue = GetCoinValueFromButton(button);
         
-        _reactionTimer.Stop();
-        var reactionTime = (int)_reactionTimer.ElapsedMilliseconds;
-        _reactionTimes.Add(reactionTime);
+        if (coinValue > 0)
+        {
+            _selectedCoins.Add(coinValue);
+            UpdateSelectedCoinsDisplay();
+            
+            // Sprawdź czy można sprawdzić odpowiedź
+            CheckAnswerButton.IsEnabled = _selectedCoins.Count > 0;
+        }
+    }
 
-        bool isCorrect = CheckAnswer(response);
+    private int GetCoinValueFromButton(Button button)
+    {
+        return button?.Text switch
+        {
+            "1gr" => 1,
+            "2gr" => 2,
+            "5gr" => 5,
+            "10gr" => 10,
+            "20gr" => 20,
+            "50gr" => 50,
+            "1zł" => 100,
+            "2zł" => 200,
+            _ => 0
+        };
+    }
+
+    private void OnClearSelection(object sender, EventArgs e)
+    {
+        _selectedCoins.Clear();
+        UpdateSelectedCoinsDisplay();
+        CheckAnswerButton.IsEnabled = false;
+    }
+
+    private void OnCheckAnswer(object sender, EventArgs e)
+    {
+        if (!_isGameRunning || _isPaused) return;
+
+        ProcessAnswer();
+    }
+
+    private void ProcessAnswer()
+    {
+        _responseTimer.Stop();
+        _taskTimer?.Dispose(); // Zatrzymaj timer zadania
         
+        var responseTime = (int)_responseTimer.ElapsedMilliseconds;
+        _responseTimes.Add(responseTime);
+
+        var currentSum = _selectedCoins.Sum();
+        var isCorrect = currentSum == _targetAmount;
+        var optimalCoins = CalculateOptimalSolution(_targetAmount);
+        var coinsUsed = _selectedCoins.Count;
+        
+        _coinsUsedPerTask.Add(coinsUsed);
+
         if (isCorrect)
         {
             _correctAnswers++;
-            ShowFeedback("✅ Poprawnie!", Colors.Green);
-            UpdateAvatarMood("celebrating");
+            
+            if (coinsUsed == optimalCoins)
+            {
+                ShowFeedback("🎉 Doskonale! Optymalna liczba monet!", Colors.Green);
+                UpdateAvatarMood("celebrating");
+            }
+            else
+            {
+                ShowFeedback($"✅ Poprawnie! (Optimum: {optimalCoins} monet)", Colors.Orange);
+                UpdateAvatarMood("happy");
+            }
+        }
+        else if (_selectedCoins.Count == 0)
+        {
+            // Timeout - brak odpowiedzi
+            ShowFeedback("⏰ Czas minął! Brak odpowiedzi.", Colors.Red);
+            UpdateAvatarMood("concerned");
         }
         else
         {
-            ShowFeedback("❌ Błędnie!", Colors.Red);
+            ShowFeedback($"❌ Błąd! Potrzebujesz dokładnie {FormatAmount(_targetAmount)}", Colors.Red);
             UpdateAvatarMood("concerned");
         }
 
-        // Oblicz switch cost
-        if (_wasSwitch && _lastNonSwitchRT > 0)
-        {
-            var switchCost = reactionTime - _lastNonSwitchRT;
-            _switchCosts.Add(Math.Max(0, switchCost));
-        }
-        else if (!_wasSwitch)
-        {
-            _lastNonSwitchRT = reactionTime;
-        }
-
         _currentTask++;
-        UpdateProgress();
         UpdateStats();
 
-        if (_currentTask >= _totalTasks || _timeLeft <= 0)
+        if (_currentTask >= _totalTasks || _gameTimeLeft <= 0)
         {
             StopGame();
             return;
         }
 
         // Następne zadanie po krótkiej przerwie
-        Task.Delay(800).ContinueWith(_ => 
+        Task.Delay(1500).ContinueWith(_ => 
         {
             MainThread.BeginInvokeOnMainThread(() => 
             {
                 if (_isGameRunning && !_isPaused)
                 {
-                    PrepareNextTask();
-                    UpdateAvatarMood("focused");
+                    StartNextTask();
                 }
             });
         });
     }
 
-    private void OnDirectionButtonClicked(object sender, EventArgs e)
+    private void StartNextTask()
     {
-        OnResponseButtonClicked(sender, e);
+        GenerateNewTask();
+        OnClearSelection(null, null);
+        _taskTimeLeft = TASK_TIME_LIMIT;
+        _responseTimer.Restart();
+        StartTaskTimer();
+        UpdateAvatarMood("focused");
     }
 
-    private void StartTaskSequence()
+    private int CalculateOptimalSolution(int amount)
     {
-        _stimulusTimer = new Timer(_ => 
+        // Algorytm zachłanny - zawsze optymalny dla systemu monetarnego EUR/PLN
+        var coins = 0;
+        var remaining = amount;
+        
+        foreach (var coin in _availableCoins.OrderByDescending(x => x))
         {
-            MainThread.BeginInvokeOnMainThread(() => 
-            {
-                if (!_isGameRunning || _isPaused) return;
-                PrepareNextTask();
-            });
-        }, null, 1000, 0); // Pierwsze zadanie po 1s
-    }
-
-    private void PrepareNextTask()
-    {
-        // Losowo zmień regułę (30% szans na switch)
-        var previousRule = _currentRule;
-        if (_random.NextDouble() < 0.3)
-        {
-            _currentRule = _currentRule == "KOLOR" ? "KSZTAŁT" : "KOLOR";
+            coins += remaining / coin;
+            remaining %= coin;
         }
-        _wasSwitch = _currentRule != previousRule;
-
-        // Wygeneruj nowy bodziec
-        _currentShape = _shapes[_random.Next(_shapes.Count)];
-        _currentColor = _colors[_random.Next(_colors.Count)];
-
-        // Aktualizuj UI
-        CurrentRuleLabel.Text = _currentRule;
-        CurrentRuleLabel.TextColor = _currentRule == "KOLOR" ? 
-            Color.FromArgb("#2196F3") : Color.FromArgb("#FF9800");
         
-        RuleFrame.BackgroundColor = _currentRule == "KOLOR" ? 
-            Color.FromArgb("#BBDEFB") : Color.FromArgb("#FFE0B2");
-
-        StimulusLabel.Text = _currentShape;
-        StimulusLabel.TextColor = _currentColor;
-        
-        _reactionTimer.Restart();
+        return coins;
     }
 
-    private bool CheckAnswer(string response)
+    private void GenerateNewTask()
     {
-        if (_currentRule == "KOLOR")
+        // Generuj kwoty od 1gr do 5zł
+        _targetAmount = _random.Next(1, 501); // 1gr do 5zł
+        TargetAmountLabel.Text = FormatAmount(_targetAmount);
+    }
+
+    private string FormatAmount(int grosz)
+    {
+        if (grosz >= 100)
         {
-            // Odpowiadaj na podstawie koloru
-            return (_currentColor.ToArgbHex() == "#FFF44336" && response == "LEWO") ||  // Czerwony -> Lewo
-                   (_currentColor.ToArgbHex() == "#FF2196F3" && response == "PRAWO") || // Niebieski -> Prawo
-                   (_currentColor.ToArgbHex() == "#FF4CAF50" && response == "GÓRA") ||  // Zielony -> Góra
-                   (_currentColor.ToArgbHex() == "#FFFFC107" && response == "DÓŁ");    // Żółty -> Dół
+            var zloty = grosz / 100;
+            var grosze = grosz % 100;
+            
+            if (grosze == 0)
+                return $"{zloty} zł";
+            else
+                return $"{zloty},{grosze:D2} zł";
         }
         else
         {
-            // Odpowiadaj na podstawie kształtu
-            return (_currentShape == "●" && response == "LEWO") ||   // Koło -> Lewo
-                   (_currentShape == "■" && response == "PRAWO") ||  // Kwadrat -> Prawo
-                   (_currentShape == "▲" && response == "GÓRA") ||   // Trójkąt -> Góra
-                   (_currentShape == "♦" && response == "DÓŁ");     // Romb -> Dół
+            return $"{grosz} gr";
         }
     }
 
-    private void UpdateProgress()
+    private void UpdateSelectedCoinsDisplay()
     {
-        ProgressLabel.Text = $"Zadanie {_currentTask + 1}/{_totalTasks}";
-        GameProgressBar.Progress = (double)(_currentTask + 1) / _totalTasks;
+        if (_selectedCoins.Count == 0)
+        {
+            SelectedCoinsLabel.Text = "Wybierz monety...";
+        }
+        else
+        {
+            var coinGroups = _selectedCoins.GroupBy(x => x)
+                                          .OrderByDescending(g => g.Key)
+                                          .Select(g => $"{g.Count()}x{_coinNames[g.Key]}")
+                                          .ToList();
+            
+            SelectedCoinsLabel.Text = string.Join(", ", coinGroups);
+        }
+        
+        // Usunięto wyświetlanie sumy - tylko liczba monet
+        CoinsCountLabel.Text = _selectedCoins.Count.ToString();
     }
 
     private void UpdateStats()
     {
+        ProgressLabel.Text = $"{_currentTask}/{_totalTasks}";
         ScoreLabel.Text = _correctAnswers.ToString();
         
-        if (_reactionTimes.Count > 0)
+        if (_coinsUsedPerTask.Count > 0)
         {
-            var avgRT = (int)_reactionTimes.Average();
-            AvgRTLabel.Text = $"{avgRT}ms";
+            var avgCoins = _coinsUsedPerTask.Average();
+            AvgCoinsLabel.Text = $"{avgCoins:F1}";
         }
+    }
 
-        if (_switchCosts.Count > 0)
-        {
-            var avgSwitchCost = (int)_switchCosts.Average();
-            SwitchCostLabel.Text = $"{avgSwitchCost}ms";
-        }
+    private void UpdateUI()
+    {
+        UpdateStats();
+        UpdateSelectedCoinsDisplay();
     }
 
     private void ShowFeedback(string message, Color color)
@@ -281,30 +334,30 @@ public partial class TaskSwitchingGamePage : ContentPage
         InstructionLabel.Text = message;
         InstructionLabel.TextColor = color;
         
-        Task.Delay(600).ContinueWith(_ => 
+        Task.Delay(1200).ContinueWith(_ => 
         {
             MainThread.BeginInvokeOnMainThread(() => 
             {
-                InstructionLabel.Text = "Przełączaj między regułami: kolor vs kształt";
+                InstructionLabel.Text = "Wydaj resztę używając najmniejszej liczby monet";
                 InstructionLabel.TextColor = Color.FromArgb("#757575");
             });
         });
     }
 
-    private void StartTimer()
+    private void StartGameTimer()
     {
         _gameTimer = new Timer(_ => 
         {
-            _timeLeft--;
+            _gameTimeLeft--;
             MainThread.BeginInvokeOnMainThread(() => 
             {
-                TimerLabel.Text = $"{_timeLeft}s";
+                TimerLabel.Text = $"{_gameTimeLeft}s";
                 
-                if (_timeLeft <= 0)
+                if (_gameTimeLeft <= 0)
                 {
                     StopGame();
                 }
-                else if (_timeLeft <= 10)
+                else if (_gameTimeLeft <= 10)
                 {
                     TimerLabel.TextColor = Colors.Red;
                     UpdateAvatarMood("concerned");
@@ -313,18 +366,55 @@ public partial class TaskSwitchingGamePage : ContentPage
         }, null, 1000, 1000);
     }
 
-    private void EnableResponseButtons(bool enabled)
+    private void StartTaskTimer()
     {
-        LeftButton.IsEnabled = enabled;
-        RightButton.IsEnabled = enabled;
-        UpButton.IsEnabled = enabled;
-        DownButton.IsEnabled = enabled;
+        _taskTimeLeft = TASK_TIME_LIMIT;
+        
+        _taskTimer = new Timer(_ => 
+        {
+            _taskTimeLeft--;
+            MainThread.BeginInvokeOnMainThread(() => 
+            {
+                // Zaktualizuj timer zadania w interfejsie (opcjonalnie)
+                if (_taskTimeLeft <= 0)
+                {
+                    // Timeout - automatycznie przejdź do następnego zadania
+                    if (_isGameRunning && !_isPaused)
+                    {
+                        ProcessAnswer(); // Przetwórz jako brak odpowiedzi
+                    }
+                }
+                else if (_taskTimeLeft <= 2)
+                {
+                    // Ostrzeżenie - zmień kolor timera na czerwony
+                    TimerLabel.TextColor = Colors.Orange;
+                }
+            });
+        }, null, 1000, 1000);
+    }
+
+    private void EnableCoinButtons(bool enabled)
+    {
+        Coin1Button.IsEnabled = enabled;
+        Coin2Button.IsEnabled = enabled;
+        Coin5Button.IsEnabled = enabled;
+        Coin10Button.IsEnabled = enabled;
+        Coin20Button.IsEnabled = enabled;
+        Coin50Button.IsEnabled = enabled;
+        Coin100Button.IsEnabled = enabled;
+        Coin200Button.IsEnabled = enabled;
+        ClearButton.IsEnabled = enabled;
+        CheckAnswerButton.IsEnabled = enabled && _selectedCoins.Count > 0;
         
         var opacity = enabled ? 1.0 : 0.5;
-        LeftButton.Opacity = opacity;
-        RightButton.Opacity = opacity;
-        UpButton.Opacity = opacity;
-        DownButton.Opacity = opacity;
+        Coin1Button.Opacity = opacity;
+        Coin2Button.Opacity = opacity;
+        Coin5Button.Opacity = opacity;
+        Coin10Button.Opacity = opacity;
+        Coin20Button.Opacity = opacity;
+        Coin50Button.Opacity = opacity;
+        Coin100Button.Opacity = opacity;
+        Coin200Button.Opacity = opacity;
     }
 
     private async void ShowResults()
@@ -332,33 +422,47 @@ public partial class TaskSwitchingGamePage : ContentPage
         UpdateAvatarMood("celebrating");
         
         var accuracy = _currentTask > 0 ? (double)_correctAnswers / _currentTask * 100 : 0;
-        var avgRT = _reactionTimes.Count > 0 ? (int)_reactionTimes.Average() : 0;
-        var avgSwitchCost = _switchCosts.Count > 0 ? (int)_switchCosts.Average() : 0;
+        var avgCoins = _coinsUsedPerTask.Count > 0 ? _coinsUsedPerTask.Average() : 0;
+        var avgTime = _responseTimes.Count > 0 ? (int)_responseTimes.Average() : 0;
         
-        var message = $"🎉 Świetnie!\n\n" +
+        // Oblicz efektywność (im mniej monet, tym lepiej)
+        var totalOptimalCoins = 0;
+        var totalUsedCoins = _coinsUsedPerTask.Sum();
+        
+        // Estymacja optymalnych monet dla wykonanych zadań
+        for (int i = 0; i < _currentTask; i++)
+        {
+            // Przybliżona wartość optymalna (trudno odtworzyć dokładne kwoty)
+            totalOptimalCoins += 2; // Średnio 2-3 monety na zadanie
+        }
+        
+        var efficiency = totalOptimalCoins > 0 ? (double)totalOptimalCoins / totalUsedCoins * 100 : 0;
+        
+        var message = $"💰 Wyniki Gry Kasjer!\n\n" +
                      $"Poprawne odpowiedzi: {_correctAnswers}/{_currentTask}\n" +
                      $"Dokładność: {accuracy:F1}%\n" +
-                     $"Średni czas reakcji: {avgRT}ms\n" +
-                     $"Switch Cost: {avgSwitchCost}ms\n\n";
+                     $"Średnia liczba monet: {avgCoins:F1}\n" +
+                     $"Średni czas odpowiedzi: {avgTime}ms\n" +
+                     $"Efektywność: {efficiency:F1}%\n\n";
 
-        if (avgSwitchCost < 100)
+        if (efficiency >= 90)
         {
-            message += "🏆 Doskonała elastyczność poznawcza!";
+            message += "🏆 Ekspert kasjera! Doskonała optymalizacja!";
         }
-        else if (avgSwitchCost < 200)
+        else if (efficiency >= 75)
         {
-            message += "💪 Bardzo dobra elastyczność!";
+            message += "💪 Bardzo dobry kasjer!";
         }
-        else if (avgSwitchCost < 300)
+        else if (efficiency >= 60)
         {
-            message += "👍 Dobry wynik!";
+            message += "👍 Dobry kasjer!";
         }
         else
         {
-            message += "💡 Trenuj częściej!";
+            message += "💡 Trenuj dalej! Pamiętaj o największych monetach!";
         }
 
-        await DisplayAlert("Wyniki Task Switching", message, "OK");
+        await DisplayAlert("Wyniki Gry Kasjer", message, "OK");
         await Navigation.PopAsync();
     }
 
@@ -377,7 +481,7 @@ public partial class TaskSwitchingGamePage : ContentPage
                 _ => "avatar_focused.json"
             };
 
-            TaskAvatarLottie.Source = new SkiaSharp.Extended.UI.Controls.SKFileLottieImageSource
+            CashierAvatarLottie.Source = new SkiaSharp.Extended.UI.Controls.SKFileLottieImageSource
             {
                 File = animationSource
             };
@@ -392,7 +496,7 @@ public partial class TaskSwitchingGamePage : ContentPage
     {
         base.OnDisappearing();
         _gameTimer?.Dispose();
-        _stimulusTimer?.Dispose();
-        _reactionTimer?.Stop();
+        _taskTimer?.Dispose();
+        _responseTimer?.Stop();
     }
 }

@@ -33,9 +33,9 @@
                 </Frame>
 
                 <StackLayout Grid.Column="1" VerticalOptions="Center" Spacing="4">
-                    <Label Text="🔢 N-back Test" Style="{StaticResource HeadlineLabel}" />
+                    <Label Text="🔢 Test Pamięci Roboczej" Style="{StaticResource HeadlineLabel}" />
                     <Label x:Name="InstructionLabel"
-                           Text="Kliknij gdy pozycja powtarza się sprzed N kroków"
+                           Text="Wybierz kształt, który pojawił się jeden krok wcześniej"
                            Style="{StaticResource SubtitleLabel}" />
                 </StackLayout>
 
@@ -59,102 +59,80 @@
         <ScrollView Grid.Row="1" Padding="20,0">
             <StackLayout Spacing="24">
 
-                <!-- Poziom trudności -->
-                <Frame Style="{StaticResource CardFrame}">
-                    <Grid ColumnSpacing="12">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-
-                        <Button Grid.Column="0"
-                                x:Name="OneBackBtn"
-                                Text="1-back"
-                                Style="{StaticResource PrimaryButton}"
-                                Clicked="OnLevelSelected" />
-
-                        <Label Grid.Column="1"
-                               Text="vs"
-                               FontSize="16"
-                               VerticalOptions="Center"
-                               HorizontalOptions="Center"
-                               TextColor="{StaticResource TextSecondary}" />
-
-                        <Button Grid.Column="2"
-                                x:Name="TwoBackBtn"
-                                Text="2-back"
-                                Style="{StaticResource OutlineButton}"
-                                Clicked="OnLevelSelected" />
-                    </Grid>
-                </Frame>
-
-                <!-- Plansza gry -->
+                <!-- Obszar prezentacji kształtu -->
                 <Frame Style="{StaticResource ElevatedCard}" 
-                       HeightRequest="280"
+                       HeightRequest="200"
                        BackgroundColor="{StaticResource SurfaceVariant}">
-                    <Grid x:Name="GameBoard" RowSpacing="8" ColumnSpacing="8">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="*" />
-                            <RowDefinition Height="*" />
-                            <RowDefinition Height="*" />
-                        </Grid.RowDefinitions>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-
-                        <!-- 9 pozycji na planszy -->
-                        <Frame Grid.Row="0" Grid.Column="0" x:Name="Pos00" Style="{StaticResource GamePositionFrame}" />
-                        <Frame Grid.Row="0" Grid.Column="1" x:Name="Pos01" Style="{StaticResource GamePositionFrame}" />
-                        <Frame Grid.Row="0" Grid.Column="2" x:Name="Pos02" Style="{StaticResource GamePositionFrame}" />
-                        <Frame Grid.Row="1" Grid.Column="0" x:Name="Pos10" Style="{StaticResource GamePositionFrame}" />
-                        <Frame Grid.Row="1" Grid.Column="1" x:Name="Pos11" Style="{StaticResource GamePositionFrame}" />
-                        <Frame Grid.Row="1" Grid.Column="2" x:Name="Pos12" Style="{StaticResource GamePositionFrame}" />
-                        <Frame Grid.Row="2" Grid.Column="0" x:Name="Pos20" Style="{StaticResource GamePositionFrame}" />
-                        <Frame Grid.Row="2" Grid.Column="1" x:Name="Pos21" Style="{StaticResource GamePositionFrame}" />
-                        <Frame Grid.Row="2" Grid.Column="2" x:Name="Pos22" Style="{StaticResource GamePositionFrame}" />
-
-                        <!-- Aktualny bodziec -->
-                        <Frame x:Name="CurrentStimulus" 
-                               Grid.Row="1" Grid.Column="1"
-                               BackgroundColor="{StaticResource Primary}"
-                               CornerRadius="25"
-                               IsVisible="False"
-                               Padding="0">
-                            <Label Text="●" 
-                                   FontSize="36"
-                                   TextColor="White"
-                                   HorizontalOptions="Center"
-                                   VerticalOptions="Center" />
-                        </Frame>
+                    <Grid>
+                        <!-- Aktualny bodziec - kształt -->
+                        <Label x:Name="CurrentShapeDisplay" 
+                               Text=""
+                               FontSize="80"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center"
+                               IsVisible="False" />
+                        
+                        <!-- Komunikat oczekiwania -->
+                        <Label x:Name="WaitingLabel"
+                               Text="To jest kwadrat - kliknij Start aby rozpocząć"
+                               FontSize="18"
+                               TextColor="{StaticResource TextSecondary}"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center" />
                     </Grid>
                 </Frame>
 
-                <!-- Przyciski odpowiedzi -->
-                <Grid ColumnSpacing="20">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
+                <!-- Przyciski wyboru kształtów -->
+                <Frame Style="{StaticResource CardFrame}">
+                    <StackLayout Spacing="16">
+                        <Label Text="Wybierz kształt:" 
+                               Style="{StaticResource HeadlineLabel}"
+                               HorizontalOptions="Center" />
+                        
+                        <Grid ColumnSpacing="15" RowSpacing="15">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
 
-                    <Button Grid.Column="0"
-                            x:Name="MatchButton"
-                            Text="✅ MATCH"
-                            Style="{StaticResource PrimaryButton}"
-                            FontSize="18"
-                            HeightRequest="60"
-                            Clicked="OnMatchClicked" />
+                            <Button Grid.Row="0" Grid.Column="0"
+                                    x:Name="CircleButton"
+                                    Text="●"
+                                    FontSize="40"
+                                    Style="{StaticResource ShapeButton}"
+                                    Clicked="OnShapeSelected"
+                                    IsEnabled="False" />
 
-                    <Button Grid.Column="1"
-                            x:Name="NoMatchButton"
-                            Text="❌ NO MATCH"
-                            Style="{StaticResource SecondaryButton}"
-                            FontSize="18"
-                            HeightRequest="60"
-                            Clicked="OnNoMatchClicked" />
-                </Grid>
+                            <Button Grid.Row="0" Grid.Column="1"
+                                    x:Name="SquareButton"
+                                    Text="■"
+                                    FontSize="40"
+                                    Style="{StaticResource ShapeButton}"
+                                    Clicked="OnShapeSelected"
+                                    IsEnabled="False" />
+
+                            <Button Grid.Row="1" Grid.Column="0"
+                                    x:Name="TriangleButton"
+                                    Text="▲"
+                                    FontSize="40"
+                                    Style="{StaticResource ShapeButton}"
+                                    Clicked="OnShapeSelected"
+                                    IsEnabled="False" />
+
+                            <Button Grid.Row="1" Grid.Column="1"
+                                    x:Name="DiamondButton"
+                                    Text="♦"
+                                    FontSize="40"
+                                    Style="{StaticResource ShapeButton}"
+                                    Clicked="OnShapeSelected"
+                                    IsEnabled="False" />
+                        </Grid>
+                    </StackLayout>
+                </Frame>
 
                 <!-- Statystyki gry -->
                 <Frame Style="{StaticResource CardFrame}">
@@ -166,10 +144,9 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
 
-                        <Label Grid.Row="0" Grid.ColumnSpan="3" 
+                        <Label Grid.Row="0" Grid.ColumnSpan="2" 
                                Text="📊 Statystyki" 
                                Style="{StaticResource HeadlineLabel}" 
                                HorizontalOptions="Center" />
@@ -182,11 +159,6 @@
                         <StackLayout Grid.Row="1" Grid.Column="1" Spacing="4">
                             <Label Text="Trafienia" Style="{StaticResource StatDescription}" />
                             <Label x:Name="AccuracyLabel" Text="0%" Style="{StaticResource StatLabel}" />
-                        </StackLayout>
-
-                        <StackLayout Grid.Row="1" Grid.Column="2" Spacing="4">
-                            <Label Text="Poziom" Style="{StaticResource StatDescription}" />
-                            <Label x:Name="LevelLabel" Text="1-back" Style="{StaticResource StatLabel}" />
                         </StackLayout>
                     </Grid>
                 </Frame>

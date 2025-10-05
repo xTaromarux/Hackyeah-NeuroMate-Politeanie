@@ -31,6 +31,7 @@
     <Color x:Key="PageBackground">#F8FAFC</Color>
     <Color x:Key="CardBackground">#FFFFFF</Color>
     <Color x:Key="SurfaceBackground">#F1F5F9</Color>
+    <Color x:Key="SurfaceVariant">#E2E8F0</Color>
     <Color x:Key="OverlayBackground">#80000000</Color>
     
     <!-- Kolory tekstu -->

@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:skia="clr-namespace:SkiaSharp.Extended.UI.Controls;assembly=SkiaSharp.Extended.UI"
              x:Class="NeuroMate.Views.TaskSwitchingGamePage"
-             Title="Task Switching"
+             Title="Gra Kasjer"
              BackgroundColor="{StaticResource PageBackground}">
 
     <Grid>
@@ -24,7 +24,7 @@
 
                 <!-- Awatar -->
                 <Frame Grid.Column="0" Style="{StaticResource AvatarFrame}">
-                    <skia:SKLottieView x:Name="TaskAvatarLottie"
+                    <skia:SKLottieView x:Name="CashierAvatarLottie"
                                        Source="turtle.json"
                                        RepeatCount="-1"
                                        IsAnimationEnabled="True"
@@ -33,9 +33,9 @@
                 </Frame>
 
                 <StackLayout Grid.Column="1" VerticalOptions="Center" Spacing="4">
-                    <Label Text="🔄 Task Switching" Style="{StaticResource HeadlineLabel}" />
+                    <Label Text="💰 Gra Kasjer" Style="{StaticResource HeadlineLabel}" />
                     <Label x:Name="InstructionLabel"
-                           Text="Przełączaj między regułami: kolor vs kształt"
+                           Text="Wydaj resztę używając najmniejszej liczby monet"
                            Style="{StaticResource SubtitleLabel}" />
                 </StackLayout>
 
@@ -46,7 +46,7 @@
                        Padding="16,12"
                        HasShadow="True">
                     <Label x:Name="TimerLabel" 
-                           Text="45s"
+                           Text="60s"
                            FontSize="20"
                            FontAttributes="Bold"
                            TextColor="White"
@@ -59,82 +59,164 @@
         <ScrollView Grid.Row="1" Padding="20,0">
             <StackLayout Spacing="24">
                 
-                <!-- Aktualna zasada -->
-                <Frame x:Name="RuleFrame" Style="{StaticResource ElevatedCard}">
+                <!-- Kwota do wydania -->
+                <Frame Style="{StaticResource ElevatedCard}">
                     <StackLayout Spacing="12">
-                        <Label Text="📋 Aktualna zasada:" Style="{StaticResource SubtitleLabel}" HorizontalOptions="Center" />
-                        <Label x:Name="CurrentRuleLabel" 
-                               Text="KOLOR"
-                               Style="{StaticResource TitleLabel}"
+                        <Label Text="💸 Wydaj resztę:" Style="{StaticResource SubtitleLabel}" HorizontalOptions="Center" />
+                        <Label x:Name="TargetAmountLabel" 
+                               Text="2,47 zł"
+                               Style="{StaticResource HeadlineLabel}"
+                               FontSize="36"
                                HorizontalOptions="Center"
                                TextColor="{StaticResource Primary}" />
                     </StackLayout>
                 </Frame>
 
-                <!-- Bodziec -->
-                <Frame Style="{StaticResource ElevatedCard}" 
-                       HeightRequest="180"
-                       Background="{StaticResource AccentGradient}">
-                    <Label x:Name="StimulusLabel"
-                           Text="●"
-                           FontSize="80"
-                           FontAttributes="Bold"
-                           HorizontalOptions="Center"
-                           VerticalOptions="Center"
-                           TextColor="White" />
+                <!-- Wybrane monety -->
+                <Frame Style="{StaticResource CardFrame}">
+                    <StackLayout Spacing="12">
+                        <Label Text="🎯 Twój wybór:" Style="{StaticResource SubtitleLabel}" HorizontalOptions="Center" />
+                        <Label x:Name="SelectedCoinsLabel" 
+                               Text="Wybierz monety..."
+                               FontSize="16"
+                               HorizontalOptions="Center"
+                               TextColor="{StaticResource TextSecondary}" />
+                        <StackLayout Orientation="Horizontal" HorizontalOptions="Center" Spacing="8">
+                            <Label Text="Liczba monet:" Style="{StaticResource BodyLabel}" />
+                            <Label x:Name="CoinsCountLabel" 
+                                   Text="0"
+                                   Style="{StaticResource BodyLabel}"
+                                   FontAttributes="Bold"
+                                   TextColor="{StaticResource Accent}" />
+                        </StackLayout>
+                    </StackLayout>
                 </Frame>
 
-                <!-- Przyciski odpowiedzi -->
-                <Grid ColumnSpacing="16" RowSpacing="16">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
+                <!-- Dostępne monety -->
+                <Frame Style="{StaticResource CardFrame}">
+                    <StackLayout Spacing="16">
+                        <Label Text="🪙 Dostępne monety:" Style="{StaticResource SubtitleLabel}" HorizontalOptions="Center" />
+                        
+                        <!-- Monety większe -->
+                        <Grid ColumnSpacing="12" RowSpacing="12">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
 
-                    <Button Grid.Row="0" Grid.Column="1"
-                            x:Name="UpButton"
-                            Text="⬆️"
-                            Style="{StaticResource PrimaryButton}"
-                            FontSize="24"
-                            HeightRequest="70"
-                            Clicked="OnDirectionButtonClicked" />
+                            <!-- Pierwsze rzęd - duże nominały -->
+                            <Button Grid.Row="0" Grid.Column="0"
+                                    x:Name="Coin200Button"
+                                    Text="2zł"
+                                    Style="{StaticResource PrimaryButton}"
+                                    FontSize="16"
+                                    HeightRequest="60"
+                                    BackgroundColor="#FFD700"
+                                    TextColor="Black"
+                                    Clicked="OnCoinSelected" />
 
-                    <Button Grid.Row="1" Grid.Column="0"
-                            x:Name="LeftButton"
-                            Text="⬅️"
-                            Style="{StaticResource PrimaryButton}"
-                            FontSize="24"
-                            HeightRequest="70"
-                            Clicked="OnDirectionButtonClicked" />
+                            <Button Grid.Row="0" Grid.Column="1"
+                                    x:Name="Coin100Button"
+                                    Text="1zł"
+                                    Style="{StaticResource PrimaryButton}"
+                                    FontSize="16"
+                                    HeightRequest="60"
+                                    BackgroundColor="#C0C0C0"
+                                    TextColor="Black"
+                                    Clicked="OnCoinSelected" />
 
-                    <Button Grid.Row="1" Grid.Column="2"
-                            x:Name="RightButton"
-                            Text="➡️"
-                            Style="{StaticResource PrimaryButton}"
-                            FontSize="24"
-                            HeightRequest="70"
-                            Clicked="OnDirectionButtonClicked" />
+                            <Button Grid.Row="0" Grid.Column="2"
+                                    x:Name="Coin50Button"
+                                    Text="50gr"
+                                    Style="{StaticResource PrimaryButton}"
+                                    FontSize="16"
+                                    HeightRequest="60"
+                                    BackgroundColor="#CD7F32"
+                                    TextColor="White"
+                                    Clicked="OnCoinSelected" />
 
-                    <Button Grid.Row="2" Grid.Column="1"
-                            x:Name="DownButton"
-                            Text="⬇️"
-                            Style="{StaticResource PrimaryButton}"
-                            FontSize="24"
-                            HeightRequest="70"
-                            Clicked="OnDirectionButtonClicked" />
-                </Grid>
+                            <!-- Drugi rząd - średnie nominały -->
+                            <Button Grid.Row="1" Grid.Column="0"
+                                    x:Name="Coin20Button"
+                                    Text="20gr"
+                                    Style="{StaticResource PrimaryButton}"
+                                    FontSize="16"
+                                    HeightRequest="60"
+                                    BackgroundColor="#B8860B"
+                                    TextColor="White"
+                                    Clicked="OnCoinSelected" />
+
+                            <Button Grid.Row="1" Grid.Column="1"
+                                    x:Name="Coin10Button"
+                                    Text="10gr"
+                                    Style="{StaticResource PrimaryButton}"
+                                    FontSize="16"
+                                    HeightRequest="60"
+                                    BackgroundColor="#A0522D"
+                                    TextColor="White"
+                                    Clicked="OnCoinSelected" />
+
+                            <Button Grid.Row="1" Grid.Column="2"
+                                    x:Name="Coin5Button"
+                                    Text="5gr"
+                                    Style="{StaticResource PrimaryButton}"
+                                    FontSize="16"
+                                    HeightRequest="60"
+                                    BackgroundColor="#8B4513"
+                                    TextColor="White"
+                                    Clicked="OnCoinSelected" />
+
+                            <!-- Trzeci rząd - małe nominały -->
+                            <Button Grid.Row="2" Grid.Column="0"
+                                    x:Name="Coin2Button"
+                                    Text="2gr"
+                                    Style="{StaticResource PrimaryButton}"
+                                    FontSize="16"
+                                    HeightRequest="60"
+                                    BackgroundColor="#D2691E"
+                                    TextColor="White"
+                                    Clicked="OnCoinSelected" />
+
+                            <Button Grid.Row="2" Grid.Column="1"
+                                    x:Name="Coin1Button"
+                                    Text="1gr"
+                                    Style="{StaticResource PrimaryButton}"
+                                    FontSize="16"
+                                    HeightRequest="60"
+                                    BackgroundColor="#A0522D"
+                                    TextColor="White"
+                                    Clicked="OnCoinSelected" />
+
+                            <Button Grid.Row="2" Grid.Column="2"
+                                    x:Name="ClearButton"
+                                    Text="🗑️ Wyczyść"
+                                    Style="{StaticResource OutlineButton}"
+                                    FontSize="14"
+                                    HeightRequest="60"
+                                    Clicked="OnClearSelection" />
+                        </Grid>
+                    </StackLayout>
+                </Frame>
+
+                <!-- Przycisk sprawdzenia -->
+                <Button x:Name="CheckAnswerButton"
+                        Text="✅ Sprawdź odpowiedź"
+                        Style="{StaticResource AccentButton}"
+                        FontSize="18"
+                        HeightRequest="60"
+                        Clicked="OnCheckAnswer"
+                        IsEnabled="False" />
 
                 <!-- Statystyki -->
                 <Frame Style="{StaticResource CardFrame}">
                     <Grid ColumnSpacing="20" RowSpacing="16">
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
@@ -150,24 +232,18 @@
                                HorizontalOptions="Center" />
 
                         <StackLayout Grid.Row="1" Grid.Column="0" Spacing="4">
-                            <Label Text="Postęp" Style="{StaticResource CaptionLabel}" HorizontalOptions="Center" />
-                            <Label x:Name="ProgressLabel" Text="0/20" Style="{StaticResource BodyLabel}" HorizontalOptions="Center" />
-                            <ProgressBar x:Name="GameProgressBar" Progress="0" ProgressColor="{StaticResource Primary}" />
+                            <Label Text="Zadania" Style="{StaticResource StatDescription}" />
+                            <Label x:Name="ProgressLabel" Text="0/15" Style="{StaticResource StatLabel}" />
                         </StackLayout>
 
                         <StackLayout Grid.Row="1" Grid.Column="1" Spacing="4">
-                            <Label Text="Wynik" Style="{StaticResource CaptionLabel}" HorizontalOptions="Center" />
-                            <Label x:Name="ScoreLabel" Text="0" Style="{StaticResource BodyLabel}" HorizontalOptions="Center" />
+                            <Label Text="Poprawne" Style="{StaticResource StatDescription}" />
+                            <Label x:Name="ScoreLabel" Text="0" Style="{StaticResource StatLabel}" />
                         </StackLayout>
 
                         <StackLayout Grid.Row="1" Grid.Column="2" Spacing="4">
-                            <Label Text="Śr. czas" Style="{StaticResource CaptionLabel}" HorizontalOptions="Center" />
-                            <Label x:Name="AvgRTLabel" Text="0ms" Style="{StaticResource BodyLabel}" HorizontalOptions="Center" />
-                        </StackLayout>
-
-                        <StackLayout Grid.Row="2" Grid.ColumnSpan="3" Spacing="4">
-                            <Label Text="Switch Cost" Style="{StaticResource CaptionLabel}" HorizontalOptions="Center" />
-                            <Label x:Name="SwitchCostLabel" Text="0ms" Style="{StaticResource BodyLabel}" HorizontalOptions="Center" />
+                            <Label Text="Śr. monet" Style="{StaticResource StatDescription}" />
+                            <Label x:Name="AvgCoinsLabel" Text="0" Style="{StaticResource StatLabel}" />
                         </StackLayout>
                     </Grid>
                 </Frame>
