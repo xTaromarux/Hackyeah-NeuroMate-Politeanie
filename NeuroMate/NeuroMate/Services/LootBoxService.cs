@@ -72,6 +72,15 @@ namespace NeuroMate.Services
         {
             var boxes = await _database.GetAllLootBoxesAsync();
             
+            // Sprawdź czy są awatary dostępne
+            var avatars = await _database.GetAllAvatarsAsync();
+            if (!avatars.Any())
+            {
+                // Stwórz podstawowe awatary jeśli ich nie ma
+                await InitializeDefaultAvatarsAsync();
+                avatars = await _database.GetAllAvatarsAsync();
+            }
+            
             foreach (var box in boxes)
             {
                 // Sprawdź czy już są nagrody dla tej skrzynki
@@ -81,41 +90,121 @@ namespace NeuroMate.Services
                 
                 var rewards = new List<Database.Entities.LootBoxReward>();
                 
+                // Dla każdej skrzynki dodaj awatary i punkty
                 if (box.Name == "Początkujący Pakiet")
                 {
+                    // Głównie punkty, mało awatarów
                     rewards.AddRange(new[]
                     {
-                        new Database.Entities.LootBoxReward { LootBoxId = box.Id, RewardType = "Points", RewardValue = "15", DropChance = 0.6f, Rarity = "Common", IsActive = true },
+                        new Database.Entities.LootBoxReward { LootBoxId = box.Id, RewardType = "Points", RewardValue = "15", DropChance = 0.4f, Rarity = "Common", IsActive = true },
                         new Database.Entities.LootBoxReward { LootBoxId = box.Id, RewardType = "Points", RewardValue = "20", DropChance = 0.3f, Rarity = "Common", IsActive = true },
-                        new Database.Entities.LootBoxReward { LootBoxId = box.Id, RewardType = "Points", RewardValue = "30", DropChance = 0.1f, Rarity = "Rare", IsActive = true }
+                        new Database.Entities.LootBoxReward { LootBoxId = box.Id, RewardType = "Points", RewardValue = "30", DropChance = 0.2f, Rarity = "Rare", IsActive = true }
                     });
+                    
+                    // Dodaj niektóre awatary Common
+                    if (avatars.Count > 0)
+                    {
+                        var commonAvatars = avatars.Where(a => a.Rarity == "Common").Take(2);
+                        foreach (var avatar in commonAvatars)
+                        {
+                            rewards.Add(new Database.Entities.LootBoxReward 
+                            { 
+                                LootBoxId = box.Id, 
+                                RewardType = "Avatar", 
+                                RewardValue = avatar.Id.ToString(), 
+                                DropChance = 0.05f, 
+                                Rarity = "Common", 
+                                IsActive = true 
+                            });
+                        }
+                    }
                 }
                 else if (box.Rarity == "Common")
                 {
+                    // Mix punktów i awatarów
                     rewards.AddRange(new[]
                     {
-                        new Database.Entities.LootBoxReward { LootBoxId = box.Id, RewardType = "Points", RewardValue = "30", DropChance = 0.5f, Rarity = "Common", IsActive = true },
-                        new Database.Entities.LootBoxReward { LootBoxId = box.Id, RewardType = "Points", RewardValue = "50", DropChance = 0.3f, Rarity = "Common", IsActive = true },
-                        new Database.Entities.LootBoxReward { LootBoxId = box.Id, RewardType = "Points", RewardValue = "75", DropChance = 0.2f, Rarity = "Rare", IsActive = true }
+                        new Database.Entities.LootBoxReward { LootBoxId = box.Id, RewardType = "Points", RewardValue = "30", DropChance = 0.3f, Rarity = "Common", IsActive = true },
+                        new Database.Entities.LootBoxReward { LootBoxId = box.Id, RewardType = "Points", RewardValue = "50", DropChance = 0.2f, Rarity = "Common", IsActive = true }
                     });
+                    
+                    // Więcej awatarów Common
+                    if (avatars.Count > 0)
+                    {
+                        var commonAvatars = avatars.Where(a => a.Rarity == "Common");
+                        foreach (var avatar in commonAvatars)
+                        {
+                            rewards.Add(new Database.Entities.LootBoxReward 
+                            { 
+                                LootBoxId = box.Id, 
+                                RewardType = "Avatar", 
+                                RewardValue = avatar.Id.ToString(), 
+                                DropChance = 0.15f, 
+                                Rarity = "Common", 
+                                IsActive = true 
+                            });
+                        }
+                    }
                 }
                 else if (box.Rarity == "Rare")
                 {
+                    // Więcej awatarów Rare
                     rewards.AddRange(new[]
                     {
-                        new Database.Entities.LootBoxReward { LootBoxId = box.Id, RewardType = "Points", RewardValue = "100", DropChance = 0.4f, Rarity = "Rare", IsActive = true },
-                        new Database.Entities.LootBoxReward { LootBoxId = box.Id, RewardType = "Points", RewardValue = "125", DropChance = 0.3f, Rarity = "Rare", IsActive = true },
-                        new Database.Entities.LootBoxReward { LootBoxId = box.Id, RewardType = "Points", RewardValue = "75", DropChance = 0.3f, Rarity = "Common", IsActive = true }
+                        new Database.Entities.LootBoxReward { LootBoxId = box.Id, RewardType = "Points", RewardValue = "100", DropChance = 0.2f, Rarity = "Rare", IsActive = true },
+                        new Database.Entities.LootBoxReward { LootBoxId = box.Id, RewardType = "Points", RewardValue = "125", DropChance = 0.1f, Rarity = "Rare", IsActive = true }
                     });
+                    
+                    if (avatars.Count > 0)
+                    {
+                        var rareAvatars = avatars.Where(a => a.Rarity == "Rare" || a.Rarity == "Common");
+                        foreach (var avatar in rareAvatars)
+                        {
+                            var chance = avatar.Rarity == "Rare" ? 0.25f : 0.2f;
+                            rewards.Add(new Database.Entities.LootBoxReward 
+                            { 
+                                LootBoxId = box.Id, 
+                                RewardType = "Avatar", 
+                                RewardValue = avatar.Id.ToString(), 
+                                DropChance = chance, 
+                                Rarity = avatar.Rarity, 
+                                IsActive = true 
+                            });
+                        }
+                    }
                 }
                 else if (box.Rarity == "Epic")
                 {
+                    // Najlepsze awatary
                     rewards.AddRange(new[]
                     {
-                        new Database.Entities.LootBoxReward { LootBoxId = box.Id, RewardType = "Points", RewardValue = "200", DropChance = 0.4f, Rarity = "Epic", IsActive = true },
-                        new Database.Entities.LootBoxReward { LootBoxId = box.Id, RewardType = "Points", RewardValue = "300", DropChance = 0.3f, Rarity = "Epic", IsActive = true },
-                        new Database.Entities.LootBoxReward { LootBoxId = box.Id, RewardType = "Points", RewardValue = "150", DropChance = 0.3f, Rarity = "Rare", IsActive = true }
+                        new Database.Entities.LootBoxReward { LootBoxId = box.Id, RewardType = "Points", RewardValue = "200", DropChance = 0.1f, Rarity = "Epic", IsActive = true },
+                        new Database.Entities.LootBoxReward { LootBoxId = box.Id, RewardType = "Points", RewardValue = "300", DropChance = 0.05f, Rarity = "Epic", IsActive = true }
                     });
+                    
+                    if (avatars.Count > 0)
+                    {
+                        // Wszystkie awatary dostępne
+                        foreach (var avatar in avatars)
+                        {
+                            var chance = avatar.Rarity switch
+                            {
+                                "Epic" => 0.3f,
+                                "Rare" => 0.25f,
+                                "Common" => 0.2f,
+                                _ => 0.1f
+                            };
+                            rewards.Add(new Database.Entities.LootBoxReward 
+                            { 
+                                LootBoxId = box.Id, 
+                                RewardType = "Avatar", 
+                                RewardValue = avatar.Id.ToString(), 
+                                DropChance = chance, 
+                                Rarity = avatar.Rarity, 
+                                IsActive = true 
+                            });
+                        }
+                    }
                 }
 
                 foreach (var reward in rewards)
@@ -124,6 +213,65 @@ namespace NeuroMate.Services
                 }
                 
                 System.Diagnostics.Debug.WriteLine($"[LootBox] Dodano {rewards.Count} nagród dla {box.Name}");
+            }
+        }
+
+        private async Task InitializeDefaultAvatarsAsync()
+        {
+            var existingAvatars = await _database.GetAllAvatarsAsync();
+            if (!existingAvatars.Any())
+            {
+                var defaultAvatars = new List<Database.Entities.Avatar>
+                {
+                    new Database.Entities.Avatar 
+                    { 
+                        Name = "Hackyeah Default", 
+                        Description = "Podstawowy awatar uczestnika Hackyeah", 
+                        ImagePath = "hackyeah_default.png",
+                        Rarity = "Common",
+                        Price = 0,
+                        IsDefault = true
+                    },
+                    new Database.Entities.Avatar 
+                    { 
+                        Name = "Szczęśliwy Hacker", 
+                        Description = "Awatar pełen radości z programowania", 
+                        ImagePath = "hackyeah_happy.png",
+                        Rarity = "Common",
+                        Price = 50
+                    },
+                    new Database.Entities.Avatar 
+                    { 
+                        Name = "Pozdrawiający Guru", 
+                        Description = "Doświadczony mentor witający nowych", 
+                        ImagePath = "hackyeah_wave.png",
+                        Rarity = "Rare",
+                        Price = 150
+                    },
+                    new Database.Entities.Avatar 
+                    { 
+                        Name = "IT Profesjonalista", 
+                        Description = "Ekspert w dziedzinie technologii", 
+                        ImagePath = "it_guy.png",
+                        Rarity = "Epic",
+                        Price = 300
+                    },
+                    new Database.Entities.Avatar 
+                    { 
+                        Name = "Szary Minimalistą", 
+                        Description = "Prosty i elegancki styl", 
+                        ImagePath = "gray_tshirt.png",
+                        Rarity = "Rare",
+                        Price = 200
+                    }
+                };
+
+                foreach (var avatar in defaultAvatars)
+                {
+                    await _database.SaveAvatarAsync(avatar);
+                }
+                
+                System.Diagnostics.Debug.WriteLine($"[Avatar] Dodano {defaultAvatars.Count} domyślnych awatarów");
             }
         }
 

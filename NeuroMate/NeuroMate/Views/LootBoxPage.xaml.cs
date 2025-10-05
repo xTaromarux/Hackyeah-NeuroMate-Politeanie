@@ -142,6 +142,33 @@ namespace NeuroMate.Views
             }
         }
 
+        private async void OnLootBoxButtonClicked(object sender, EventArgs e)
+        {
+            if (sender is Button button && button.BindingContext is LootBoxDisplayModel lootBoxModel)
+            {
+                System.Diagnostics.Debug.WriteLine($"[LootBoxPage] Kliknięto przycisk dla {lootBoxModel.Name}");
+                
+                try
+                {
+                    // Sprawdź czy mamy wystarczająco punktów
+                    var playerProfile = await _viewModel.PointsService.GetPlayerProfileAsync();
+                    if (playerProfile.TotalPoints < lootBoxModel.Price)
+                    {
+                        await DisplayAlert("Błąd", "Nie masz wystarczająco punktów!", "OK");
+                        return;
+                    }
+
+                    System.Diagnostics.Debug.WriteLine($"[LootBoxPage] Uruchamianie animacji ruletki...");
+                    await ShowRouletteAnimationAsync(lootBoxModel);
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[LootBoxPage] Błąd: {ex.Message}");
+                    await DisplayAlert("Błąd", $"Wystąpił błąd: {ex.Message}", "OK");
+                }
+            }
+        }
+
         private async Task ShowLootBoxPreview(LootBoxDisplayModel lootBoxModel)
         {
             var confirmed = await DisplayAlert("Podgląd skrzynki",
@@ -251,6 +278,228 @@ namespace NeuroMate.Views
             // Symulacja animacji otwierania z lepszymi efektami
             await Task.Delay(1500);
         }
+
+        // ===== NOWE METODY DLA ANIMACJI RULETKI =====
+
+        public async Task ShowRouletteAnimationAsync(LootBoxDisplayModel lootBoxModel)
+        {
+            try
+            {
+                // Przygotuj elementy ruletki
+                await PrepareRouletteItemsAsync(lootBoxModel.Id);
+                
+                // Pokaż popup ruletki
+                RoulettePopup.IsVisible = true;
+                RouletteStatusLabel.Text = "Losowanie nagrody...";
+                CancelRouletteButton.IsVisible = false;
+                
+                // Animacja pojawiania się popup'a
+                var popup = RoulettePopup.Children[0] as Frame;
+                if (popup != null)
+                {
+                    popup.Scale = 0.5;
+                    popup.Opacity = 0;
+                    await Task.WhenAll(
+                        popup.ScaleTo(1.0, 300, Easing.BounceOut),
+                        popup.FadeTo(1.0, 250)
+                    );
+                }
+
+                await Task.Delay(500); // Krótka pauza na pokazanie elementów
+
+                // Uruchom animację ruletki
+                var result = await _viewModel.LootBoxService.OpenLootBoxAsync(lootBoxModel.Id);
+                await AnimateRouletteAsync(result);
+
+                // Ukryj ruletę i pokaż wynik
+                await HideRouletteAndShowResultAsync(result, lootBoxModel.ToLootBox());
+            }
+            catch (Exception ex)
+            {
+                RoulettePopup.IsVisible = false;
+                await DisplayAlert("Błąd", $"Wystąpił błąd podczas animacji: {ex.Message}", "OK");
+            }
+        }
+
+        private async Task PrepareRouletteItemsAsync(int lootBoxId)
+        {
+            // Pobierz dostępne nagrody dla tej skrzynki
+            var rewards = await GetLootBoxRewardsForRouletteAsync(lootBoxId);
+            
+            // Pobierz awatary bezpośrednio z bazy danych
+            var databaseService = _viewModel.LootBoxService.GetType()
+                .GetField("_database", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                ?.GetValue(_viewModel.LootBoxService) as DatabaseService;
+            
+            List<Avatar> allAvatars = new List<Avatar>();
+            if (databaseService != null)
+            {
+                allAvatars = await databaseService.GetAllAvatarsAsync();
+            }
+            
+            var rouletteItems = new List<RouletteItemModel>();
+
+            // Dodaj elementy do ruletki (dużo elementów dla efektu przewijania)
+            for (int cycle = 0; cycle < 8; cycle++) // 8 cykli elementów
+            {
+                foreach (var reward in rewards)
+                {
+                    var item = new RouletteItemModel
+                    {
+                        RewardType = reward.RewardType,
+                        RewardValue = reward.RewardValue,
+                        Rarity = reward.Rarity
+                    };
+
+                    if (reward.RewardType == "Avatar")
+                    {
+                        var avatarId = int.Parse(reward.RewardValue);
+                        var avatar = allAvatars.FirstOrDefault(a => a.Id == avatarId);
+                        if (avatar != null)
+                        {
+                            item.Name = avatar.Name;
+                            item.ImagePath = avatar.ImagePath;
+                            item.Value = "AWATAR";
+                        }
+                        else
+                        {
+                            item.Name = "Awatar";
+                            item.ImagePath = "hackyeah_default.png";
+                            item.Value = "AWATAR";
+                        }
+                    }
+                    else if (reward.RewardType == "Points")
+                    {
+                        item.Name = "Punkty";
+                        item.ImagePath = "coin_icon.png";
+                        item.Value = $"{reward.RewardValue} pkt";
+                    }
+
+                    rouletteItems.Add(item);
+                }
+            }
+
+            // Wymieszaj elementy dla lepszego efektu
+            var random = new Random();
+            rouletteItems = rouletteItems.OrderBy(x => random.Next()).ToList();
+
+            _viewModel.RouletteItems.Clear();
+            foreach (var item in rouletteItems)
+            {
+                _viewModel.RouletteItems.Add(item);
+            }
+        }
+
+        private async Task<List<LootBoxReward>> GetLootBoxRewardsForRouletteAsync(int lootBoxId)
+        {
+            try
+            {
+                // Użyj refleksji żeby dostać się do prywatnej metody
+                var method = _viewModel.LootBoxService.GetType()
+                    .GetMethod("GetLootBoxRewardsAsync", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                
+                if (method != null)
+                {
+                    var task = method.Invoke(_viewModel.LootBoxService, new object[] { lootBoxId }) as Task<List<LootBoxReward>>;
+                    return await task ?? new List<LootBoxReward>();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[Roulette] Błąd pobierania nagród: {ex.Message}");
+            }
+
+            // Fallback - podstawowe nagrody
+            return new List<LootBoxReward>
+            {
+                new LootBoxReward { RewardType = "Points", RewardValue = "25", Rarity = "Common" },
+                new LootBoxReward { RewardType = "Points", RewardValue = "50", Rarity = "Rare" },
+                new LootBoxReward { RewardType = "Points", RewardValue = "100", Rarity = "Epic" }
+            };
+        }
+
+        private async Task AnimateRouletteAsync(LootBoxResult winningResult)
+        {
+            if (RouletteItemsView == null) return;
+
+            RouletteStatusLabel.Text = "🎰 Kręcenie ruletki...";
+            
+            // Znajdź indeks wygrywającego elementu (w środku listy dla lepszego efektu)
+            var totalItems = _viewModel.RouletteItems.Count;
+            var winningIndex = totalItems / 2; // Środek listy
+            
+            // Ustaw odpowiedni element na pozycji wygrywającej
+            if (winningIndex < _viewModel.RouletteItems.Count)
+            {
+                var winningItem = _viewModel.RouletteItems[winningIndex];
+                
+                if (winningResult.RewardType == "Avatar")
+                {
+                    var avatarId = int.Parse(winningResult.RewardValue);
+                    var avatar = await _viewModel.GetAvatarByIdAsync(avatarId);
+                    if (avatar != null)
+                    {
+                        winningItem.Name = avatar.Name;
+                        winningItem.ImagePath = avatar.ImagePath;
+                        winningItem.Value = "AWATAR";
+                        winningItem.RewardType = "Avatar";
+                        winningItem.RewardValue = winningResult.RewardValue;
+                        winningItem.Rarity = avatar.Rarity;
+                    }
+                }
+                else
+                {
+                    winningItem.Name = "Punkty";
+                    winningItem.ImagePath = "coin_icon.png";
+                    winningItem.Value = $"{winningResult.RewardValue} pkt";
+                    winningItem.RewardType = "Points";
+                    winningItem.RewardValue = winningResult.RewardValue;
+                }
+            }
+
+            // Animacja scrollowania (symulacja - bo ScrollView nie ma łatwej animacji)
+            // Robimy to przez zmiany opacity i scale elementów
+            for (int i = 0; i < 50; i++) // 50 kroków animacji
+            {
+                // Szybkość animacji - początkowo szybko, potem wolniej
+                var speed = Math.Max(20, 200 - (i * 4)); 
+                await Task.Delay((int)speed);
+                
+                // Aktualizuj status
+                if (i % 10 == 0)
+                {
+                    RouletteStatusLabel.Text = $"🎰 Kręcenie ruletki... {(i * 2)}%";
+                }
+            }
+
+            // Finalizacja
+            RouletteStatusLabel.Text = "🎉 Wynik jest gotowy!";
+            await Task.Delay(1000);
+        }
+
+        private async Task HideRouletteAndShowResultAsync(LootBoxResult result, LootBox lootBox)
+        {
+            // Ukryj ruletę z animacją
+            var popup = RoulettePopup.Children[0] as Frame;
+            if (popup != null)
+            {
+                await Task.WhenAll(
+                    popup.ScaleTo(0.8, 200, Easing.CubicIn),
+                    popup.FadeTo(0, 200)
+                );
+            }
+            
+            RoulettePopup.IsVisible = false;
+            
+            // Pokaż wynik
+            await ShowRewardAsync(result, lootBox);
+        }
+
+        private async void OnCancelRouletteClicked(object sender, EventArgs e)
+        {
+            // Anuluj animację (opcjonalnie)
+            RoulettePopup.IsVisible = false;
+        }
     }
 
     public partial class LootBoxViewModel : ObservableObject
@@ -263,6 +512,9 @@ namespace NeuroMate.Views
 
         [ObservableProperty]
         private int currentPoints;
+
+        [ObservableProperty]
+        private ObservableCollection<RouletteItemModel> rouletteItems = new();
 
         // Publiczne właściwości dla dostępu z code-behind
         public LootBoxService LootBoxService => _lootBoxService;
@@ -315,20 +567,26 @@ namespace NeuroMate.Views
         }
 
         [RelayCommand]
-        private async Task OpenLootBoxAsync(LootBoxDisplayModel lootBoxModel)
+        private async Task OpenLootBox(LootBoxDisplayModel lootBoxModel)
         {
             try
             {
-                var result = await _lootBoxService.OpenLootBoxAsync(lootBoxModel.Id);
-                
-                // Znajdź stronę i pokaż animację
+                // Sprawdź czy mamy wystarczająco punktów
+                var playerProfile = await _pointsService.GetPlayerProfileAsync();
+                if (playerProfile.TotalPoints < lootBoxModel.Price)
+                {
+                    await Application.Current.MainPage.DisplayAlert("Błąd", "Nie masz wystarczająco punktów!", "OK");
+                    return;
+                }
+
+                // Pokaż animację ruletki zamiast natychmiastowego wyniku
                 if (Application.Current?.MainPage is AppShell shell)
                 {
                     var navigation = shell.Navigation;
                     var currentPage = navigation.NavigationStack.LastOrDefault();
                     if (currentPage is LootBoxPage lootBoxPage)
                     {
-                        await lootBoxPage.ShowRewardAsync(result, lootBoxModel.ToLootBox());
+                        await lootBoxPage.ShowRouletteAnimationAsync(lootBoxModel);
                     }
                 }
             }
@@ -408,5 +666,41 @@ namespace NeuroMate.Views
                 Rarity = Rarity
             };
         }
+    }
+
+    // Model dla elementów ruletki
+    public class RouletteItemModel
+    {
+        public string Name { get; set; } = string.Empty;
+        public string ImagePath { get; set; } = string.Empty;
+        public string Value { get; set; } = string.Empty;
+        public string Rarity { get; set; } = string.Empty;
+        public string RewardType { get; set; } = string.Empty;
+        public string RewardValue { get; set; } = string.Empty;
+
+        public string BackgroundColor => Rarity switch
+        {
+            "Common" => "#404040",
+            "Rare" => "#0066cc",
+            "Epic" => "#9933cc",
+            "Legendary" => "#ff6600",
+            _ => "#404040"
+        };
+
+        public string BorderColor => Rarity switch
+        {
+            "Common" => "#808080",
+            "Rare" => "#0088ff",
+            "Epic" => "#bb44ff",
+            "Legendary" => "#ff8800",
+            _ => "#808080"
+        };
+
+        public string ValueColor => RewardType switch
+        {
+            "Avatar" => "#ffdd44",
+            "Points" => "#44ff44",
+            _ => "#ffffff"
+        };
     }
 }

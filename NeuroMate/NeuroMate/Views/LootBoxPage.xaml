@@ -179,10 +179,9 @@
                                 <Button Grid.Row="4" 
                                         Text="{Binding ButtonText}"
                                         BackgroundColor="{Binding ButtonColor}"
-                                        IsEnabled="{Binding CanAfford}"
+                                        IsEnabled="False"
                                         Style="{StaticResource PrimaryButton}"
-                                        Command="{Binding Source={x:Reference LootBoxesCollectionView}, Path=BindingContext.OpenLootBoxCommand}"
-                                        CommandParameter="{Binding}"
+                                        Clicked="OnLootBoxButtonClicked"
                                         HeightRequest="50"
                                         FontSize="16"
                                         TextColor="White"
@@ -281,6 +280,73 @@
                             Clicked="OnClosePopupClicked"
                             FontSize="16"
                             HeightRequest="50" />
+                </StackLayout>
+            </Frame>
+        </Grid>
+
+        <!-- Popup z ruletką -->
+        <Grid x:Name="RoulettePopup" 
+              Style="{StaticResource DialogOverlay}"
+              Grid.RowSpan="2"
+              IsVisible="False">
+            
+            <Frame Style="{StaticResource DialogCard}" 
+                   WidthRequest="350" 
+                   HeightRequest="500">
+                
+                <StackLayout Spacing="20">
+                    <!-- Header -->
+                    <Label Text="🎰 RULETKA NAGRÓD 🎰"
+                           Style="{StaticResource TitleStyle}"
+                           FontSize="22"
+                           TextColor="{StaticResource Accent}"
+                           HorizontalTextAlignment="Center" />
+                    
+                    <!-- Ruletka Container -->
+                    <Frame BackgroundColor="#1a1a2e" 
+                           BorderColor="{StaticResource Primary}"
+                           CornerRadius="15"
+                           HeightRequest="300"
+                           WidthRequest="300"
+                           HorizontalOptions="Center"
+                           HasShadow="True"
+                           Padding="10">
+                        
+                        <Grid>
+                            <!-- Wskaźnik na górze -->
+                            <Polygon Points="150,10 160,30 140,30"
+                                     Fill="{StaticResource Primary}"
+                                     VerticalOptions="Start"
+                                     HorizontalOptions="Center"
+                                     ZIndex="10" />
+                            
+                            <!-- Ruletka z nagrodami -->
+                            <CollectionView x:Name="RouletteItemsView"
+                                            ItemsSource="{Binding RouletteItems}"
+                                            HorizontalScrollBarVisibility="Never"
+                                            VerticalScrollBarVisibility="Never">
+                                <CollectionView.ItemsLayout>
+                                    <LinearItemsLayout Orientation="Horizontal" ItemSpacing="5" />
+                                </CollectionView.ItemsLayout>
+                            </CollectionView>
+                        </Grid>
+                    </Frame>
+                    
+                    <!-- Status -->
+                    <Label x:Name="RouletteStatusLabel"
+                           Text="Przygotowywanie ruletki..."
+                           Style="{StaticResource Subtitle}"
+                           FontSize="14"
+                           HorizontalTextAlignment="Center"
+                           TextColor="{StaticResource Primary}" />
+                    
+                    <!-- Przycisk anulowania (tylko podczas animacji) -->
+                    <Button x:Name="CancelRouletteButton"
+                            Text="Anuluj"
+                            Style="{StaticResource PrimaryButton}"
+                            BackgroundColor="Gray"
+                            IsVisible="False"
+                            Clicked="OnCancelRouletteClicked" />
                 </StackLayout>
             </Frame>
         </Grid>
