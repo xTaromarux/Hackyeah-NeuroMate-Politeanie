@@ -32,7 +32,7 @@ namespace NeuroMate.Database
             _database.CreateTableAsync<LootBoxResult>().Wait();
             _database.CreateTableAsync<Entities.Intervention>().Wait();
             _database.CreateTableAsync<Entities.InterventionResult>().Wait();
-            _database.CreateTableAsync<Entities.ReactionRecord>().Wait();
+            _database.CreateTableAsync<Entities.GameReactionRecord>().Wait();
             _database.CreateTableAsync<Entities.HealthRecord>().Wait();
             _database.CreateTableAsync<Entities.ImportResult>().Wait();
         }
@@ -108,9 +108,9 @@ namespace NeuroMate.Database
         public Task DeleteInterventionResultAsync(Entities.InterventionResult data) => _database.DeleteAsync(data);
 
         // ReactionRecord
-        public Task<List<Entities.ReactionRecord>> GetAllReactionRecordsAsync() => _database.Table<Entities.ReactionRecord>().ToListAsync();
-        public Task SaveReactionRecordAsync(Entities.ReactionRecord data) => _database.InsertOrReplaceAsync(data);
-        public Task DeleteReactionRecordAsync(Entities.ReactionRecord data) => _database.DeleteAsync(data);
+        public Task<List<Entities.GameReactionRecord>> GetAllReactionRecordsAsync() => _database.Table<Entities.GameReactionRecord>().ToListAsync();
+        public Task SaveGameReactionRecordAsync(Entities.GameReactionRecord data) => _database.InsertOrReplaceAsync(data);
+        public Task DeleteGameReactionRecordAsync(Entities.GameReactionRecord data) => _database.DeleteAsync(data);
 
         // HealthRecord
         public Task<List<Entities.HealthRecord>> GetAllHealthRecordsAsync() => _database.Table<Entities.HealthRecord>().ToListAsync();

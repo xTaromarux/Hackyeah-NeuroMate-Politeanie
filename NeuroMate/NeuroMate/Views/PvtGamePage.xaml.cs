@@ -1,9 +1,11 @@
+using NeuroMate.Database;
 using System.Diagnostics;
 
 namespace NeuroMate.Views
 {
     public partial class PvtGamePage : ContentPage
     {
+        private DatabaseService _dbService => App.Services.GetService<DatabaseService>()!;
         private readonly Random _random = new();
         private Timer? _gameTimer;
         private Stopwatch _reactionStopwatch = new();
@@ -235,13 +237,26 @@ namespace NeuroMate.Views
             // Pokaż wyniki końcowe
             var avgRT = _reactionTimes.Count > 0 ? _reactionTimes.Average() : 0;
             var fastestRT = _reactionTimes.Count > 0 ? _reactionTimes.Min() : 0;
-            
+
+            await AddDataToDb((int)avgRT);
+
             await DisplayAlert("🎉 Test zakończony!", 
                 $"Wykonałeś {_currentTrial} prób\n" +
                 $"Średni czas reakcji: {avgRT:F0}ms\n" +
                 $"Najszybszy czas: {fastestRT}ms\n\n" +
                 $"Wynik zostanie zapisany w Twoim profilu!", 
                 "OK");
+        }
+
+        private async Task AddDataToDb(int avgRT)
+        {
+            var GameReactionRecord = new Database.Entities.GameReactionRecord
+            {
+                ReactionTimeMs = avgRT,
+                IsValid = false,
+            };
+
+           await _dbService.SaveGameReactionRecordAsync(GameReactionRecord);
         }
 
         private async void OnExitClicked(object sender, EventArgs e)

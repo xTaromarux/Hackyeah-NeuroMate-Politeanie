@@ -1,7 +1,10 @@
+using NeuroMate.Database;
+
 namespace NeuroMate.Views
 {
     public partial class NBackGamePage : ContentPage
     {
+        private DatabaseService _service = App.Services.GetService<DatabaseService>()!;
         private readonly Random _random = new();
         private Timer? _gameTimer;
         
@@ -336,7 +339,9 @@ namespace NeuroMate.Views
             
             var accuracy = answered > 0 ? (double)correct / answered * 100 : 0;
             var totalValidTrials = _correctAnswers.Count(x => x != ShapeType.None);
-            
+
+            await AddDataToDb();
+
             await DisplayAlert("🧠 Test zakończony!", 
                 $"Wykonałeś {_currentTrial} prób\n" +
                 $"Próby wymagające odpowiedzi: {totalValidTrials}\n" +
@@ -346,6 +351,17 @@ namespace NeuroMate.Views
                 "OK");
         }
 
+        private async Task AddDataToDb()
+        {
+            var gameRecord = new Database.Entities.GameReactionRecord
+            {
+                CorrectAnswers = _userResponses.Where((t, i) => _correctAnswers[i] != ShapeType.None && t == _correctAnswers[i]).Count(),
+                WrongAnswers = _userResponses.Where((t, i) => _correctAnswers[i] != ShapeType.None && t != _correctAnswers[i]).Count(),
+                IsValid = false,
+            };
+
+            await _service.SaveGameReactionRecordAsync(gameRecord);
+        }
         private async void OnExitClicked(object sender, EventArgs e)
         {
             if (_isGameRunning)

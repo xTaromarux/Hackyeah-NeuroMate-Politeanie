@@ -1,3 +1,4 @@
+using NeuroMate.Database;
 using System.Diagnostics;
 
 namespace NeuroMate.Views;
@@ -5,7 +6,8 @@ namespace NeuroMate.Views;
 public partial class TaskSwitchingGamePage : ContentPage
 {
     private readonly Random _random = new();
-    
+    private DatabaseService _dbService => App.Services.GetService<DatabaseService>()!;
+
     // Dostępne monety w groszach (1gr, 2gr, 5gr, 10gr, 20gr, 50gr, 1zł, 2zł)
     private readonly List<int> _availableCoins = new() { 1, 2, 5, 10, 20, 50, 100, 200 };
     private readonly Dictionary<int, string> _coinNames = new()
@@ -462,9 +464,24 @@ public partial class TaskSwitchingGamePage : ContentPage
             message += "💡 Trenuj dalej! Pamiętaj o największych monetach!";
         }
 
+        await AddDataToDb(avgTime);
         await DisplayAlert("Wyniki Gry Kasjer", message, "OK");
         await Navigation.PopAsync();
     }
+
+    private async Task AddDataToDb(int avgRT)
+    {
+        var GameReactionRecord = new Database.Entities.GameReactionRecord
+        {
+            ReactionTimeMs = avgRT,
+            CorrectAnswers = _correctAnswers,
+            WrongAnswers = _currentTask - _correctAnswers,
+            IsValid = true,
+        };
+
+        await _dbService.SaveGameReactionRecordAsync(GameReactionRecord);
+    }
+
 
     private void UpdateAvatarMood(string mood)
     {

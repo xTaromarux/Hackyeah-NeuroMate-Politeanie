@@ -1,9 +1,12 @@
+using NeuroMate.Database;
+using NeuroMate.Database.Entities;
 using System.Diagnostics;
 
 namespace NeuroMate.Views;
 
 public partial class StroopGamePage : ContentPage
 {
+    private DatabaseService _databaseService => App.Services.GetService<DatabaseService>()!;
     private readonly Random _random = new();
     private readonly List<string> _colorNames = new() { "CZERWONY", "NIEBIESKI", "ZIELONY", "ŻÓŁTY" };
     private readonly List<Color> _colors = new() 
@@ -289,8 +292,22 @@ public partial class StroopGamePage : ContentPage
             message += "💡 Trenuj częściej!";
         }
 
+        await AddDataToDb((int)accuracy);
         await DisplayAlert("Wyniki Test Stroop", message, "OK");
         await Navigation.PopAsync();
+    }
+
+    private async Task AddDataToDb(int accuracy)
+    {
+        var gameReactionRecord = new GameReactionRecord
+        {
+            CorrectAnswers = _correctAnswers,
+            WrongAnswers = _currentTrial - _correctAnswers,
+            ReactionTimeMs = accuracy,
+            IsValid = true,
+        };
+
+        await _databaseService.SaveGameReactionRecordAsync(gameReactionRecord);
     }
 
     private void UpdateAvatarMood(string mood)
