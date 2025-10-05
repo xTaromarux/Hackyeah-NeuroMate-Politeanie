@@ -10,14 +10,14 @@ namespace NeuroMate.ViewModels
     public partial class MainViewModel : ObservableObject
     {
         #region Services
-        
+
         private readonly INeuroScoreService _neuroScoreService;
         private readonly IInterventionService _interventionService;
         private readonly IPVTGameService _pvtGameService;
         private readonly IDataImportService _dataImportService;
         private readonly IPointsService _pointsService;
         private readonly IAvatarService _avatarService;
-        
+
         #endregion
 
         #region Observable Properties - Assistant View
@@ -110,6 +110,8 @@ namespace NeuroMate.ViewModels
             // Subskrybuj zdarzenia z serwisów
             _pvtGameService.OnReactionRecorded += HandleReactionRecorded;
             _pvtGameService.OnGameStateChanged += HandleGameStateChanged;
+
+            _pointsService.OnProfileChanged += () => _ = LoadPointsDataAsync();
         }
 
         #endregion
@@ -134,7 +136,7 @@ namespace NeuroMate.ViewModels
         {
             // Załaduj zapisane dane użytkownika
             var userData = _neuroScoreService.GetCurrentUserData();
-            
+
             NeuroScore = userData.NeuroScore;
             MinutesNoBreak = userData.MinutesNoBreak;
             Hrv = userData.HRV;
@@ -173,18 +175,18 @@ namespace NeuroMate.ViewModels
 
             // Pobierz odpowiednią interwencję na podstawie obecnego stanu
             var intervention = await _interventionService.GetRecommendedInterventionAsync(
-                NeuroScore, 
-                MinutesNoBreak, 
+                NeuroScore,
+                MinutesNoBreak,
                 SelectedGoal
             );
 
             if (intervention != null)
             {
                 AssistantHint = $"Rozpoczynam: {intervention.Name} - {intervention.Description}";
-                
+
                 // Uruchom interwencję
                 await _interventionService.ExecuteInterventionAsync(intervention);
-                
+
                 // Aktualizuj statystyki
                 await RefreshNeuroScore();
             }
@@ -217,14 +219,14 @@ namespace NeuroMate.ViewModels
                 if (result != null)
                 {
                     await ShowToast("Importuję dane...");
-                    
+
                     var importedData = await _dataImportService.ImportCsvAsync(result.FullPath);
-                    
+
                     if (importedData.Success)
                     {
                         // Aktualizuj dane na podstawie importu
                         Hrv = importedData.AverageHRV;
-                        
+
                         await ShowToast($"Zaimportowano {importedData.RecordsCount} rekordów!");
                         await RefreshNeuroScore();
                     }
@@ -245,7 +247,7 @@ namespace NeuroMate.ViewModels
         {
             // TODO: Integracja z kalendarzem
             await ShowToast("Dodano 3-minutową przerwę do kalendarza");
-            
+
             AssistantHint = "Przerwa zaplanowana na 11:55-11:58";
         }
 
@@ -259,14 +261,14 @@ namespace NeuroMate.ViewModels
         private async Task ResetData()
         {
             bool confirm = await ShowConfirmation(
-                "Reset danych", 
+                "Reset danych",
                 "Czy na pewno chcesz zresetować wszystkie dane? Tej operacji nie można cofnąć."
             );
 
             if (confirm)
             {
                 await _neuroScoreService.ResetAllDataAsync();
-                
+
                 // Zresetuj wartości
                 NeuroScore = 50;
                 MinutesNoBreak = 0;
@@ -274,9 +276,9 @@ namespace NeuroMate.ViewModels
                 TrialsCount = 0;
                 BestReactionMs = 0;
                 AvgReactionMs = 0;
-                
+
                 InitializeTrendData();
-                
+
                 await ShowToast("Dane zostały zresetowane");
             }
         }
@@ -306,10 +308,10 @@ namespace NeuroMate.ViewModels
                 PvtStateText = "Gotowy?";
 
                 await _pvtGameService.StopGameAsync();
-                
+
                 // Przyznaj punkty za grę
                 await AwardPointsForGameAsync("PVT");
-                
+
                 // Zapisz wyniki do Neuro-Score
                 await RefreshNeuroScore();
             }
@@ -331,7 +333,7 @@ namespace NeuroMate.ViewModels
             {
                 LastReactionMs = e.ReactionTimeMs;
                 HasLastReaction = true;
-                
+
                 // Aktualizuj statystyki
                 var stats = _pvtGameService.GetStatistics();
                 BestReactionMs = stats.BestReactionMs;
@@ -409,13 +411,13 @@ namespace NeuroMate.ViewModels
                 var profile = await _pointsService.GetPlayerProfileAsync();
                 var currentAvatar = await _avatarService.GetCurrentAvatarAsync();
                 var todaysHistory = await _pointsService.GetPointsHistoryAsync(1);
-                
+
                 // Wymusz aktualizację WSZYSTKICH właściwości w MainThread jednocześnie
                 await MainThread.InvokeOnMainThreadAsync(() =>
                 {
                     System.Diagnostics.Debug.WriteLine($"[DEBUG] Updating points: {TotalPoints} -> {profile.TotalPoints}");
                     System.Diagnostics.Debug.WriteLine($"[DEBUG] Updating avatar: {CurrentAvatarName} -> {currentAvatar.Name}");
-                    
+
                     TotalPoints = profile.TotalPoints;
                     CurrentAvatarName = currentAvatar.Name;
                     CurrentAvatarLottie = currentAvatar.LottieFileName;
@@ -434,10 +436,10 @@ namespace NeuroMate.ViewModels
             {
                 var stats = _pvtGameService.GetStatistics();
                 int gameScore = CalculateGameScore(stats);
-                
+
                 int pointsEarned = await _pointsService.AddPointsForGameAsync(
-                    gameType, 
-                    gameScore, 
+                    gameType,
+                    gameScore,
                     stats.AverageReactionMs
                 );
 
@@ -445,9 +447,9 @@ namespace NeuroMate.ViewModels
                 {
                     TotalPoints += pointsEarned;
                     PointsEarnedToday += pointsEarned;
-                    
+
                     await ShowToast($"🎉 Zdobyłeś {pointsEarned} punktów!");
-                    
+
                     // Dodaj efekt wizualny lub dźwiękowy
                     AssistantHint = $"Świetnie! +{pointsEarned} pkt za grę {gameType}. Łącznie: {TotalPoints} pkt";
                 }
@@ -464,7 +466,7 @@ namespace NeuroMate.ViewModels
 
             // Podstawowy wynik na podstawie czasu reakcji i liczby prób
             int accuracyScore = Math.Min(100, stats.TrialsCount * 10);
-            
+
             // Bonus za szybką reakcję
             int reactionBonus = stats.AverageReactionMs switch
             {

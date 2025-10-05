@@ -6,6 +6,7 @@ namespace NeuroMate.Services
     {
         private PlayerProfile _playerProfile;
         private readonly List<PointsHistory> _pointsHistory = new();
+        public event Action OnProfileChanged;
 
         public PointsService()
         {
@@ -26,7 +27,7 @@ namespace NeuroMate.Services
             await Task.Delay(1); // Symulacja async
 
             int pointsEarned = CalculatePointsForGame(gameType, gameScore, reactionTimeMs);
-            
+
             _playerProfile.TotalPoints += pointsEarned;
             _playerProfile.TotalGamesPlayed++;
             _playerProfile.LastPointsEarned = DateTime.Now;
@@ -41,6 +42,7 @@ namespace NeuroMate.Services
                 Description = $"Gra {gameType}: {gameScore} pkt, RT: {reactionTimeMs}ms"
             });
 
+            OnProfileChanged.Invoke();
             return pointsEarned;
         }
 
@@ -137,6 +139,7 @@ namespace NeuroMate.Services
         {
             await Task.Delay(1);
             _playerProfile = profile;
+            OnProfileChanged.Invoke();
         }
 
         public async Task<bool> SpendPointsAsync(int amount)
@@ -146,8 +149,10 @@ namespace NeuroMate.Services
             {
                 _playerProfile.TotalPoints -= amount;
                 _playerProfile.PointsSpent += amount;
+                OnProfileChanged.Invoke();
                 return true;
             }
+            OnProfileChanged.Invoke();
             return false;
         }
     }

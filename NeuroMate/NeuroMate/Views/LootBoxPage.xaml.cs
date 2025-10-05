@@ -17,6 +17,8 @@ namespace NeuroMate.Views
             _lootBoxService = lootBoxService;
             _pointsService = pointsService;
             LootBoxesCollection.ItemsSource = _lootBoxes;
+            _pointsService.OnProfileChanged += () => _ = LoadDataAsync();
+
         }
 
         protected override async void OnAppearing()
@@ -45,7 +47,7 @@ namespace NeuroMate.Views
                 {
                     var canAfford = await _lootBoxService.CanAffordLootBoxAsync(lootBox.Id);
                     var dropRates = GetDropRatesText(lootBox);
-                    
+
                     _lootBoxes.Add(new LootBoxShopItem(lootBox, canAfford, dropRates));
                 }
             }
@@ -128,10 +130,10 @@ namespace NeuroMate.Views
             // Symulacja procesu otwierania z różnymi tekstami
             await Task.Delay(500);
             OpeningLabel.Text = "Losowanie nagrody...";
-            
+
             await Task.Delay(800);
             OpeningLabel.Text = "Już prawie...";
-            
+
             await Task.Delay(700);
         }
 

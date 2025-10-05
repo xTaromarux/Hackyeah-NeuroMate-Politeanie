@@ -160,6 +160,7 @@ namespace NeuroMate.Services
     /// </summary>
     public interface IPointsService
     {
+        event Action OnProfileChanged;
         /// <summary>
         /// Dodaje punkty za wykonanie gry
         /// </summary>

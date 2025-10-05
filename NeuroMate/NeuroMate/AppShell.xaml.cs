@@ -1,4 +1,6 @@
-﻿namespace NeuroMate
+﻿using NeuroMate.Views;
+
+namespace NeuroMate
 {
     public partial class AppShell : Shell
     {
@@ -25,7 +27,7 @@
 
             // Ustawienia / Onboarding
             Routing.RegisterRoute(nameof(OnboardingPage), typeof(OnboardingPage));
-            
+
             // Rejestracja routingu dla nowych stron
             Routing.RegisterRoute(nameof(LootBoxPage), typeof(Views.LootBoxPage));
         }

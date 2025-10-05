@@ -11,6 +11,38 @@ namespace NeuroMate.Services
         {
             _pointsService = pointsService;
             _allAvatars = InitializeAvatars();
+            _pointsService.OnProfileChanged += _pointsService_OnProfileChanged;
+        }
+
+        private void _pointsService_OnProfileChanged()
+        {
+            // Asynchronicznie odświeżamy status awatarów
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    var profile = await _pointsService.GetPlayerProfileAsync();
+
+                    // Aktualizujemy status odblokowania dla wszystkich awatarów
+                    foreach (var avatar in _allAvatars)
+                    {
+                        avatar.IsUnlocked = profile.UnlockedAvatarIds.Contains(avatar.Id);
+                    }
+
+                    // Wywołujemy na głównym wątku, jeśli ktoś nasłuchuje
+                    if (OnAvatarsUpdated != null)
+                    {
+                        Microsoft.Maui.Controls.Application.Current?.Dispatcher.Dispatch(() =>
+                        {
+                            OnAvatarsUpdated.Invoke();
+                        });
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Error updating avatars: {ex.Message}");
+                }
+            });
         }
 
         private List<Avatar> InitializeAvatars()
@@ -103,13 +135,13 @@ namespace NeuroMate.Services
         {
             await Task.Delay(1);
             var profile = await _pointsService.GetPlayerProfileAsync();
-            
+
             // Ustaw status odblokowania
             foreach (var avatar in _allAvatars)
             {
                 avatar.IsUnlocked = profile.UnlockedAvatarIds.Contains(avatar.Id);
             }
-            
+
             return _allAvatars.ToList();
         }
 
@@ -126,36 +158,36 @@ namespace NeuroMate.Services
                 return false;
 
             var profile = await _pointsService.GetPlayerProfileAsync();
-            
+
             if (profile.TotalPoints >= avatar.Price)
             {
                 // Odejmij punkty
                 profile.TotalPoints -= avatar.Price;
                 profile.PointsSpent += avatar.Price;
-                
+
                 // Odblokuj awatara
                 profile.UnlockedAvatarIds.Add(avatarId);
-                
+
                 // Zapisz profil
                 await _pointsService.SavePlayerProfileAsync(profile);
-                
+
                 return true;
             }
-            
+
             return false;
         }
 
         public async Task<bool> ChangeAvatarAsync(string avatarId)
         {
             var profile = await _pointsService.GetPlayerProfileAsync();
-            
+
             if (profile.UnlockedAvatarIds.Contains(avatarId))
             {
                 profile.CurrentAvatarId = avatarId;
                 await _pointsService.SavePlayerProfileAsync(profile);
                 return true;
             }
-            
+
             return false;
         }
 
@@ -195,5 +227,8 @@ namespace NeuroMate.Services
                 _ => "⚪"
             };
         }
+
+        // Dodajemy event dla nasłuchiwania zmian w awatarach
+        public event Action? OnAvatarsUpdated;
     }
 }

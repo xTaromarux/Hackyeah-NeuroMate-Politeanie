@@ -18,6 +18,8 @@ namespace NeuroMate.Views
             _pointsService = pointsService;
             _avatarService = avatarService;
             AvatarsCollection.ItemsSource = _avatars;
+
+            _pointsService.OnProfileChanged += () => _ = LoadDataAsync();
         }
 
         protected override async void OnAppearing()
@@ -55,10 +57,10 @@ namespace NeuroMate.Views
         private async Task ApplyFilterAsync(string filter)
         {
             _currentFilter = filter;
-            
+
             // Reset przycisków filtrów
             ResetFilterButtons();
-            
+
             // Podświetl aktywny filtr
             switch (filter)
             {
@@ -132,7 +134,7 @@ namespace NeuroMate.Views
                         {
                             await DisplayAlert("Sukces!", $"Zmieniono awatara na: {avatarItem.Name}", "OK");
                             await LoadDataAsync(); // Odśwież dane w sklepie
-                            
+
                             // Wyślij komunikat o zmianie awatara do całej aplikacji
                             MessagingCenter.Send<AvatarShopPage>(this, "AvatarChanged");
                         }
@@ -140,8 +142,8 @@ namespace NeuroMate.Views
                     else if (!avatarItem.IsUnlocked)
                     {
                         // Kup awatara
-                        var confirmed = await DisplayAlert("Potwierdzenie", 
-                            $"Czy chcesz kupić awatara '{avatarItem.Name}' za {avatarItem.Price} punktów?", 
+                        var confirmed = await DisplayAlert("Potwierdzenie",
+                            $"Czy chcesz kupić awatara '{avatarItem.Name}' za {avatarItem.Price} punktów?",
                             "Kup", "Anuluj");
 
                         if (confirmed)
@@ -151,7 +153,7 @@ namespace NeuroMate.Views
                             {
                                 await DisplayAlert("Sukces!", $"Kupiono awatara: {avatarItem.Name}!", "OK");
                                 await LoadDataAsync(); // Odśwież dane w sklepie
-                                
+
                                 // Wyślij komunikat o zakupie (zmiana punktów) do całej aplikacji
                                 MessagingCenter.Send<AvatarShopPage>(this, "PointsChanged");
                             }
@@ -213,12 +215,12 @@ namespace NeuroMate.Views
 
         public string PriceText => IsUnlocked ? (IsCurrentlySelected ? "Aktywny" : "Odblokowany") : $"{Price} pkt";
 
-        public string ActionButtonText => IsUnlocked 
-            ? (IsCurrentlySelected ? "Aktywny" : "Wybierz") 
+        public string ActionButtonText => IsUnlocked
+            ? (IsCurrentlySelected ? "Aktywny" : "Wybierz")
             : "Kup";
 
-        public Color ActionButtonColor => IsUnlocked 
-            ? (IsCurrentlySelected ? Colors.Gray : Colors.Blue) 
+        public Color ActionButtonColor => IsUnlocked
+            ? (IsCurrentlySelected ? Colors.Gray : Colors.Blue)
             : (CanAfford ? Colors.Green : Colors.Gray);
 
         public bool CanPerformAction => IsUnlocked ? !IsCurrentlySelected : CanAfford;
