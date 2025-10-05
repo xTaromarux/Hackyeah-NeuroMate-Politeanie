@@ -13,14 +13,13 @@
 ---
 
 # 1. Opis projektu
-NeuroMate to aplikacja desktopowa (Windows/macOS/Linux) zaprojektowana jako asystent poprawiający wydajność poznawczą i higienę pracy. Aplikacja:
-- zbiera i agreguje codzienne metryki (sen, HR/HRV, kroki, aktywność) z konsumenckich wearables (lub importu CSV),  
+NeuroMate to aplikacja desktopowa (Windows) a zarazem mobilna (Android) zaprojektowana jako asystent poprawiający wydajność poznawczą i higienę pracy. 
+Aplikacja:
+- zbiera i agreguje codzienne metryki (sen, HR/HRV, kroki, aktywność) z konsumenckich wearables,  
 - ocenia krótkoterminowy poziom „Focus” i wykrywa nagłe spadki koncentracji,  
 - proponuje micro-interwencje (ćwiczenia oddechowe, krótkie gry kognitywne, zalecenia rozciągające),  
 - prowadzi interakcję przez animowanego awatara (feedback, nagrody, motywacja),  
-- zapisuje logi i możliwość eksportu wyników do pliku.  
-
-Projekt powstał z myślą o zgłoszeniu do kategorii **Biohacking** na HackYeah 2025. Wymogi HackYeah (format zgłoszenia, 10 slajdów, kryteria oceny) zostały uwzględnione w planie.
+- zapisuje logi i możliwość eksportu wyników do pliku
 
 ---
 
@@ -37,8 +36,7 @@ Projekt powstał z myślą o zgłoszeniu do kategorii **Biohacking** na HackYeah
 # 3. Architektura i stos technologiczny
 **Główne technologie (zgodnie z repo):**
 - C# / .NET MAUI — aplikacja desktopowa (UI multiplatform).  
-- PowerShell — skrypty pomocnicze (build/deploy).  
-- (opcjonalnie) Python — moduły analizy/ML (jeśli model będzie użyty lokalnie; tutaj miejsce na integrację).  
+-  
 
 **Proponowana warstwa logiczna:**
 - UI (MAUI) — ekran główny, status focus, awatar, szybkie akcje.  
