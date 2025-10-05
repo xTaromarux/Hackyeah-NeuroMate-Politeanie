@@ -425,26 +425,26 @@
                     <!--  Avatar i animacja  -->
                     <Grid>
                         <Frame
-                            HeightRequest="120"
+                            HeightRequest="150"
                             HorizontalOptions="Center"
                             Style="{StaticResource AvatarFrame}"
-                            WidthRequest="120">
+                            WidthRequest="300">
 
                             <Grid>
 
                                 <toolkit:MediaElement
                                     x:Name="DialogAvatarVideo"
-                                    Aspect="AspectFit"
-                                    HeightRequest="100"
+                                    Aspect="AspectFill"
+                                    HeightRequest="230"
                                     MediaFailed="DialogAvatarVideo_MediaFailed"
                                     ShouldAutoPlay="false"
                                     ShouldLoopPlayback="True"
                                     ShouldMute="False"
                                     ShouldShowPlaybackControls="False"
-                                    Source="embed://a.mp4"
+                                    Source="embed://wave.mp4"
                                     StateChanged="DialogAvatarVideo_StateChanged"
                                     Volume="0.8"
-                                    WidthRequest="100" />
+                                    WidthRequest="230" />
 
                                 <Image
                                     x:Name="DialogAvatarImage"
@@ -503,7 +503,10 @@
                             Style="{StaticResource PrimaryButton}"
                             Text="🎯 Rozpocznij trening" />
 
-                        <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                        <Grid
+                            ColumnDefinitions="*,*"
+                            ColumnSpacing="12"
+                            IsVisible="Collapse">
                             <Button
                                 x:Name="ShowStatsButton"
                                 Grid.Column="0"

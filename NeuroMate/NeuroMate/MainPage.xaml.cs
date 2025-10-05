@@ -141,7 +141,7 @@ namespace NeuroMate
         private async Task ShowAvatarDialog()
         {
             // Wybierz odpowiednią animację na podstawie wyników
-            string animationFile = GetAvatarAnimationBasedOnPerformance();
+            //string animationFile = GetAvatarAnimationBasedOnPerformance();
             //DialogAvatarVideo.Source = animationFile;
             DialogAvatarVideo.ShouldAutoPlay = true;
             DialogAvatarVideo.ShouldLoopPlayback = true;
@@ -288,30 +288,26 @@ namespace NeuroMate
 
         private string GetAvatarAnimationBasedOnPerformance()
         {
-            // TYMCZASOWO: zawsze zwraca wave.webm dla testowania
-            return "wave.webm";
-
-            /* Oryginalna logika - przywrócę po testach
+            //Oryginalna logika - przywrócę po testach
             // Pobierz aktualne dane z ViewModelu
             if (BindingContext is not MainViewModel viewModel)
-                return "idle.webm"; // Domyślna animacja
+                return "embed://idle.mp4"; // Domyślna animacja
 
             // Analiza wyników użytkownika
             int neuroScore = viewModel.NeuroScore;
             int avgReactionMs = viewModel.AvgReactionMs;
             int pointsEarnedToday = viewModel.PointsEarnedToday;
-            
+
             // Oblicz ogólny wynik na podstawie różnych metryk
             double performanceScore = CalculateOverallPerformance(neuroScore, avgReactionMs, pointsEarnedToday);
-            
+
             // Wybierz animację na podstawie wyniku
             return performanceScore switch
             {
-                > 0.7 => "wave.webm",     // Dobry wynik - machanie
-                < 0.3 => "sad.webm",      // Słaby wynik - smutek
-                _ => "idle.webm"          // Neutralny wynik - spokojny
+                > 0.7 => "embed://wave.mp4",     // Dobry wynik - machanie
+                < 0.3 => "embed://sad.mp4",      // Słaby wynik - smutek
+                _ => "embed://idle.mp4"          // Neutralny wynik - spokojny
             };
-            */
         }
 
         private string GetAvatarMessageBasedOnPerformance()
@@ -395,6 +391,7 @@ namespace NeuroMate
         }
         private void DialogAvatarVideo_MediaFailed(object sender, MediaFailedEventArgs e)
         {
+            var a = DialogAvatarVideo.Source;
             // Użyj Debug.WriteLine lub Console.WriteLine, aby zobaczyć błąd
             System.Diagnostics.Debug.WriteLine($"MEDIA FAILED! Błąd: {e.ErrorMessage}");
 
