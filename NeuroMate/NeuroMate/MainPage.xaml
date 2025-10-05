@@ -3,7 +3,8 @@
              xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:skia="clr-namespace:SkiaSharp.Extended.UI.Controls;assembly=SkiaSharp.Extended.UI"
-             Title="NeuroMate"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             Shell.NavBarIsVisible="False"
              BackgroundColor="{StaticResource PageBackground}">
 
     <Grid>
@@ -26,16 +27,15 @@
                 <!-- Awatar z nowym designem -->
                 <Frame Grid.Column="0" Style="{StaticResource AvatarFrame}" 
                        WidthRequest="70" HeightRequest="70">
-                    <skia:SKLottieView x:Name="MainAvatarLottie"
-                                       Source="turtle.json"
-                                       RepeatCount="-1"
-                                       IsAnimationEnabled="True"
-                                       WidthRequest="54"
-                                       HeightRequest="54">
-                        <skia:SKLottieView.GestureRecognizers>
+                    <Image x:Name="MainAvatarImage"
+                           Source="hackyeah_default.png"
+                           WidthRequest="54"
+                           HeightRequest="54"
+                           Aspect="AspectFit">
+                        <Image.GestureRecognizers>
                             <TapGestureRecognizer Tapped="OnAvatarTapped" />
-                        </skia:SKLottieView.GestureRecognizers>
-                    </skia:SKLottieView>
+                        </Image.GestureRecognizers>
+                    </Image>
                 </Frame>
 
                 <!-- Informacje powitalne -->
@@ -74,6 +74,56 @@
         <!-- Główna zawartość z przewijaniem -->
         <ScrollView Grid.Row="1" Padding="16,0">
             <StackLayout Spacing="20">
+
+                <!-- Sekcja punktów i awatara - PIERWSZA na liście -->
+                <Frame Style="{StaticResource ElevatedCard}" 
+                       Background="{StaticResource CardGradient}">
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Informacje o punktach -->
+                        <StackLayout Grid.Column="0" Spacing="4">
+                            <Label Text="💎 Punkty"
+                                   Style="{StaticResource SectionTitle}"
+                                   FontSize="14" />
+                            <Label x:Name="TotalPointsLabel"
+                                   Text="0"
+                                   Style="{StaticResource TitleStyle}"
+                                   FontSize="20"
+                                   FontAttributes="Bold" />
+                            <Label x:Name="TodayPointsLabel"
+                                   Text="Dziś: +0"
+                                   Style="{StaticResource SubtitleStyle}"
+                                   FontSize="12" />
+                        </StackLayout>
+
+                        <!-- Aktualny awatar -->
+                        <StackLayout Grid.Column="1" VerticalOptions="Center" Spacing="4">
+                            <Label Text="🤖 Aktywny awatar"
+                                   Style="{StaticResource SubtitleStyle}"
+                                   FontSize="12"
+                                   HorizontalTextAlignment="Center" />
+                            <Label x:Name="CurrentAvatarNameLabel"
+                                   Text="Żółw Mistrz"
+                                   Style="{StaticResource SectionTitle}"
+                                   FontSize="14"
+                                   HorizontalTextAlignment="Center" />
+                        </StackLayout>
+
+                        <!-- Przycisk sklepu -->
+                        <Button Grid.Column="2"
+                                Text="🛒"
+                                Style="{StaticResource CircleButton}"
+                                WidthRequest="50" HeightRequest="50"
+                                Command="{Binding OpenAvatarShopCommand}"
+                                ToolTipProperties.Text="Sklep awatarów" />
+                    </Grid>
+                </Frame>
+
 
                 <!-- Dashboard z responsywnymi kartami -->
                 <StackLayout Spacing="12">
@@ -293,15 +343,27 @@
                     <!-- Avatar i animacja -->
                     <Grid>
                         <Frame Style="{StaticResource AvatarFrame}" 
-                               WidthRequest="80" 
-                               HeightRequest="80"
+                               WidthRequest="120" 
+                               HeightRequest="120"
                                HorizontalOptions="Center">
-                            <skia:SKLottieView x:Name="DialogAvatarLottie"
-                                               Source="turtle.json"
-                                               RepeatCount="-1"
-                                               IsAnimationEnabled="True"
-                                               WidthRequest="64"
-                                               HeightRequest="64" />
+                            <!-- MediaElement dla animacji MKV -->
+                            <toolkit:MediaElement x:Name="DialogAvatarVideo"
+                                         Source="idle.mkv"
+                                         WidthRequest="100"
+                                         HeightRequest="100"
+                                         Aspect="AspectFit"
+                                         ShouldAutoPlay="True"
+                                         ShouldLoopPlayback="True"
+                                         ShouldShowPlaybackControls="False"
+                                         Volume="0" />
+                            
+                            <!-- Fallback Image (ukryty domyślnie) -->
+                            <Image x:Name="DialogAvatarImage"
+                                   Source="hackyeah_default.png"
+                                   WidthRequest="100"
+                                   HeightRequest="100"
+                                   Aspect="AspectFit"
+                                   IsVisible="False" />
                         </Frame>
                         
                         <!-- Indicator mówiącej postaci -->

@@ -280,4 +280,103 @@ namespace NeuroMate.Models
     }
 
     #endregion
+
+    #region Points & Rewards System
+
+    /// <summary>
+    /// Model awatara do wykupienia
+    /// </summary>
+    public class Avatar
+    {
+        public string Id { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public string LottieFileName { get; set; } = string.Empty; // Teraz zawiera ścieżkę do PNG
+        public int Price { get; set; }
+        public bool IsUnlocked { get; set; }
+        public bool IsDefault { get; set; }
+        public AvatarRarity Rarity { get; set; }
+        public string PreviewImagePath { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Zwraca ścieżkę do pliku wideo MKV dla okna dialogowego
+        /// </summary>
+        public string GetVideoPath()
+        {
+            return LottieFileName.Replace(".png", ".mkv");
+        }
+    }
+
+    /// <summary>
+    /// Rzadkość awatara
+    /// </summary>
+    public enum AvatarRarity
+    {
+        Common,     // Zwykły - 100-200 pkt
+        Rare,       // Rzadki - 300-500 pkt
+        Epic,       // Epicki - 600-800 pkt
+        Legendary   // Legendarny - 1000+ pkt
+    }
+
+    /// <summary>
+    /// Model lootboxa
+    /// </summary>
+    public class LootBox
+    {
+        public string Id { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public int Price { get; set; }
+        public List<LootBoxReward> PossibleRewards { get; set; } = new();
+        public string IconPath { get; set; } = string.Empty;
+    }
+
+    /// <summary>
+    /// Nagroda z lootboxa
+    /// </summary>
+    public class LootBoxReward
+    {
+        public string AvatarId { get; set; } = string.Empty;
+        public double DropChance { get; set; } // 0-1
+        public AvatarRarity Rarity { get; set; }
+    }
+
+    /// <summary>
+    /// Wynik otwarcia lootboxa
+    /// </summary>
+    public class LootBoxResult
+    {
+        public Avatar UnlockedAvatar { get; set; } = new();
+        public bool WasNewAvatar { get; set; }
+        public int PointsRefunded { get; set; } // Jeśli był już odblokowany
+        public DateTime OpenedAt { get; set; }
+    }
+
+    /// <summary>
+    /// Profil gracza z punktami
+    /// </summary>
+    public class PlayerProfile
+    {
+        public int TotalPoints { get; set; }
+        public int PointsSpent { get; set; }
+        public string CurrentAvatarId { get; set; } = "hackyeah_default";
+        public List<string> UnlockedAvatarIds { get; set; } = new();
+        public int TotalGamesPlayed { get; set; }
+        public int TotalLootBoxesOpened { get; set; }
+        public DateTime LastPointsEarned { get; set; }
+    }
+
+    /// <summary>
+    /// Historia zdobywania punktów
+    /// </summary>
+    public class PointsHistory
+    {
+        public DateTime Timestamp { get; set; }
+        public int PointsEarned { get; set; }
+        public string Source { get; set; } = string.Empty; // "PVT_Game", "Stroop_Game", etc.
+        public int GameScore { get; set; }
+        public string Description { get; set; } = string.Empty;
+    }
+
+    #endregion
 }

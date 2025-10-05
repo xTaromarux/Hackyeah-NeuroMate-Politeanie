@@ -5,6 +5,9 @@
         public AppShell()
         {
             InitializeComponent();
+            
+            // Rejestracja routingu dla nowych stron
+            Routing.RegisterRoute("LootBoxPage", typeof(Views.LootBoxPage));
         }
     }
 }

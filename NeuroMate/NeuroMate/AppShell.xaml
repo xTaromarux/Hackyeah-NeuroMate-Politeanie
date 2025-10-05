@@ -87,6 +87,14 @@
                       Shell.TitleColor="{StaticResource TextPrimary}"
                       Shell.UnselectedColor="{StaticResource TextSecondary}" />
 
+        <ShellContent Title="Sklep"
+                      Icon="🛒"
+                      Route="AvatarShopPage"
+                      ContentTemplate="{DataTemplate views:AvatarShopPage}"
+                      Shell.ForegroundColor="{StaticResource Primary}"
+                      Shell.TitleColor="{StaticResource TextPrimary}"
+                      Shell.UnselectedColor="{StaticResource TextSecondary}" />
+
         <ShellContent Title="Ustawienia"
                       Icon="⚙️"
                       Route="OnboardingPage"

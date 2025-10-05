@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:skia="clr-namespace:SkiaSharp.Extended.UI.Controls;assembly=SkiaSharp.Extended.UI"
+             x:Class="NeuroMate.Views.AvatarShopPage"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="{StaticResource PageBackground}">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Header z punktami -->
+        <Frame Grid.Row="0" Style="{StaticResource ElevatedCard}" 
+               Margin="16,24,16,12"
+               Background="{StaticResource CardGradient}">
+            <Grid ColumnSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Powrót -->
+                <Button Grid.Column="0" 
+                        Text="←" 
+                        Style="{StaticResource CircleButton}"
+                        WidthRequest="50" HeightRequest="50"
+                        Clicked="OnBackClicked" />
+
+                <!-- Informacje o sklepie -->
+                <StackLayout Grid.Column="1" VerticalOptions="Center" Spacing="4">
+                    <Label Text="🛒 Sklep Awatarów" 
+                           Style="{StaticResource TitleStyle}" 
+                           FontSize="22" />
+                    <Label x:Name="PointsLabel"
+                           Text="💎 Punkty: 0"
+                           Style="{StaticResource SubtitleStyle}"
+                           FontSize="16" />
+                </StackLayout>
+
+                <!-- Przycisk do lootboxów -->
+                <Button Grid.Column="2" 
+                        Text="📦" 
+                        Style="{StaticResource CircleButton}"
+                        WidthRequest="50" HeightRequest="50"
+                        Clicked="OnLootBoxClicked" />
+            </Grid>
+        </Frame>
+
+        <!-- Filtry rzadkości -->
+        <Frame Grid.Row="1" Style="{StaticResource CardFrame}" Margin="16,0">
+            <StackLayout Orientation="Horizontal" Spacing="10" HorizontalOptions="Center">
+                <Button x:Name="AllFilterButton" Text="Wszystkie" Style="{StaticResource FilterButton}" 
+                        Clicked="OnFilterClicked" CommandParameter="All" />
+                <Button x:Name="CommonFilterButton" Text="⚪ Zwykłe" Style="{StaticResource FilterButton}" 
+                        Clicked="OnFilterClicked" CommandParameter="Common" />
+                <Button x:Name="RareFilterButton" Text="🔵 Rzadkie" Style="{StaticResource FilterButton}" 
+                        Clicked="OnFilterClicked" CommandParameter="Rare" />
+                <Button x:Name="EpicFilterButton" Text="🟣 Epickie" Style="{StaticResource FilterButton}" 
+                        Clicked="OnFilterClicked" CommandParameter="Epic" />
+                <Button x:Name="LegendaryFilterButton" Text="🟠 Legendarne" Style="{StaticResource FilterButton}" 
+                        Clicked="OnFilterClicked" CommandParameter="Legendary" />
+            </StackLayout>
+        </Frame>
+
+        <!-- Lista awatarów -->
+        <ScrollView Grid.Row="2" Margin="16">
+            <CollectionView x:Name="AvatarsCollection"
+                            ItemsLayout="VerticalGrid, 2"
+                            VerticalScrollBarVisibility="Never">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Frame Style="{StaticResource CardFrame}" Margin="8" Padding="12">
+                            <Grid RowSpacing="10">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="80" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+
+                                <!-- Avatar Preview -->
+                                <Frame Grid.Row="0" 
+                                       Style="{StaticResource AvatarFrame}"
+                                       WidthRequest="70" HeightRequest="70"
+                                       HorizontalOptions="Center">
+                                    <Image Source="{Binding LottieFileName}"
+                                           WidthRequest="54"
+                                           HeightRequest="54"
+                                           Aspect="AspectFit" />
+                                </Frame>
+
+                                <!-- Nazwa awatara -->
+                                <Label Grid.Row="1" 
+                                       Text="{Binding Name}"
+                                       Style="{StaticResource SectionTitle}"
+                                       FontSize="16"
+                                       HorizontalOptions="Center"
+                                       HorizontalTextAlignment="Center" />
+
+                                <!-- Opis -->
+                                <Label Grid.Row="2" 
+                                       Text="{Binding Description}"
+                                       Style="{StaticResource Subtitle}"
+                                       FontSize="12"
+                                       HorizontalOptions="Center"
+                                       HorizontalTextAlignment="Center"
+                                       MaxLines="2" />
+
+                                <!-- Cena/Status -->
+                                <StackLayout Grid.Row="3" Orientation="Horizontal" 
+                                           HorizontalOptions="Center" Spacing="5">
+                                    <Label Text="{Binding RarityIcon}" FontSize="16" />
+                                    <Label Text="{Binding PriceText}" 
+                                           Style="{StaticResource Subtitle}"
+                                           FontAttributes="Bold" />
+                                </StackLayout>
+
+                                <!-- Przycisk akcji -->
+                                <Button Grid.Row="4" 
+                                        Text="{Binding ActionButtonText}"
+                                        Clicked="OnAvatarActionClicked"
+                                        CommandParameter="{Binding Id}"
+                                        IsEnabled="{Binding CanPerformAction}"
+                                        BackgroundColor="{Binding ActionButtonColor}"
+                                        TextColor="White"
+                                        FontAttributes="Bold"
+                                        CornerRadius="8"
+                                        HeightRequest="40" />
+                            </Grid>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </ScrollView>
+
+        <!-- Loading indicator -->
+        <ActivityIndicator x:Name="LoadingIndicator" 
+                           Grid.Row="2"
+                           IsVisible="False"
+                           IsRunning="False"
+                           Color="{StaticResource Primary}" />
+    </Grid>
+</ContentPage>

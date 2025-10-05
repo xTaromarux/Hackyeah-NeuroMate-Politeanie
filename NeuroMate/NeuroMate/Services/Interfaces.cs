@@ -156,146 +156,96 @@ namespace NeuroMate.Services
     }
 
     /// <summary>
-    /// Serwis zarządzania awatarem
+    /// Serwis zarządzający systemem punktów i nagród
+    /// </summary>
+    public interface IPointsService
+    {
+        /// <summary>
+        /// Dodaje punkty za wykonanie gry
+        /// </summary>
+        Task<int> AddPointsForGameAsync(string gameType, int gameScore, int reactionTimeMs = 0);
+
+        /// <summary>
+        /// Pobiera aktualny profil gracza
+        /// </summary>
+        Task<PlayerProfile> GetPlayerProfileAsync();
+
+        /// <summary>
+        /// Pobiera historię punktów
+        /// </summary>
+        Task<List<PointsHistory>> GetPointsHistoryAsync(int days = 30);
+
+        /// <summary>
+        /// Zapisuje profil gracza
+        /// </summary>
+        Task SavePlayerProfileAsync(PlayerProfile profile);
+
+        /// <summary>
+        /// Wydaje punkty
+        /// </summary>
+        Task<bool> SpendPointsAsync(int amount);
+    }
+
+    /// <summary>
+    /// Serwis zarządzający awatarami
     /// </summary>
     public interface IAvatarService
     {
         /// <summary>
-        /// Pobiera konfigurację awatara
+        /// Pobiera wszystkie dostępne awatary
         /// </summary>
-        AvatarConfig GetConfig();
+        Task<List<Avatar>> GetAllAvatarsAsync();
 
         /// <summary>
-        /// Zapisuje konfigurację awatara
+        /// Pobiera odblokowane awatary gracza
         /// </summary>
-        Task SaveConfigAsync(AvatarConfig config);
+        Task<List<Avatar>> GetUnlockedAvatarsAsync();
 
         /// <summary>
-        /// Generuje wiadomość awatara na podstawie kontekstu
+        /// Kupuje awatara za punkty
         /// </summary>
-        AvatarMessage GenerateMessage(
-            string context,
-            int neuroScore,
-            InterventionResult? lastIntervention = null
-        );
+        Task<bool> PurchaseAvatarAsync(string avatarId);
 
         /// <summary>
-        /// Pobiera losową wiadomość motywacyjną
+        /// Zmienia aktualnego awatara
         /// </summary>
-        string GetMotivationalMessage();
+        Task<bool> ChangeAvatarAsync(string avatarId);
 
         /// <summary>
-        /// Zmienia nastrój awatara
+        /// Pobiera aktualnego awatara
         /// </summary>
-        void SetMood(AvatarMood mood);
+        Task<Avatar> GetCurrentAvatarAsync();
+
+        /// <summary>
+        /// Sprawdza czy awatar jest odblokowany
+        /// </summary>
+        Task<bool> IsAvatarUnlockedAsync(string avatarId);
     }
 
     /// <summary>
-    /// Serwis gamifikacji
+    /// Serwis zarządzający lootboxami
     /// </summary>
-    public interface IGamificationService
+    public interface ILootBoxService
     {
         /// <summary>
-        /// Dodaje punkty użytkownikowi
+        /// Pobiera dostępne lootboxy
         /// </summary>
-        Task<int> AddPointsAsync(int points, string reason);
+        Task<List<LootBox>> GetAvailableLootBoxesAsync();
 
         /// <summary>
-        /// Pobiera postęp użytkownika
+        /// Otwiera lootbox
         /// </summary>
-        Task<UserProgress> GetUserProgressAsync();
+        Task<LootBoxResult> OpenLootBoxAsync(string lootBoxId);
 
         /// <summary>
-        /// Sprawdza czy użytkownik odblokowal nową odznakę
+        /// Sprawdza czy gracz może kupić lootbox
         /// </summary>
-        Task<List<Badge>> CheckForNewBadgesAsync();
+        Task<bool> CanAffordLootBoxAsync(string lootBoxId);
 
         /// <summary>
-        /// Odblokuje skórkę awatara
+        /// Generuje nagrodę z lootboxa
         /// </summary>
-        Task<bool> UnlockSkinAsync(string skinId);
-
-        /// <summary>
-        /// Ustawia aktywną skórkę
-        /// </summary>
-        Task EquipSkinAsync(string skinId);
-
-        /// <summary>
-        /// Pobiera wszystkie dostępne skórki
-        /// </summary>
-        List<AvatarSkin> GetAllSkins();
-
-        /// <summary>
-        /// Aktualizuje streak (serię dni)
-        /// </summary>
-        Task UpdateStreakAsync();
-    }
-
-    /// <summary>
-    /// Serwis monitorowania aktywności na komputerze
-    /// </summary>
-    public interface IActivityMonitorService
-    {
-        /// <summary>
-        /// Rozpoczyna monitorowanie
-        /// </summary>
-        void StartMonitoring();
-
-        /// <summary>
-        /// Zatrzymuje monitorowanie
-        /// </summary>
-        void StopMonitoring();
-
-        /// <summary>
-        /// Pobiera czas bez przerwy w minutach
-        /// </summary>
-        int GetMinutesWithoutBreak();
-
-        /// <summary>
-        /// Resetuje licznik czasu
-        /// </summary>
-        void ResetTimer();
-
-        /// <summary>
-        /// Event wywoływany gdy wykryto długi czas bez przerwy
-        /// </summary>
-        event EventHandler<int>? OnLongWorkSessionDetected;
-
-        /// <summary>
-        /// Wykrywa "kaskadę Alt+Tab" (częste przełączanie aplikacji)
-        /// </summary>
-        bool DetectAltTabCascade();
-    }
-
-    /// <summary>
-    /// Serwis integracji z kalendarzem
-    /// </summary>
-    public interface ICalendarService
-    {
-        /// <summary>
-        /// Pobiera dzisiejsze wydarzenia
-        /// </summary>
-        Task<List<CalendarEvent>> GetTodayEventsAsync();
-
-        /// <summary>
-        /// Dodaje przerwę do kalendarza
-        /// </summary>
-        Task<bool> AddBreakEventAsync(DateTime startTime, int durationMinutes);
-
-        /// <summary>
-        /// Synchronizuje z Google Calendar
-        /// </summary>
-        Task<bool> SyncWithGoogleCalendarAsync();
-
-        /// <summary>
-        /// Synchronizuje z Microsoft Calendar
-        /// </summary>
-        Task<bool> SyncWithMicrosoftCalendarAsync();
-
-        /// <summary>
-        /// Proponuje optymalne czasy przerw
-        /// </summary>
-        Task<List<DateTime>> SuggestBreakTimesAsync();
+        Task<Avatar> GenerateRewardAsync(LootBox lootBox);
     }
 
     /// <summary>

@@ -15,6 +15,8 @@ namespace NeuroMate.ViewModels
         private readonly IInterventionService _interventionService;
         private readonly IPVTGameService _pvtGameService;
         private readonly IDataImportService _dataImportService;
+        private readonly IPointsService _pointsService;
+        private readonly IAvatarService _avatarService;
         
         #endregion
 
@@ -41,6 +43,22 @@ namespace NeuroMate.ViewModels
 
         [ObservableProperty]
         private ObservableCollection<TrendPoint> _trendPoints = new();
+
+        #endregion
+
+        #region Observable Properties - Points & Avatar System
+
+        [ObservableProperty]
+        private int _totalPoints = 0;
+
+        [ObservableProperty]
+        private string _currentAvatarName = "Żółw Mistrz";
+
+        [ObservableProperty]
+        private string _currentAvatarLottie = "hackyeah_default.png"; // Zmieniam domyślną wartość na nowy PNG
+
+        [ObservableProperty]
+        private int _pointsEarnedToday = 0;
 
         #endregion
 
@@ -76,15 +94,18 @@ namespace NeuroMate.ViewModels
 
         public MainViewModel()
         {
-            // Inicjalizacja serwisów
+            // Inicjalizacja serwisów - tymczasowo bez DI
             _neuroScoreService = new NeuroScoreService();
             _interventionService = new InterventionService();
             _pvtGameService = new PvtGameService();
             _dataImportService = new DataImportService();
+            _pointsService = new PointsService();
+            _avatarService = new AvatarService(_pointsService);
 
             // Inicjalizacja danych
             InitializeTrendData();
             LoadUserData();
+            _ = LoadPointsDataAsync(); // Async load without blocking
 
             // Subskrybuj zdarzenia z serwisów
             _pvtGameService.OnReactionRecorded += HandleReactionRecorded;
@@ -286,9 +307,18 @@ namespace NeuroMate.ViewModels
 
                 await _pvtGameService.StopGameAsync();
                 
+                // Przyznaj punkty za grę
+                await AwardPointsForGameAsync("PVT");
+                
                 // Zapisz wyniki do Neuro-Score
                 await RefreshNeuroScore();
             }
+        }
+
+        [RelayCommand]
+        private async Task OpenAvatarShop()
+        {
+            await Shell.Current.GoToAsync("//AvatarShopPage");
         }
 
         #endregion
@@ -347,10 +377,18 @@ namespace NeuroMate.ViewModels
 
         #region Public Methods
 
+        public async Task RefreshDataAsync()
+        {
+            LoadUserData();
+            await RefreshNeuroScore();
+            await LoadPointsDataAsync();
+        }
+
         public async void RefreshData()
         {
             LoadUserData();
             await RefreshNeuroScore();
+            await LoadPointsDataAsync();
         }
 
         public void Cleanup()
@@ -358,6 +396,85 @@ namespace NeuroMate.ViewModels
             // Zatrzymaj timery i cleanup
             _pvtGameService.OnReactionRecorded -= HandleReactionRecorded;
             _pvtGameService.OnGameStateChanged -= HandleGameStateChanged;
+        }
+
+        #endregion
+
+        #region Points & Avatar System Methods
+
+        private async Task LoadPointsDataAsync()
+        {
+            try
+            {
+                var profile = await _pointsService.GetPlayerProfileAsync();
+                var currentAvatar = await _avatarService.GetCurrentAvatarAsync();
+                var todaysHistory = await _pointsService.GetPointsHistoryAsync(1);
+                
+                // Wymusz aktualizację WSZYSTKICH właściwości w MainThread jednocześnie
+                await MainThread.InvokeOnMainThreadAsync(() =>
+                {
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG] Updating points: {TotalPoints} -> {profile.TotalPoints}");
+                    System.Diagnostics.Debug.WriteLine($"[DEBUG] Updating avatar: {CurrentAvatarName} -> {currentAvatar.Name}");
+                    
+                    TotalPoints = profile.TotalPoints;
+                    CurrentAvatarName = currentAvatar.Name;
+                    CurrentAvatarLottie = currentAvatar.LottieFileName;
+                    PointsEarnedToday = todaysHistory.Sum(h => h.PointsEarned);
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error loading points data: {ex.Message}");
+            }
+        }
+
+        private async Task AwardPointsForGameAsync(string gameType)
+        {
+            try
+            {
+                var stats = _pvtGameService.GetStatistics();
+                int gameScore = CalculateGameScore(stats);
+                
+                int pointsEarned = await _pointsService.AddPointsForGameAsync(
+                    gameType, 
+                    gameScore, 
+                    stats.AverageReactionMs
+                );
+
+                if (pointsEarned > 0)
+                {
+                    TotalPoints += pointsEarned;
+                    PointsEarnedToday += pointsEarned;
+                    
+                    await ShowToast($"🎉 Zdobyłeś {pointsEarned} punktów!");
+                    
+                    // Dodaj efekt wizualny lub dźwiękowy
+                    AssistantHint = $"Świetnie! +{pointsEarned} pkt za grę {gameType}. Łącznie: {TotalPoints} pkt";
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error awarding points: {ex.Message}");
+            }
+        }
+
+        private int CalculateGameScore(PVTStatistics stats)
+        {
+            if (stats.TrialsCount == 0) return 0;
+
+            // Podstawowy wynik na podstawie czasu reakcji i liczby prób
+            int accuracyScore = Math.Min(100, stats.TrialsCount * 10);
+            
+            // Bonus za szybką reakcję
+            int reactionBonus = stats.AverageReactionMs switch
+            {
+                < 250 => 30,
+                < 300 => 20,
+                < 400 => 10,
+                _ => 0
+            };
+
+            return Math.Min(100, accuracyScore + reactionBonus);
         }
 
         #endregion
