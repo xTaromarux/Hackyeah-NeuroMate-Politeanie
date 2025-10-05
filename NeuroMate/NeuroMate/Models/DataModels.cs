@@ -1,3 +1,5 @@
+using SQLite;
+
 namespace NeuroMate.Models
 {
     #region Dashboard Models
@@ -105,6 +107,7 @@ namespace NeuroMate.Models
     /// </summary>
     public class PlayerProfileData
     {
+        [PrimaryKey, AutoIncrement]
         public int Id { get; set; }
         public string Username { get; set; } = string.Empty;
         public int Points { get; set; } = 0;
@@ -121,6 +124,7 @@ namespace NeuroMate.Models
     /// </summary>
     public class PointsHistoryData
     {
+        [PrimaryKey, AutoIncrement]
         public int Id { get; set; }
         public int PlayerId { get; set; }
         public int PointsChange { get; set; }

@@ -35,6 +35,9 @@ namespace NeuroMate.Database
             _database.CreateTableAsync<Entities.GameReactionRecord>().Wait();
             _database.CreateTableAsync<Entities.HealthRecord>().Wait();
             _database.CreateTableAsync<Entities.ImportResult>().Wait();
+            
+            // Debug: sprawdź czy tabela została utworzona
+            System.Diagnostics.Debug.WriteLine($"[Database] Baza danych utworzona w: {dbPath}");
         }
 
         // SleepData - używamy typów z Database.Entities
@@ -121,5 +124,31 @@ namespace NeuroMate.Database
         public Task<List<Entities.ImportResult>> GetAllImportResultsAsync() => _database.Table<Entities.ImportResult>().ToListAsync();
         public Task SaveImportResultAsync(Entities.ImportResult data) => _database.InsertOrReplaceAsync(data);
         public Task DeleteImportResultAsync(Entities.ImportResult data) => _database.DeleteAsync(data);
+
+        // Metoda do resetowania loot boxów i nagród
+        public async Task ResetLootBoxDataAsync()
+        {
+            await _database.DeleteAllAsync<LootBox>();
+            await _database.DeleteAllAsync<LootBoxReward>();
+            await _database.DeleteAllAsync<LootBoxResult>();
+        }
+
+        // Metoda do resetowania danych gracza (na potrzeby debugowania)
+        public async Task ResetPlayerDataAsync()
+        {
+            await _database.DeleteAllAsync<Models.PlayerProfileData>();
+            await _database.DeleteAllAsync<Models.PointsHistoryData>();
+            System.Diagnostics.Debug.WriteLine("[Database] Dane gracza zostały zresetowane");
+        }
+
+        // Metoda do sprawdzenia stanu bazy danych
+        public async Task<string> GetDatabaseStatusAsync()
+        {
+            var players = await _database.Table<Models.PlayerProfileData>().CountAsync();
+            var lootBoxes = await _database.Table<LootBox>().CountAsync();
+            var rewards = await _database.Table<LootBoxReward>().CountAsync();
+            
+            return $"Gracze: {players}, LootBoxy: {lootBoxes}, Nagrody: {rewards}";
+        }
     }
 }

@@ -414,28 +414,44 @@ namespace NeuroMate.ViewModels
         {
             try
             {
+                System.Diagnostics.Debug.WriteLine("[MainViewModel] Ładowanie danych punktów i awatara...");
+                
                 var profile = await _pointsService.GetPlayerProfileAsync();
                 var currentAvatar = await _avatarService.GetSelectedAvatarAsync();
-                // Usuwam nieistniejącą metodę GetPointsHistoryAsync
                 var todaysPointsEarned = 0; // Domyślna wartość
+
+                System.Diagnostics.Debug.WriteLine($"[MainViewModel] Profil gracza - Punkty: {profile.TotalPoints}");
+                System.Diagnostics.Debug.WriteLine($"[MainViewModel] Wybrany awatar: {currentAvatar?.Name ?? "NULL"}, Plik: {currentAvatar?.LottieFileName ?? "NULL"}");
 
                 // Wymusz aktualizację WSZYSTKICH właściwości w MainThread jednocześnie
                 await MainThread.InvokeOnMainThreadAsync(() =>
                 {
-                    System.Diagnostics.Debug.WriteLine($"[DEBUG] Updating points: {TotalPoints} -> {profile.TotalPoints}");
+                    System.Diagnostics.Debug.WriteLine($"[MainViewModel] Aktualizuję punkty: {TotalPoints} -> {profile.TotalPoints}");
                     
                     TotalPoints = profile.TotalPoints;
                     if (currentAvatar != null)
                     {
+                        System.Diagnostics.Debug.WriteLine($"[MainViewModel] Aktualizuję awatar: {CurrentAvatarName} -> {currentAvatar.Name}");
+                        System.Diagnostics.Debug.WriteLine($"[MainViewModel] Aktualizuję plik awatara: {CurrentAvatarLottie} -> {currentAvatar.LottieFileName}");
+                        
                         CurrentAvatarName = currentAvatar.Name;
                         CurrentAvatarLottie = currentAvatar.LottieFileName;
                     }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine("[MainViewModel] PROBLEM: Brak wybranego awatara w bazie danych!");
+                        // Fallback do domyślnego awatara
+                        CurrentAvatarName = "HackyEah Domyślny";
+                        CurrentAvatarLottie = "hackyeah_default.png";
+                    }
                     PointsEarnedToday = todaysPointsEarned;
+                    
+                    System.Diagnostics.Debug.WriteLine($"[MainViewModel] ZAKOŃCZONO - Aktualny awatar: {CurrentAvatarName}, Plik: {CurrentAvatarLottie}");
                 });
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error loading points data: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[MainViewModel] Błąd ładowania danych punktów: {ex.Message}");
             }
         }
 

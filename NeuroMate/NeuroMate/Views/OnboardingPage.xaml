@@ -129,10 +129,20 @@
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
 
-                        <Label Grid.Row="0" Grid.Column="0" Text="Początek:" Style="{StaticResource StatDescription}" VerticalOptions="Center" />
+                        <Label Grid.Row="0" Grid.Column="0" 
+                               Text="Początek:" 
+                               VerticalOptions="Center"
+                               TextColor="{StaticResource TextPrimary}"
+                               FontSize="14"
+                               FontAttributes="Bold" />
                         <TimePicker Grid.Row="0" Grid.Column="1" x:Name="WorkStartTime" Time="09:00:00" />
 
-                        <Label Grid.Row="1" Grid.Column="0" Text="Koniec:" Style="{StaticResource StatDescription}" VerticalOptions="Center" />
+                        <Label Grid.Row="1" Grid.Column="0" 
+                               Text="Koniec:" 
+                               VerticalOptions="Center"
+                               TextColor="{StaticResource TextPrimary}"
+                               FontSize="14"
+                               FontAttributes="Bold" />
                         <TimePicker Grid.Row="1" Grid.Column="1" x:Name="WorkEndTime" Time="17:00:00" />
                     </Grid>
                 </StackLayout>
@@ -150,7 +160,11 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
 
-                            <Label Grid.Column="0" Text="Smartband/Smartwatch (HRV, sen)" VerticalOptions="Center" />
+                            <Label Grid.Column="0" 
+                                   Text="Smartband/Smartwatch (HRV, sen)" 
+                                   VerticalOptions="Center"
+                                   TextColor="{StaticResource TextPrimary}"
+                                   FontSize="14" />
                             <Switch Grid.Column="1" x:Name="SmartbandSwitch" />
 
                         </Grid>
@@ -161,7 +175,11 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
 
-                            <Label Grid.Column="0" Text="Kalendarz (Google/Outlook)" VerticalOptions="Center" />
+                            <Label Grid.Column="0" 
+                                   Text="Kalendarz (Google/Outlook)" 
+                                   VerticalOptions="Center"
+                                   TextColor="{StaticResource TextPrimary}"
+                                   FontSize="14" />
                             <Switch Grid.Column="1" x:Name="CalendarSwitch" />
 
                         </Grid>
@@ -172,7 +190,11 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
 
-                            <Label Grid.Column="0" Text="Monitorowanie aktywności komputera" VerticalOptions="Center" />
+                            <Label Grid.Column="0" 
+                                   Text="Monitorowanie aktywności komputera" 
+                                   VerticalOptions="Center"
+                                   TextColor="{StaticResource TextPrimary}"
+                                   FontSize="14" />
                             <Switch Grid.Column="1" x:Name="ActivitySwitch" IsToggled="True" />
                         </Grid>
                     </StackLayout>

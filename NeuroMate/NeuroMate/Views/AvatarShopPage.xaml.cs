@@ -1,6 +1,7 @@
 using NeuroMate.Models;
 using NeuroMate.Services;
 using NeuroMate.Database.Entities;
+using NeuroMate.Database;
 using NeuroMate.Messages;
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.Messaging;
@@ -15,12 +16,14 @@ namespace NeuroMate.Views
         private List<Avatar> _allAvatars = new();
         private string _currentFilter = "All";
         private AvatarShopItem? _currentPreviewAvatar;
+        private readonly DatabaseService _database; // Dodajemy dostęp do bazy danych
 
         public AvatarShopPage()
         {
             InitializeComponent();
             _pointsService = App.Services.GetService<IPointsService>();
             _avatarService = App.Services.GetService<IAvatarService>();
+            _database = App.Services.GetService<DatabaseService>();
             AvatarsCollection.ItemsSource = _avatars;
 
             if (_pointsService != null)
@@ -30,6 +33,9 @@ namespace NeuroMate.Views
         protected override async void OnAppearing()
         {
             base.OnAppearing();
+            
+            // Upewnij się że zaczynamy z filtrem "All"
+            _currentFilter = "All";
             await LoadDataAsync();
         }
 
@@ -40,16 +46,129 @@ namespace NeuroMate.Views
 
             try
             {
+                // Załaduj awatary bezpośrednio z plików zamiast z bazy danych
+                System.Diagnostics.Debug.WriteLine("Ładowanie awatarów bezpośrednio z plików Resources/Images...");
+                
+                var player = await _pointsService.GetCurrentPlayerAsync();
+                
+                // Definiuj awatary bezpośrednio na podstawie plików z Resources/Images
+                var avatarsFromFiles = new List<Database.Entities.Avatar>
+                {
+                    new Database.Entities.Avatar 
+                    { 
+                        Id = 1,
+                        Name = "HackyEah Domyślny", 
+                        Description = "Twój podstawowy awatar", 
+                        LottieFileName = "hackyeah_default.png",
+                        PreviewImagePath = "hackyeah_default.png",
+                        Price = 0,
+                        Rarity = "Common", 
+                        IsUnlocked = true, 
+                        IsSelected = true, 
+                        IsDefault = true,
+                        PlayerId = player.Id 
+                    },
+                    new Database.Entities.Avatar 
+                    { 
+                        Id = 2,
+                        Name = "HackyEah Szczęśliwy", 
+                        Description = "Uśmiechnięty awatar", 
+                        LottieFileName = "hackyeah_happy.png",
+                        PreviewImagePath = "hackyeah_happy.png",
+                        Price = 50,
+                        Rarity = "Common", 
+                        IsUnlocked = false,
+                        IsSelected = false,
+                        PlayerId = player.Id 
+                    },
+                    new Database.Entities.Avatar 
+                    { 
+                        Id = 3,
+                        Name = "HackyEah Smutny", 
+                        Description = "Zamyślony awatar", 
+                        LottieFileName = "hackyeah_sad.png",
+                        PreviewImagePath = "hackyeah_sad.png",
+                        Price = 75,
+                        Rarity = "Rare", 
+                        IsUnlocked = false,
+                        IsSelected = false,
+                        PlayerId = player.Id 
+                    },
+                    new Database.Entities.Avatar 
+                    { 
+                        Id = 4,
+                        Name = "HackyEah Machający", 
+                        Description = "Przyjazny awatar", 
+                        LottieFileName = "hackyeah_wave.png",
+                        PreviewImagePath = "hackyeah_wave.png",
+                        Price = 100,
+                        Rarity = "Rare", 
+                        IsUnlocked = false,
+                        IsSelected = false,
+                        PlayerId = player.Id 
+                    },
+                    new Database.Entities.Avatar 
+                    { 
+                        Id = 5,
+                        Name = "Programista", 
+                        Description = "Ekspert IT", 
+                        LottieFileName = "it_guy.png",
+                        PreviewImagePath = "it_guy.png",
+                        Price = 200,
+                        Rarity = "Epic", 
+                        IsUnlocked = false,
+                        IsSelected = false,
+                        PlayerId = player.Id 
+                    },
+                    new Database.Entities.Avatar 
+                    { 
+                        Id = 6,
+                        Name = "Szara Koszulka", 
+                        Description = "Minimalistyczny styl", 
+                        LottieFileName = "gray_tshirt.png",
+                        PreviewImagePath = "gray_tshirt.png",
+                        Price = 150,
+                        Rarity = "Epic", 
+                        IsUnlocked = false,
+                        IsSelected = false,
+                        PlayerId = player.Id 
+                    }
+                };
+
+                System.Diagnostics.Debug.WriteLine($"Załadowano {avatarsFromFiles.Count} awatarów z plików");
+                
+                // Sprawdź które awatary są odblokowane (pobierz z bazy danych informacje o odblokowaniu)
+                var dbAvatars = await _avatarService.GetAllAvatarsAsync();
+                foreach (var avatar in avatarsFromFiles)
+                {
+                    var dbAvatar = dbAvatars.FirstOrDefault(db => db.LottieFileName == avatar.LottieFileName);
+                    if (dbAvatar != null)
+                    {
+                        avatar.IsUnlocked = dbAvatar.IsUnlocked;
+                        avatar.IsSelected = dbAvatar.IsSelected;
+                        System.Diagnostics.Debug.WriteLine($"Awatar {avatar.Name}: odblokowany={avatar.IsUnlocked}, wybrany={avatar.IsSelected}");
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Awatar {avatar.Name}: brak w bazie - pozostaje domyślny status");
+                    }
+                }
+
                 // Załaduj punkty gracza
                 var profile = await _pointsService.GetPlayerProfileAsync();
                 PointsLabel.Text = $"💎 Punkty: {profile.TotalPoints}";
 
-                // Załaduj awatary
-                _allAvatars = await _avatarService.GetAllAvatarsAsync();
+                // Użyj awatarów z plików zamiast z bazy
+                _allAvatars = avatarsFromFiles;
+                System.Diagnostics.Debug.WriteLine($"Ładuję {_allAvatars.Count} awatarów do interfejsu");
+                
                 await ApplyFilterAsync(_currentFilter);
+                
+                System.Diagnostics.Debug.WriteLine($"W kolekcji UI mamy teraz {_avatars.Count} awatarów");
             }
             catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"Błąd ładowania: {ex.Message}");
                 await DisplayAlert("Błąd", $"Nie udało się załadować danych: {ex.Message}", "OK");
             }
             finally
@@ -86,6 +205,9 @@ namespace NeuroMate.Views
                     break;
             }
 
+            // Debug: sprawdź ile awatarów mamy przed filtrowaniem
+            System.Diagnostics.Debug.WriteLine($"Przed filtrowaniem: {_allAvatars.Count} awatarów, filtr: {filter}");
+
             // Filtruj awatary - używam porównania stringów ponieważ Avatar.Rarity to string
             var filteredAvatars = filter switch
             {
@@ -96,13 +218,22 @@ namespace NeuroMate.Views
                 _ => _allAvatars
             };
 
+            var filteredList = filteredAvatars.ToList();
+            System.Diagnostics.Debug.WriteLine($"Po filtrowaniu: {filteredList.Count} awatarów");
+            foreach (var av in filteredList)
+            {
+                System.Diagnostics.Debug.WriteLine($"  Filtrowany awatar: {av.Name}, Rzadkość: {av.Rarity}");
+            }
+
             _avatars.Clear();
             var profile = await _pointsService.GetPlayerProfileAsync();
 
-            foreach (var avatar in filteredAvatars)
+            foreach (var avatar in filteredList)
             {
                 _avatars.Add(new AvatarShopItem(avatar, profile));
             }
+            
+            System.Diagnostics.Debug.WriteLine($"Dodano do UI: {_avatars.Count} awatarów");
         }
 
         private void ResetFilterButtons()
@@ -126,26 +257,45 @@ namespace NeuroMate.Views
         {
             if (sender is Button button && button.CommandParameter is string avatarId)
             {
+                System.Diagnostics.Debug.WriteLine($"Kliknięto przycisk awatara ID: {avatarId}");
+                
                 var avatarItem = _avatars.FirstOrDefault(a => a.Id.ToString() == avatarId);
-                if (avatarItem == null) return;
+                if (avatarItem == null) 
+                {
+                    System.Diagnostics.Debug.WriteLine($"Nie znaleziono awatara o ID: {avatarId}");
+                    return;
+                }
+
+                System.Diagnostics.Debug.WriteLine($"Znaleziono awatar: {avatarItem.Name}, Odblokowany: {avatarItem.IsUnlocked}, Wybrany: {avatarItem.IsCurrentlySelected}");
 
                 try
                 {
                     if (avatarItem.IsUnlocked && !avatarItem.IsCurrentlySelected)
                     {
-                        // Zmień awatara
-                        var success = await _avatarService.ChangeAvatarAsync(avatarId);
-                        if (success)
-                        {
-                            await DisplayAlert("Sukces!", $"Zmieniono awatara na: {avatarItem.Name}", "OK");
-                            await LoadDataAsync(); // Odśwież dane w sklepie
+                        System.Diagnostics.Debug.WriteLine("Zmieniam awatara...");
+                        // Zmień awatara - zapisz w bazie i odśwież UI
+                        await SaveAvatarUnlockStatus(avatarItem, isSelected: true);
+                        await DisplayAlert("Sukces!", $"Zmieniono awatara na: {avatarItem.Name}", "OK");
+                        await LoadDataAsync(); // Odśwież dane w sklepie
 
-                            // Wyślij komunikat o zmianie awatara do całej aplikacji
-                            WeakReferenceMessenger.Default.Send(new AvatarChangedMessage());
-                        }
+                        // Wyślij komunikat o zmianie awatara do całej aplikacji
+                        WeakReferenceMessenger.Default.Send(new AvatarChangedMessage());
+                        System.Diagnostics.Debug.WriteLine("Wysłano komunikat o zmianie awatara");
                     }
                     else if (!avatarItem.IsUnlocked)
                     {
+                        System.Diagnostics.Debug.WriteLine("Rozpoczynam proces kupowania awatara...");
+                        
+                        // Sprawdź czy ma dość punktów
+                        var profile = await _pointsService.GetPlayerProfileAsync();
+                        System.Diagnostics.Debug.WriteLine($"Gracz ma {profile.TotalPoints} punktów, awatar kosztuje {avatarItem.Price}");
+                        
+                        if (profile.TotalPoints < avatarItem.Price)
+                        {
+                            await DisplayAlert("Błąd", "Niewystarczająca liczba punktów!", "OK");
+                            return;
+                        }
+
                         // Kup awatara
                         var confirmed = await DisplayAlert("Potwierdzenie",
                             $"Czy chcesz kupić awatara '{avatarItem.Name}' za {avatarItem.Price} punktów?",
@@ -153,26 +303,104 @@ namespace NeuroMate.Views
 
                         if (confirmed)
                         {
-                            var success = await _avatarService.PurchaseAvatarAsync(avatarId);
+                            System.Diagnostics.Debug.WriteLine("Gracz potwierdził zakup");
+                            
+                            // Odejmij punkty
+                            var success = await _pointsService.SpendPointsAsync(avatarItem.Price);
+                            System.Diagnostics.Debug.WriteLine($"Wynik odejmowania punktów: {success}");
+                            
                             if (success)
                             {
-                                await DisplayAlert("Sukces!", $"Kupiono awatara: {avatarItem.Name}!", "OK");
+                                // Zapisz awatara jako odblokowany i aktywny
+                                await SaveAvatarUnlockStatus(avatarItem, isUnlocked: true, isSelected: true);
+                                
+                                await DisplayAlert("Sukces!", $"Kupiono awatara: {avatarItem.Name}!\nAwatar został automatycznie aktywowany.", "OK");
                                 await LoadDataAsync(); // Odśwież dane w sklepie
 
-                                // Wyślij komunikat o zakupie (zmiana punktów) do całej aplikacji
+                                // Wyślij komunikaty do całej aplikacji
                                 WeakReferenceMessenger.Default.Send(new PointsChangedMessage(0));
+                                WeakReferenceMessenger.Default.Send(new AvatarChangedMessage());
+                                System.Diagnostics.Debug.WriteLine("Wysłano komunikaty o zakupie i zmianie awatara");
                             }
                             else
                             {
                                 await DisplayAlert("Błąd", "Niewystarczająca liczba punktów!", "OK");
                             }
                         }
+                        else
+                        {
+                            System.Diagnostics.Debug.WriteLine("Gracz anulował zakup");
+                        }
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine("Awatar jest już aktywny lub nie można wykonać akcji");
                     }
                 }
                 catch (Exception ex)
                 {
+                    System.Diagnostics.Debug.WriteLine($"Błąd w OnAvatarActionClicked: {ex.Message}");
                     await DisplayAlert("Błąd", $"Wystąpił problem: {ex.Message}", "OK");
                 }
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine("Nieprawidłowe parametry przyciska");
+            }
+        }
+
+        // Nowa metoda do zapisywania statusu awatara w bazie
+        private async Task SaveAvatarUnlockStatus(AvatarShopItem avatarItem, bool? isUnlocked = null, bool? isSelected = null)
+        {
+            try
+            {
+                // Znajdź lub utwórz awatara w bazie
+                var dbAvatars = await _avatarService.GetAllAvatarsAsync();
+                var dbAvatar = dbAvatars.FirstOrDefault(db => db.LottieFileName == avatarItem.LottieFileName);
+                
+                if (dbAvatar == null)
+                {
+                    // Utwórz nowy rekord w bazie
+                    dbAvatar = new Database.Entities.Avatar
+                    {
+                        Name = avatarItem.Name,
+                        Description = avatarItem.Description,
+                        LottieFileName = avatarItem.LottieFileName,
+                        PreviewImagePath = avatarItem.PreviewImagePath,
+                        Price = avatarItem.Price,
+                        Rarity = avatarItem.Rarity,
+                        PlayerId = avatarItem.PlayerId,
+                        IsUnlocked = isUnlocked ?? avatarItem.IsUnlocked,
+                        IsSelected = isSelected ?? avatarItem.IsSelected,
+                        IsDefault = avatarItem.IsDefault
+                    };
+                }
+                else
+                {
+                    // Zaktualizuj istniejący rekord
+                    if (isUnlocked.HasValue) dbAvatar.IsUnlocked = isUnlocked.Value;
+                    if (isSelected.HasValue) 
+                    {
+                        // Jeśli wybieramy nowy awatar, odznacz poprzedni
+                        if (isSelected.Value)
+                        {
+                            var previousSelected = dbAvatars.FirstOrDefault(a => a.IsSelected);
+                            if (previousSelected != null)
+                            {
+                                previousSelected.IsSelected = false;
+                                await _database.SaveAvatarAsync(previousSelected);
+                            }
+                        }
+                        dbAvatar.IsSelected = isSelected.Value;
+                    }
+                }
+
+                await _database.SaveAvatarAsync(dbAvatar);
+                System.Diagnostics.Debug.WriteLine($"Zapisano status awatara {avatarItem.Name}: odblokowany={dbAvatar.IsUnlocked}, wybrany={dbAvatar.IsSelected}");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Błąd zapisywania statusu awatara: {ex.Message}");
             }
         }
 
@@ -280,20 +508,25 @@ namespace NeuroMate.Views
             {
                 if (_currentPreviewAvatar.IsUnlocked && !_currentPreviewAvatar.IsCurrentlySelected)
                 {
-                    // Zmień awatara
-                    var success = await _avatarService.ChangeAvatarAsync(_currentPreviewAvatar.Id.ToString());
-                    if (success)
-                    {
-                        await DisplayAlert("Sukces!", $"Zmieniono awatara na: {_currentPreviewAvatar.Name}", "OK");
-                        await LoadDataAsync(); // Odśwież dane w sklepie
-                        await CloseAvatarPreview();
+                    // Zmień awatara - użyj nowego systemu
+                    await SaveAvatarUnlockStatus(_currentPreviewAvatar, isSelected: true);
+                    await DisplayAlert("Sukces!", $"Zmieniono awatara na: {_currentPreviewAvatar.Name}", "OK");
+                    await LoadDataAsync(); // Odśwież dane w sklepie
+                    await CloseAvatarPreview();
 
-                        // Wyślij komunikat o zmianie awatara do całej aplikacji
-                        WeakReferenceMessenger.Default.Send(new AvatarChangedMessage());
-                    }
+                    // Wyślij komunikat o zmianie awatara do całej aplikacji
+                    WeakReferenceMessenger.Default.Send(new AvatarChangedMessage());
                 }
                 else if (!_currentPreviewAvatar.IsUnlocked)
                 {
+                    // Sprawdź czy ma dość punktów
+                    var profile = await _pointsService.GetPlayerProfileAsync();
+                    if (profile.TotalPoints < _currentPreviewAvatar.Price)
+                    {
+                        await DisplayAlert("Błąd", "Niewystarczająca liczba punktów!", "OK");
+                        return;
+                    }
+
                     // Kup awatara
                     var confirmed = await DisplayAlert("Potwierdzenie zakupu",
                         $"Czy chcesz kupić awatara '{_currentPreviewAvatar.Name}' za {_currentPreviewAvatar.Price} punktów?\n\n" +
@@ -303,14 +536,18 @@ namespace NeuroMate.Views
 
                     if (confirmed)
                     {
-                        var success = await _avatarService.PurchaseAvatarAsync(_currentPreviewAvatar.Id.ToString());
+                        // Odejmij punkty
+                        var success = await _pointsService.SpendPointsAsync(_currentPreviewAvatar.Price);
                         if (success)
                         {
+                            // Zapisz awatara jako odblokowany i aktywny
+                            await SaveAvatarUnlockStatus(_currentPreviewAvatar, isUnlocked: true, isSelected: true);
+                            
                             await DisplayAlert("Sukces!", $"Kupiono awatara: {_currentPreviewAvatar.Name}!\n\nAwatar został automatycznie aktywowany.", "OK");
                             await LoadDataAsync(); // Odśwież dane w sklepie
                             await CloseAvatarPreview();
 
-                            // Wyślij komunikat o zakupie (zmiana punktów) do całej aplikacji
+                            // Wyślij komunikaty do całej aplikacji
                             WeakReferenceMessenger.Default.Send(new PointsChangedMessage(0));
                             WeakReferenceMessenger.Default.Send(new AvatarChangedMessage());
                         }
@@ -367,11 +604,18 @@ namespace NeuroMate.Views
                 Price = avatar.Price;
                 IsUnlocked = avatar.IsUnlocked;
                 IsDefault = avatar.IsDefault;
-                Rarity = avatar.Rarity; // Kopiuj string Rarity
+                Rarity = avatar.Rarity;
                 PreviewImagePath = avatar.PreviewImagePath;
+                PlayerId = avatar.PlayerId;
 
-                IsCurrentlySelected = profile.CurrentAvatarId == avatar.Id.ToString();
+                // Sprawdź czy to aktualnie wybrany awatar
+                IsCurrentlySelected = avatar.IsSelected || (profile.CurrentAvatarId == avatar.Id.ToString());
+                
+                // Sprawdź czy gracz ma dość punktów
                 CanAfford = profile.TotalPoints >= avatar.Price;
+                
+                // Debug informacje
+                System.Diagnostics.Debug.WriteLine($"Awatar {Name}: ID={Id}, Odblokowany={IsUnlocked}, Wybrany={IsCurrentlySelected}, Cena={Price}, MożeKupić={CanAfford}, Punkty={profile.TotalPoints}");
             }
 
             public bool IsCurrentlySelected { get; set; }
@@ -389,14 +633,15 @@ namespace NeuroMate.Views
             public string PriceText => IsUnlocked ? (IsCurrentlySelected ? "Aktywny" : "Odblokowany") : $"{Price} pkt";
 
             public string ActionButtonText => IsUnlocked
-                ? (IsCurrentlySelected ? "Aktywny" : "Wybierz")
-                : "Kup";
+                ? (IsCurrentlySelected ? "✓ Aktywny" : "🎨 Wybierz")
+                : (CanAfford ? "💎 Kup" : "💎 Kup");
 
             public Color ActionButtonColor => IsUnlocked
                 ? (IsCurrentlySelected ? Colors.Gray : Colors.Blue)
-                : (CanAfford ? Colors.Green : Colors.Gray);
+                : (CanAfford ? Colors.Green : Colors.Orange);
 
-            public bool CanPerformAction => IsUnlocked ? !IsCurrentlySelected : CanAfford;
+            // NAPRAWKA: Zawsze pozwalaj na akcję, sprawdzenie punktów jest w kodzie
+            public bool CanPerformAction => !IsCurrentlySelected; // Tylko blokuj jeśli awatar jest już aktywny
         }
     }
 }

@@ -20,33 +20,40 @@ namespace NeuroMate.Services
 
         public async Task<PlayerProfileData> GetCurrentPlayerAsync()
         {
+            // ZAWSZE pobieraj z bazy danych, żeby mieć aktualne dane
+            var players = await _database.GetAllPlayerProfileDataAsync();
+            _currentPlayer = players.FirstOrDefault();
+            
             if (_currentPlayer == null)
             {
-                var players = await _database.GetAllPlayerProfileDataAsync();
-                _currentPlayer = players.FirstOrDefault();
-                
-                if (_currentPlayer == null)
+                _currentPlayer = new PlayerProfileData
                 {
-                    _currentPlayer = new PlayerProfileData
-                    {
-                        Username = "Gracz",
-                        Points = 500, // Startowe punkty zwiększone na potrzeby testowania
-                        Level = 1,
-                        Experience = 0
-                    };
-                    await _database.SavePlayerProfileDataAsync(_currentPlayer);
-                }
+                    Username = "Gracz",
+                    Points = 5000, // Zwiększone punkty startowe dla testowania
+                    Level = 1,
+                    Experience = 0
+                };
+                await _database.SavePlayerProfileDataAsync(_currentPlayer);
             }
+            
             return _currentPlayer;
         }
 
         public async Task<bool> SpendPointsAsync(int amount)
         {
             var player = await GetCurrentPlayerAsync();
+            System.Diagnostics.Debug.WriteLine($"[PointsService] Przed wydaniem: {player.Points} punktów, wydaje: {amount}");
+            
             if (player.Points >= amount)
             {
                 player.Points -= amount;
                 await _database.SavePlayerProfileDataAsync(player);
+                System.Diagnostics.Debug.WriteLine($"[PointsService] Po wydaniu i zapisie do bazy: {player.Points} punktów");
+                
+                // Sprawdź czy faktycznie zostało zapisane
+                var savedPlayer = await GetCurrentPlayerAsync();
+                System.Diagnostics.Debug.WriteLine($"[PointsService] Sprawdzenie z bazy po zapisie: {savedPlayer.Points} punktów");
+                
                 WeakReferenceMessenger.Default.Send(new PointsChangedMessage(player.Points));
                 return true;
             }
@@ -56,8 +63,16 @@ namespace NeuroMate.Services
         public async Task AddPointsAsync(int amount)
         {
             var player = await GetCurrentPlayerAsync();
+            System.Diagnostics.Debug.WriteLine($"[PointsService] Przed dodaniem: {player.Points} punktów, dodaję: {amount}");
+            
             player.Points += amount;
             await _database.SavePlayerProfileDataAsync(player);
+            System.Diagnostics.Debug.WriteLine($"[PointsService] Po dodaniu i zapisie do bazy: {player.Points} punktów");
+            
+            // Sprawdź czy faktycznie zostało zapisane
+            var savedPlayer = await GetCurrentPlayerAsync();
+            System.Diagnostics.Debug.WriteLine($"[PointsService] Sprawdzenie z bazy po zapisie: {savedPlayer.Points} punktów");
+            
             WeakReferenceMessenger.Default.Send(new PointsChangedMessage(player.Points));
         }
 
@@ -77,7 +92,7 @@ namespace NeuroMate.Services
 
             return new Models.PlayerProfile
             {
-                TotalPoints = playerData.Points+2000,
+                TotalPoints = playerData.Points, // USUNIĘTO +2000
                 PointsSpent = 0, // Można dodać tracking wydanych punktów
                 CurrentAvatarId = playerData.SelectedAvatarId.ToString(),
                 UnlockedAvatarIds = unlockedAvatarIds,

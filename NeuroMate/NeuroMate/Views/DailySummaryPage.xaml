@@ -100,7 +100,7 @@
                     </StackLayout>
 
                     <!-- Postęp ogólny -->
-                    <StackLayout Grid.Row="1" Grid.ColumnSpan="3" Spacing="10">
+                    <StackLayout Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Spacing="10">
                         <Label Text="Postęp dzienny" 
                                Style="{StaticResource Subtitle}"
                                HorizontalTextAlignment="Center" />
@@ -355,15 +355,18 @@
 
                     <Button Grid.Column="0"
                             Text="📤 Eksportuj raport"
-                            Style="{StaticResource OutlineButton}" />
+                            Style="{StaticResource OutlineButton}"
+                            Clicked="OnExportReportClicked" />
 
                     <Button Grid.Column="1"
                             Text="📅 Plan na jutro"
-                            Style="{StaticResource PrimaryButton}" />
+                            Style="{StaticResource PrimaryButton}"
+                            Clicked="OnPlanTomorrowClicked" />
                 </Grid>
 
                 <Button Text="🏠 Powrót do głównej"
-                        Style="{StaticResource SecondaryButton}" />
+                        Style="{StaticResource SecondaryButton}"
+                        Clicked="OnBackToMainClicked" />
             </StackLayout>
         </Grid>
     </ScrollView>
