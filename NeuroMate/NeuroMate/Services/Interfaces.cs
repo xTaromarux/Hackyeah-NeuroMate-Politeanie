@@ -189,6 +189,9 @@ namespace NeuroMate.Services
         Task<List<NeuroMate.Database.Entities.Avatar>> GetAllAvatarsAsync();
         Task<bool> ChangeAvatarAsync(string avatarId);
         Task<bool> PurchaseAvatarAsync(string avatarId);
+        
+        // Nowa metoda do resetowania awatarów
+        Task ResetAvatarsAsync();
     }
 
     /// <summary>

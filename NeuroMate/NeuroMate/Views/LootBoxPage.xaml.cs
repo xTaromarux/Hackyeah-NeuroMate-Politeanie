@@ -1,6 +1,7 @@
 using Microsoft.Maui.Controls;
 using NeuroMate.Services;
 using NeuroMate.Database.Entities;
+using NeuroMate.Database;
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -32,6 +33,100 @@ namespace NeuroMate.Views
         private async void OnBackClicked(object sender, EventArgs e)
         {
             await Shell.Current.GoToAsync("..");
+        }
+
+        private async void OnResetClicked(object sender, EventArgs e)
+        {
+            try
+            {
+                LoadingIndicator.IsVisible = true;
+                LoadingIndicator.IsRunning = true;
+                
+                // Resetuj loot boxy
+                await _viewModel.LootBoxService.ResetLootBoxDataAsync();
+                
+                // Przeładuj dane
+                await _viewModel.LoadDataAsync();
+                PointsLabel.Text = $"💎 Punkty: {_viewModel.CurrentPoints}";
+                
+                await DisplayAlert("Sukces", "Loot boxy zostały zresetowane!", "OK");
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlert("Błąd", $"Nie udało się zresetować: {ex.Message}", "OK");
+            }
+            finally
+            {
+                LoadingIndicator.IsVisible = false;
+                LoadingIndicator.IsRunning = false;
+            }
+        }
+
+        private async void OnAddPointsClicked(object sender, EventArgs e)
+        {
+            try
+            {
+                // Dodaj 1000 punktów
+                await _viewModel.PointsService.AddPointsAsync(1000);
+                
+                // Odśwież wyświetlanie
+                await _viewModel.LoadDataAsync();
+                PointsLabel.Text = $"💎 Punkty: {_viewModel.CurrentPoints}";
+                
+                await DisplayAlert("Sukces", "Dodano 1000 punktów!", "OK");
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlert("Błąd", $"Nie udało się dodać punktów: {ex.Message}", "OK");
+            }
+        }
+
+        private async void OnResetPlayerClicked(object sender, EventArgs e)
+        {
+            try
+            {
+                var confirmed = await DisplayAlert("Potwierdzenie", 
+                    "Czy na pewno chcesz zresetować dane gracza?\n\nTo usunie:\n- Profil gracza\n- Historię punktów\n- Wszystkie loot boxy\n\nGracz zostanie utworzony na nowo z 5000 punktów.", 
+                    "Tak, resetuj", "Anuluj");
+                
+                if (!confirmed) return;
+                
+                LoadingIndicator.IsVisible = true;
+                LoadingIndicator.IsRunning = true;
+                
+                // Resetuj dane gracza i loot boxy
+                var databaseService = _viewModel.LootBoxService.GetType()
+                    .GetField("_database", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                    ?.GetValue(_viewModel.LootBoxService) as DatabaseService;
+                
+                if (databaseService != null)
+                {
+                    await databaseService.ResetPlayerDataAsync();
+                    await databaseService.ResetLootBoxDataAsync();
+                    
+                    // Sprawdź status bazy
+                    var status = await databaseService.GetDatabaseStatusAsync();
+                    System.Diagnostics.Debug.WriteLine($"[Database] Status po resecie: {status}");
+                }
+                
+                // Przeładuj wszystko
+                await _viewModel.LootBoxService.InitializeDefaultLootBoxesAsync();
+                await _viewModel.LoadDataAsync();
+                PointsLabel.Text = $"💎 Punkty: {_viewModel.CurrentPoints}";
+                
+                await DisplayAlert("Sukces", 
+                    $"Dane gracza zostały zresetowane!\n\nNowy gracz ma {_viewModel.CurrentPoints} punktów.", 
+                    "OK");
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlert("Błąd", $"Nie udało się zresetować gracza: {ex.Message}", "OK");
+            }
+            finally
+            {
+                LoadingIndicator.IsVisible = false;
+                LoadingIndicator.IsRunning = false;
+            }
         }
 
         private async void OnAvatarShopClicked(object sender, EventArgs e)
@@ -169,6 +264,10 @@ namespace NeuroMate.Views
         [ObservableProperty]
         private int currentPoints;
 
+        // Publiczne właściwości dla dostępu z code-behind
+        public LootBoxService LootBoxService => _lootBoxService;
+        public PointsService PointsService => _pointsService;
+
         public LootBoxViewModel(LootBoxService lootBoxService, PointsService pointsService)
         {
             _lootBoxService = lootBoxService;
@@ -190,15 +289,29 @@ namespace NeuroMate.Views
             var lootBoxData = await _lootBoxService.GetAvailableLootBoxesAsync();
             var displayModels = lootBoxData.Select(lb => new LootBoxDisplayModel(lb)).ToList();
             
+            // Pobierz punkty z Models.PlayerProfile.TotalPoints
+            var playerProfile = await _pointsService.GetPlayerProfileAsync();
+            CurrentPoints = playerProfile.TotalPoints;
+            
+            // Zaktualizuj status "CanAfford" dla każdego lootboxa
+            foreach (var model in displayModels)
+            {
+                model.UpdateAffordability(CurrentPoints);
+            }
+            
             LootBoxes.Clear();
             foreach (var model in displayModels)
             {
                 LootBoxes.Add(model);
             }
-
-            // Pobierz punkty z Models.PlayerProfile.TotalPoints
-            var playerProfile = await _pointsService.GetPlayerProfileAsync();
-            CurrentPoints = playerProfile.TotalPoints;
+            
+            // Debug: sprawdź ile punktów faktycznie mamy
+            System.Diagnostics.Debug.WriteLine($"[LootBoxPage] Załadowano punkty: {CurrentPoints}");
+            System.Diagnostics.Debug.WriteLine($"[LootBoxPage] Dostępne lootboxy:");
+            foreach (var box in LootBoxes)
+            {
+                System.Diagnostics.Debug.WriteLine($"  - {box.Name}: {box.Price} pkt (można kupić: {box.CanAfford})");
+            }
         }
 
         [RelayCommand]
@@ -243,6 +356,7 @@ namespace NeuroMate.Views
         public int Price { get; set; }
         public string ImagePath { get; set; } = string.Empty;
         public string Rarity { get; set; } = string.Empty;
+        public bool CanAfford { get; set; } = true; // Dodana właściwość sprawdzania punktów
 
         public string RarityColor => Rarity switch
         {
@@ -262,6 +376,9 @@ namespace NeuroMate.Views
             _ => "#40808080"
         };
 
+        public string ButtonText => CanAfford ? "📦 OTWÓRZ SKRZYNKĘ" : "💎 Za mało punktów";
+        public Color ButtonColor => CanAfford ? Colors.Green : Colors.Red;
+
         public LootBoxDisplayModel(LootBox lootBox)
         {
             Id = lootBox.Id;
@@ -270,6 +387,13 @@ namespace NeuroMate.Views
             Price = lootBox.Price;
             ImagePath = lootBox.ImagePath;
             Rarity = lootBox.Rarity;
+        }
+
+        // Metoda do aktualizacji statusu czy można kupić
+        public void UpdateAffordability(int currentPoints)
+        {
+            CanAfford = currentPoints >= Price;
+            System.Diagnostics.Debug.WriteLine($"[LootBox] {Name}: {Price} pkt, Gracz ma: {currentPoints}, Może kupić: {CanAfford}");
         }
 
         public LootBox ToLootBox()

@@ -27,27 +27,35 @@ namespace NeuroMate.Services
                 {
                     new Database.Entities.LootBox 
                     { 
-                        Name = "Podstawowa Skrzynka", 
-                        Description = "Zawiera podstawowe nagrody", 
-                        Price = 50, 
+                        Name = "Początkujący Pakiet", 
+                        Description = "Idealna dla nowych graczy - gwarantowane punkty!", 
+                        Price = 10, // Bardzo tania opcja
                         Rarity = "Common",
-                        ImagePath = "lootbox_common.png"
+                        ImagePath = "it_guy.png" // Użyj dostępnego obrazka
+                    },
+                    new Database.Entities.LootBox 
+                    { 
+                        Name = "Podstawowa Skrzynka", 
+                        Description = "Zawiera podstawowe nagrody i małe ilości punktów", 
+                        Price = 25, // Zmniejszona cena
+                        Rarity = "Common",
+                        ImagePath = "hackyeah_default.png" // Użyj dostępnego obrazka
                     },
                     new Database.Entities.LootBox 
                     { 
                         Name = "Srebrna Skrzynka", 
-                        Description = "Lepsze szanse na rzadkie nagrody", 
-                        Price = 100, 
+                        Description = "Lepsze szanse na rzadkie nagrody i więcej punktów", 
+                        Price = 75, // Zmniejszona cena
                         Rarity = "Rare",
-                        ImagePath = "lootbox_rare.png"
+                        ImagePath = "hackyeah_happy.png" // Użyj dostępnego obrazka
                     },
                     new Database.Entities.LootBox 
                     { 
                         Name = "Złota Skrzynka", 
-                        Description = "Najlepsze nagrody w grze!", 
-                        Price = 200, 
+                        Description = "Najlepsze nagrody w grze i duże ilości punktów!", 
+                        Price = 150, // Zmniejszona cena
                         Rarity = "Epic",
-                        ImagePath = "lootbox_epic.png"
+                        ImagePath = "hackyeah_wave.png" // Użyj dostępnego obrazka
                     }
                 };
 
@@ -56,33 +64,7 @@ namespace NeuroMate.Services
                     await _database.SaveLootBoxAsync(box);
                 }
 
-                await InitializeDefaultAvatarsAsync();
                 await InitializeDefaultRewardsAsync();
-            }
-        }
-
-        private async Task InitializeDefaultAvatarsAsync()
-        {
-            var player = await _pointsService.GetCurrentPlayerAsync();
-            var existingAvatars = await _database.GetAllAvatarsAsync();
-            
-            if (!existingAvatars.Any())
-            {
-                var defaultAvatars = new List<Database.Entities.Avatar>
-                {
-                    new Database.Entities.Avatar { Name = "Robocik Podstawowy", Description = "Twój pierwszy awatar", ImagePath = "avatar_robot_basic.png", Rarity = "Common", IsUnlocked = true, IsSelected = true, PlayerId = player.Id },
-                    new Database.Entities.Avatar { Name = "Koteczek", Description = "Słodki kotek", ImagePath = "avatar_cat.png", Rarity = "Common", PlayerId = player.Id },
-                    new Database.Entities.Avatar { Name = "Mysz Laboratoryjna", Description = "Mądra mysz", ImagePath = "avatar_mouse.png", Rarity = "Rare", PlayerId = player.Id },
-                    new Database.Entities.Avatar { Name = "Robocik Srebrny", Description = "Ulepszony robot", ImagePath = "avatar_robot_silver.png", Rarity = "Rare", PlayerId = player.Id },
-                    new Database.Entities.Avatar { Name = "Smok Mały", Description = "Młody smok", ImagePath = "avatar_dragon.png", Rarity = "Epic", PlayerId = player.Id },
-                    new Database.Entities.Avatar { Name = "Robocik Złoty", Description = "Najlepszy robot", ImagePath = "avatar_robot_gold.png", Rarity = "Epic", PlayerId = player.Id },
-                    new Database.Entities.Avatar { Name = "Feniks", Description = "Legendarna istota", ImagePath = "avatar_phoenix.png", Rarity = "Legendary", PlayerId = player.Id }
-                };
-
-                foreach (var avatar in defaultAvatars)
-                {
-                    await _database.SaveAvatarAsync(avatar);
-                }
             }
         }
 
@@ -92,36 +74,47 @@ namespace NeuroMate.Services
             
             foreach (var box in boxes)
             {
+                // Sprawdź czy już są nagrody dla tej skrzynki
+                var existingRewards = await _database.GetAllLootBoxRewardsAsync();
+                if (existingRewards.Any(r => r.LootBoxId == box.Id))
+                    continue; // Pomiń jeśli już są nagrody
+                
                 var rewards = new List<Database.Entities.LootBoxReward>();
                 
-                if (box.Rarity == "Common")
+                if (box.Name == "Początkujący Pakiet")
                 {
                     rewards.AddRange(new[]
                     {
-                        new Database.Entities.LootBoxReward { LootBoxId = box.Id, RewardType = "Points", RewardValue = "25", DropChance = 0.4f, Rarity = "Common" },
-                        new Database.Entities.LootBoxReward { LootBoxId = box.Id, RewardType = "Avatar", RewardValue = "2", DropChance = 0.3f, Rarity = "Common" },
-                        new Database.Entities.LootBoxReward { LootBoxId = box.Id, RewardType = "Avatar", RewardValue = "3", DropChance = 0.2f, Rarity = "Rare" },
-                        new Database.Entities.LootBoxReward { LootBoxId = box.Id, RewardType = "Points", RewardValue = "10", DropChance = 0.1f, Rarity = "Common" }
+                        new Database.Entities.LootBoxReward { LootBoxId = box.Id, RewardType = "Points", RewardValue = "15", DropChance = 0.6f, Rarity = "Common", IsActive = true },
+                        new Database.Entities.LootBoxReward { LootBoxId = box.Id, RewardType = "Points", RewardValue = "20", DropChance = 0.3f, Rarity = "Common", IsActive = true },
+                        new Database.Entities.LootBoxReward { LootBoxId = box.Id, RewardType = "Points", RewardValue = "30", DropChance = 0.1f, Rarity = "Rare", IsActive = true }
+                    });
+                }
+                else if (box.Rarity == "Common")
+                {
+                    rewards.AddRange(new[]
+                    {
+                        new Database.Entities.LootBoxReward { LootBoxId = box.Id, RewardType = "Points", RewardValue = "30", DropChance = 0.5f, Rarity = "Common", IsActive = true },
+                        new Database.Entities.LootBoxReward { LootBoxId = box.Id, RewardType = "Points", RewardValue = "50", DropChance = 0.3f, Rarity = "Common", IsActive = true },
+                        new Database.Entities.LootBoxReward { LootBoxId = box.Id, RewardType = "Points", RewardValue = "75", DropChance = 0.2f, Rarity = "Rare", IsActive = true }
                     });
                 }
                 else if (box.Rarity == "Rare")
                 {
                     rewards.AddRange(new[]
                     {
-                        new Database.Entities.LootBoxReward { LootBoxId = box.Id, RewardType = "Avatar", RewardValue = "4", DropChance = 0.3f, Rarity = "Rare" },
-                        new Database.Entities.LootBoxReward { LootBoxId = box.Id, RewardType = "Avatar", RewardValue = "5", DropChance = 0.25f, Rarity = "Epic" },
-                        new Database.Entities.LootBoxReward { LootBoxId = box.Id, RewardType = "Points", RewardValue = "75", DropChance = 0.25f, Rarity = "Rare" },
-                        new Database.Entities.LootBoxReward { LootBoxId = box.Id, RewardType = "Points", RewardValue = "50", DropChance = 0.2f, Rarity = "Common" }
+                        new Database.Entities.LootBoxReward { LootBoxId = box.Id, RewardType = "Points", RewardValue = "100", DropChance = 0.4f, Rarity = "Rare", IsActive = true },
+                        new Database.Entities.LootBoxReward { LootBoxId = box.Id, RewardType = "Points", RewardValue = "125", DropChance = 0.3f, Rarity = "Rare", IsActive = true },
+                        new Database.Entities.LootBoxReward { LootBoxId = box.Id, RewardType = "Points", RewardValue = "75", DropChance = 0.3f, Rarity = "Common", IsActive = true }
                     });
                 }
                 else if (box.Rarity == "Epic")
                 {
                     rewards.AddRange(new[]
                     {
-                        new Database.Entities.LootBoxReward { LootBoxId = box.Id, RewardType = "Avatar", RewardValue = "6", DropChance = 0.4f, Rarity = "Epic" },
-                        new Database.Entities.LootBoxReward { LootBoxId = box.Id, RewardType = "Avatar", RewardValue = "7", DropChance = 0.2f, Rarity = "Legendary" },
-                        new Database.Entities.LootBoxReward { LootBoxId = box.Id, RewardType = "Points", RewardValue = "150", DropChance = 0.3f, Rarity = "Epic" },
-                        new Database.Entities.LootBoxReward { LootBoxId = box.Id, RewardType = "Points", RewardValue = "100", DropChance = 0.1f, Rarity = "Rare" }
+                        new Database.Entities.LootBoxReward { LootBoxId = box.Id, RewardType = "Points", RewardValue = "200", DropChance = 0.4f, Rarity = "Epic", IsActive = true },
+                        new Database.Entities.LootBoxReward { LootBoxId = box.Id, RewardType = "Points", RewardValue = "300", DropChance = 0.3f, Rarity = "Epic", IsActive = true },
+                        new Database.Entities.LootBoxReward { LootBoxId = box.Id, RewardType = "Points", RewardValue = "150", DropChance = 0.3f, Rarity = "Rare", IsActive = true }
                     });
                 }
 
@@ -129,6 +122,8 @@ namespace NeuroMate.Services
                 {
                     await _database.SaveLootBoxRewardAsync(reward);
                 }
+                
+                System.Diagnostics.Debug.WriteLine($"[LootBox] Dodano {rewards.Count} nagród dla {box.Name}");
             }
         }
 
@@ -149,12 +144,28 @@ namespace NeuroMate.Services
             if (lootBox == null)
                 throw new ArgumentException("LootBox nie istnieje");
 
-            // Sprawdź czy gracz ma wystarczająco punktów
-            var canAfford = await _pointsService.SpendPointsAsync(lootBox.Price);
-            if (!canAfford)
-                throw new InvalidOperationException("Niewystarczająco punktów");
-
+            // NAPRAWKA: Najpierw sprawdź punkty bez ich wydawania
             var player = await _pointsService.GetCurrentPlayerAsync();
+            var playerProfile = await _pointsService.GetPlayerProfileAsync();
+            
+            System.Diagnostics.Debug.WriteLine($"[LootBox] Gracz ma {playerProfile.TotalPoints} punktów, lootbox kosztuje {lootBox.Price}");
+            
+            if (playerProfile.TotalPoints < lootBox.Price)
+            {
+                System.Diagnostics.Debug.WriteLine($"[LootBox] Niewystarczająco punktów!");
+                throw new InvalidOperationException("Niewystarczająco punktów");
+            }
+
+            // Teraz wydaj punkty (wiemy że ma wystarczająco)
+            var success = await _pointsService.SpendPointsAsync(lootBox.Price);
+            if (!success)
+            {
+                System.Diagnostics.Debug.WriteLine($"[LootBox] Błąd podczas wydawania punktów");
+                throw new InvalidOperationException("Błąd podczas wydawania punktów");
+            }
+
+            System.Diagnostics.Debug.WriteLine($"[LootBox] Pomyślnie wydano {lootBox.Price} punktów");
+
             var rewards = await GetLootBoxRewardsAsync(lootBoxId);
             
             // Losuj nagrodę
@@ -228,6 +239,13 @@ namespace NeuroMate.Services
             }
             
             return rewards.Last(); // Fallback
+        }
+
+        // Metoda do resetowania danych loot boxów na potrzeby debugowania
+        public async Task ResetLootBoxDataAsync()
+        {
+            await _database.ResetLootBoxDataAsync();
+            await InitializeDefaultLootBoxesAsync();
         }
     }
 }

@@ -118,5 +118,96 @@ namespace NeuroMate.Services
 
             return true;
         }
+
+        // Nowa metoda do resetowania awatarów
+        public async Task ResetAvatarsAsync()
+        {
+            // Usuń wszystkie istniejące awatary
+            var existingAvatars = await _database.GetAllAvatarsAsync();
+            foreach (var avatar in existingAvatars)
+            {
+                await _database.DeleteAvatarAsync(avatar);
+            }
+
+            // Zainicjalizuj nowe awatary
+            await InitializeDefaultAvatarsAsync();
+        }
+
+        private async Task InitializeDefaultAvatarsAsync()
+        {
+            var player = await _pointsService.GetCurrentPlayerAsync();
+            
+            var defaultAvatars = new List<Database.Entities.Avatar>
+            {
+                new Database.Entities.Avatar 
+                { 
+                    Name = "HackyEah Domyślny", 
+                    Description = "Twój podstawowy awatar", 
+                    LottieFileName = "hackyeah_default.png",
+                    PreviewImagePath = "hackyeah_default.png",
+                    Price = 0,
+                    Rarity = "Common", 
+                    IsUnlocked = true, 
+                    IsSelected = true, 
+                    IsDefault = true,
+                    PlayerId = player.Id 
+                },
+                new Database.Entities.Avatar 
+                { 
+                    Name = "HackyEah Szczęśliwy", 
+                    Description = "Uśmiechnięty awatar", 
+                    LottieFileName = "hackyeah_happy.png",
+                    PreviewImagePath = "hackyeah_happy.png",
+                    Price = 50,
+                    Rarity = "Common", 
+                    PlayerId = player.Id 
+                },
+                new Database.Entities.Avatar 
+                { 
+                    Name = "HackyEah Smutny", 
+                    Description = "Zamyślony awatar", 
+                    LottieFileName = "hackyeah_sad.png",
+                    PreviewImagePath = "hackyeah_sad.png",
+                    Price = 75,
+                    Rarity = "Rare", 
+                    PlayerId = player.Id 
+                },
+                new Database.Entities.Avatar 
+                { 
+                    Name = "HackyEah Machający", 
+                    Description = "Przyjazny awatar", 
+                    LottieFileName = "hackyeah_wave.png",
+                    PreviewImagePath = "hackyeah_wave.png",
+                    Price = 100,
+                    Rarity = "Rare", 
+                    PlayerId = player.Id 
+                },
+                new Database.Entities.Avatar 
+                { 
+                    Name = "Programista", 
+                    Description = "Ekspert IT", 
+                    LottieFileName = "it_guy.png",
+                    PreviewImagePath = "it_guy.png",
+                    Price = 200,
+                    Rarity = "Epic", 
+                    PlayerId = player.Id 
+                },
+                new Database.Entities.Avatar 
+                { 
+                    Name = "Szara Koszulka", 
+                    Description = "Minimalistyczny styl", 
+                    LottieFileName = "gray_tshirt.png",
+                    PreviewImagePath = "gray_tshirt.png",
+                    Price = 150,
+                    Rarity = "Epic", 
+                    PlayerId = player.Id 
+                }
+            };
+
+            foreach (var avatar in defaultAvatars)
+            {
+                await _database.SaveAvatarAsync(avatar);
+            }
+        }
     }
 }
