@@ -1,24 +1,414 @@
-﻿namespace NeuroMate
+﻿using NeuroMate.ViewModels;
+using NeuroMate.Views;
+using NeuroMate.Services;
+#if WINDOWS
+using Microsoft.UI.Xaml;
+using WinRT.Interop;
+using NeuroMate.WinUI;
+#endif
+#if WINDOWS
+using WinUIWindow = Microsoft.UI.Xaml.Window;
+#endif
+using SkiaSharp.Extended.UI.Controls;
+using CommunityToolkit.Mvvm.Messaging;
+using NeuroMate.Messages;
+using CommunityToolkit.Maui.Core.Primitives;
+
+namespace NeuroMate
 {
     public partial class MainPage : ContentPage
     {
-        int count = 0;
+        private readonly Random _random = new();
+        private IFloatingAvatarService? _floatingAvatarService;
+        private readonly List<string> _avatarMessages = new()
+        {
+            "Czas na przerwę! Wykonajmy razem szybki test Stroop 🎨",
+            "Zauważyłem, że pracujesz już długo. Może krótka gra na reakcję? ⚡",
+            "Twoja koncentracja może potrzebować odświeżenia. Spróbujmy Task Switching! 🔄",
+            "Pora na mikro-przerwę! Wykonaj ze mną ćwiczenia oczu 👁️",
+            "Twój mózg potrzebuje wyzwania. Zagrajmy w N-back! 🧠",
+            "Czas na ruch! Wstań i rozciągnij się przez minutę 🤸‍♂️",
+            "Może coś do picia? Nawodnienie jest ważne dla mózgu! 💧"
+        };
+
+        private Timer? _interventionTimer;
+        private DateTime _lastInterventionTime = DateTime.Now;
 
         public MainPage()
         {
             InitializeComponent();
+            var viewModel = new MainViewModel();
+            BindingContext = viewModel;
+
+            // Subskrypcja do zmian w ViewModelu dla aktualizacji UI
+            viewModel.PropertyChanged += OnViewModelPropertyChanged;
+
+            // Używam nowoczesnego WeakReferenceMessenger zamiast przestarzałego MessagingCenter
+            WeakReferenceMessenger.Default.Register<AvatarChangedMessage>(this, (r, m) =>
+            {
+                MainThread.BeginInvokeOnMainThread(async () =>
+                {
+                    if (BindingContext is MainViewModel vm)
+                    {
+                        await vm.RefreshDataAsync();
+                    }
+                });
+            });
+
+            WeakReferenceMessenger.Default.Register<PointsChangedMessage>(this, (r, m) =>
+            {
+                MainThread.BeginInvokeOnMainThread(async () =>
+                {
+                    if (BindingContext is MainViewModel vm)
+                    {
+                        await vm.RefreshDataAsync();
+                    }
+                });
+            });
+
+            // Uruchom timer interwencji
+            StartInterventionTimer();
+
+            // Aktualizuj dane startowe
+            UpdateDashboardData();
+
+            // Inicjalizuj dialog avatara
+            InitializeAvatarDialog();
         }
 
-        private void OnCounterClicked(object sender, EventArgs e)
+        private void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            count++;
+            if (BindingContext is not MainViewModel viewModel) return;
 
-            if (count == 1)
-                CounterBtn.Text = $"Clicked {count} time";
-            else
-                CounterBtn.Text = $"Clicked {count} times";
+            // Aktualizuj UI na podstawie zmian w ViewModelu
+            switch (e.PropertyName)
+            {
+                case nameof(MainViewModel.TotalPoints):
+                    TotalPointsLabel.Text = viewModel.TotalPoints.ToString();
+                    break;
+                case nameof(MainViewModel.PointsEarnedToday):
+                    TodayPointsLabel.Text = $"Dziś: +{viewModel.PointsEarnedToday}";
+                    break;
+                case nameof(MainViewModel.CurrentAvatarName):
+                    CurrentAvatarNameLabel.Text = viewModel.CurrentAvatarName;
+                    break;
+                case nameof(MainViewModel.CurrentAvatarLottie):
+                    MainAvatarImage.Source = viewModel.CurrentAvatarLottie;
+                    DialogAvatarImage.Source = viewModel.CurrentAvatarLottie;
+                    break;
+                case nameof(MainViewModel.NeuroScore):
+                    NeuroScoreLabel.Text = viewModel.NeuroScore.ToString();
+                    break;
+                case nameof(MainViewModel.AssistantHint):
+                    AvatarMessageLabel.Text = viewModel.AssistantHint;
+                    break;
+            }
+        }
 
-            SemanticScreenReader.Announce(CounterBtn.Text);
+        private void InitializeAvatarDialog()
+        {
+            // Ustaw początkowy stan okna dialogowego
+            AvatarDialogOverlay.IsVisible = false;
+            AvatarDialogOverlay.Opacity = 0;
+            AvatarDialogCard.Scale = 0.8;
+        }
+
+        protected override void OnHandlerChanged()
+        {
+            base.OnHandlerChanged();
+
+            if (Handler != null)
+            {
+                Dispatcher.Dispatch(async () =>
+                {
+                    await Task.Delay(1000);
+
+                    _floatingAvatarService = Handler.MauiContext?.Services?.GetService<IFloatingAvatarService>();
+
+                    if (_floatingAvatarService != null)
+                    {
+                        UpdateDashboardData();
+                    }
+                });
+            }
+        }
+
+        private async void OnAvatarTapped(object sender, EventArgs e)
+        {
+            await ShowAvatarDialog();
+        }
+
+        private async Task ShowAvatarDialog()
+        {
+            // Wybierz odpowiednią animację na podstawie wyników
+            //string animationFile = GetAvatarAnimationBasedOnPerformance();
+            //DialogAvatarVideo.Source = animationFile;
+            DialogAvatarVideo.ShouldAutoPlay = true;
+            DialogAvatarVideo.ShouldLoopPlayback = true;
+            DialogAvatarVideo.Play();
+            // Ustaw wiadomość na podstawie wyników
+            var message = GetAvatarMessageBasedOnPerformance();
+            AvatarMessageLabel.Text = message;
+
+            AvatarDialogOverlay.IsVisible = true;
+
+            await Task.WhenAll(
+                AvatarDialogOverlay.FadeTo(1, 300, Easing.CubicOut),
+                AvatarDialogCard.ScaleTo(1, 300, Easing.SpringOut)
+            );
+
+            StartSpeechIndicatorAnimation();
+        }
+
+        private async Task HideAvatarDialog()
+        {
+            DialogAvatarVideo.ShouldAutoPlay = false;
+            DialogAvatarVideo.ShouldLoopPlayback = false;
+            await Task.WhenAll(
+                AvatarDialogOverlay.FadeTo(0, 250, Easing.CubicIn),
+                AvatarDialogCard.ScaleTo(0.9, 250, Easing.CubicIn)
+            );
+            DialogAvatarVideo.Stop();
+
+            AvatarDialogOverlay.IsVisible = false;
+        }
+
+        private async void StartSpeechIndicatorAnimation()
+        {
+            while (AvatarDialogOverlay.IsVisible && AvatarDialogOverlay.Opacity > 0)
+            {
+                await SpeechIndicator.ScaleTo(1.2, 600, Easing.SinInOut);
+                await SpeechIndicator.ScaleTo(1.0, 600, Easing.SinInOut);
+                await Task.Delay(100);
+            }
+        }
+
+        private async void OnDialogOverlayTapped(object sender, EventArgs e) => await HideAvatarDialog();
+        private async void OnCloseDialogClicked(object sender, EventArgs e) => await HideAvatarDialog();
+        private async void OnDialogStartTrainingClicked(object sender, EventArgs e)
+        {
+            await HideAvatarDialog();
+            await Shell.Current.GoToAsync(nameof(Views.CognitiveGamesPage));
+        }
+        private async void OnDialogShowStatsClicked(object sender, EventArgs e)
+        {
+            await HideAvatarDialog();
+            await Shell.Current.GoToAsync(nameof(Views.DailySummaryPage));
+        }
+        private async void OnDialogSettingsClicked(object sender, EventArgs e)
+        {
+            await DisplayAlert("Ustawienia", "Funkcja ustawień będzie dostępna w przyszłej wersji!", "OK");
+        }
+
+        private async void OnStroopTestClicked(object sender, EventArgs e) => await Shell.Current.GoToAsync(nameof(Views.StroopGamePage));
+        private async void OnPvtTestClicked(object sender, EventArgs e) => await Shell.Current.GoToAsync(nameof(Views.PvtGamePage));
+        private async void OnTaskSwitchClicked(object sender, EventArgs e) => await Shell.Current.GoToAsync(nameof(Views.TaskSwitchingGamePage));
+        private async void OnSummaryClicked(object sender, EventArgs e) => await Shell.Current.GoToAsync(nameof(Views.DailySummaryPage));
+
+        private async void OnToggleAvatarClicked(object sender, EventArgs e)
+        {
+            if (_floatingAvatarService != null)
+                await DisplayAlert("Avatar", "Funkcja przełączania avatara będzie dostępna wkrótce!", "OK");
+        }
+
+        private async void OnStartRecommendationClicked(object sender, EventArgs e) => await Shell.Current.GoToAsync(nameof(Views.StroopGamePage));
+        private async void OnMoreRecommendationsClicked(object sender, EventArgs e)
+        {
+            await DisplayAlert(
+                "Rekomendacje AI",
+                "• Test Stroop - popraw koncentrację\n• Gra PVT - zwiększ szybkość reakcji\n• Task Switching - wzmocnij elastyczność poznawczą\n• N-back - trenuj pamięć roboczą",
+                "OK"
+            );
+        }
+
+        private void UpdateDashboardData()
+        {
+            var focusLevel = _random.Next(60, 100);
+            var workHours = _random.Next(1, 8);
+            var workMinutes = _random.Next(0, 60);
+            var sleepScore = _random.Next(50, 100);
+            var stressLevel = _random.Next(20, 80);
+
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                FocusLevelLabel.Text = focusLevel > 75 ? "Wysoka" : focusLevel > 50 ? "Średnia" : "Niska";
+                FocusLevelLabel.TextColor = focusLevel > 75 ? Colors.Green : focusLevel > 50 ? Colors.Orange : Colors.Red;
+                FocusProgressBar.Progress = focusLevel / 100.0;
+
+                WorkTimeLabel.Text = $"{workHours}h {workMinutes}m";
+                WorkStatusLabel.Text = workHours < 6 ? "W porządku" : "Czas na przerwę";
+                WorkStatusLabel.TextColor = workHours < 6 ? Colors.Green : Colors.Orange;
+
+                SleepScoreLabel.Text = $"{sleepScore}/100";
+                SleepScoreLabel.TextColor = sleepScore > 70 ? Colors.Blue : Colors.Orange;
+
+                StressLevelLabel.Text = stressLevel < 40 ? "Niski" : stressLevel < 70 ? "Średni" : "Wysoki";
+                StressLevelLabel.TextColor = stressLevel < 40 ? Colors.Green : stressLevel < 70 ? Colors.Orange : Colors.Red;
+
+                NeuroScoreLabel.Text = ((focusLevel + sleepScore + (100 - stressLevel)) / 3).ToString();
+                StatusLabel.Text = focusLevel > 75 ? "Gotowy do treningu!" : "Może czas na odpoczynek?";
+            });
+        }
+
+        private async void StartInterventionTimer()
+        {
+            _interventionTimer = new Timer(async _ =>
+            {
+                if (DateTime.Now - _lastInterventionTime > TimeSpan.FromMinutes(30))
+                {
+                    _lastInterventionTime = DateTime.Now;
+
+                    await MainThread.InvokeOnMainThreadAsync(async () =>
+                    {
+                        await ShowAvatarDialog();
+                    });
+                }
+            }, null, TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(5));
+        }
+
+        protected override async void OnAppearing()
+        {
+            base.OnAppearing();
+
+            // Odśwież dane ViewModelu, w tym aktualnego awatara
+            if (BindingContext is MainViewModel viewModel)
+            {
+                await viewModel.RefreshDataAsync();
+            }
+        }
+
+        protected override void OnDisappearing()
+        {
+            base.OnDisappearing();
+
+            // Wyczyść subskrypcje MessagingCenter aby uniknąć memory leaks
+            WeakReferenceMessenger.Default.Unregister<AvatarChangedMessage>(this);
+            WeakReferenceMessenger.Default.Unregister<PointsChangedMessage>(this);
+        }
+
+        private string GetAvatarAnimationBasedOnPerformance()
+        {
+            //Oryginalna logika - przywrócę po testach
+            // Pobierz aktualne dane z ViewModelu
+            if (BindingContext is not MainViewModel viewModel)
+                return "embed://idle.mp4"; // Domyślna animacja
+
+            // Analiza wyników użytkownika
+            int neuroScore = viewModel.NeuroScore;
+            int avgReactionMs = viewModel.AvgReactionMs;
+            int pointsEarnedToday = viewModel.PointsEarnedToday;
+
+            // Oblicz ogólny wynik na podstawie różnych metryk
+            double performanceScore = CalculateOverallPerformance(neuroScore, avgReactionMs, pointsEarnedToday);
+
+            // Wybierz animację na podstawie wyniku
+            return performanceScore switch
+            {
+                > 0.7 => "embed://wave.mp4",     // Dobry wynik - machanie
+                < 0.3 => "embed://sad.mp4",      // Słaby wynik - smutek
+                _ => "embed://idle.mp4"          // Neutralny wynik - spokojny
+            };
+        }
+
+        private string GetAvatarMessageBasedOnPerformance()
+        {
+            if (BindingContext is not MainViewModel viewModel)
+                return "Cześć! Jak się masz?";
+
+            int neuroScore = viewModel.NeuroScore;
+            int avgReactionMs = viewModel.AvgReactionMs;
+            int pointsEarnedToday = viewModel.PointsEarnedToday;
+
+            double performanceScore = CalculateOverallPerformance(neuroScore, avgReactionMs, pointsEarnedToday);
+
+            var goodMessages = new[]
+            {
+                "🎉 Świetna robota! Twoje wyniki są imponujące!",
+                "💪 Jesteś w doskonałej formie! Tak trzymaj!",
+                "⭐ Fantastyczne rezultaty! Twój mózg jest w topowej formie!",
+                "🚀 Wow! Twoja koncentracja jest na najwyższym poziomie!",
+                "👏 Brawo! Osiągasz znakomite wyniki w testach!"
+            };
+
+            var neutralMessages = new[]
+            {
+                "🧠 Twoje wyniki są w normie. Może czas na kolejne wyzwanie?",
+                "⚖️ Stabilne rezultaty! Chcesz popracować nad koncentracją?",
+                "📊 Wyniki wyglądają przeciętnie. Sprawdźmy co możemy poprawić!",
+                "🎯 Jesteś na dobrej drodze. Może spróbujemy nowego ćwiczenia?",
+                "💡 Twój mózg pracuje stabilnie. Czas na dodatkowy trening!"
+            };
+
+            var poorMessages = new[]
+            {
+                "😔 Widzę że możesz się czuć zmęczony. Może zrobimy przerwę?",
+                "💤 Twój mózg potrzebuje odpoczynku. Czas na regenerację!",
+                "🔋 Wygląda na to że energia ci się kończy. Zrób sobie przerwę!",
+                "☕ Może czas na kawę? Twoja koncentracja wydaje się osłabiona.",
+                "🌿 Nie martw się! Każdy ma gorsze dni. Jutro będzie lepiej!"
+            };
+
+            var messages = performanceScore switch
+            {
+                > 0.7 => goodMessages,
+                < 0.3 => poorMessages,
+                _ => neutralMessages
+            };
+
+            return messages[_random.Next(messages.Length)];
+        }
+
+        private double CalculateOverallPerformance(int neuroScore, int avgReactionMs, int pointsEarnedToday)
+        {
+            double score = 0;
+            int factors = 0;
+
+            // NeuroScore (0-100) -> 0-1
+            if (neuroScore > 0)
+            {
+                score += neuroScore / 100.0;
+                factors++;
+            }
+
+            // Czas reakcji (im mniejszy tym lepszy)
+            if (avgReactionMs > 0)
+            {
+                // Zakładamy że 200ms to doskonały czas, 500ms+ to słaby
+                double reactionScore = Math.Max(0, Math.Min(1, (500 - avgReactionMs) / 300.0));
+                score += reactionScore;
+                factors++;
+            }
+
+            // Punkty dzisiaj (względem oczekiwanej dziennej normy, np. 100 pkt)
+            if (pointsEarnedToday >= 0)
+            {
+                double pointsScore = Math.Min(1, pointsEarnedToday / 100.0);
+                score += pointsScore;
+                factors++;
+            }
+
+            return factors > 0 ? score / factors : 0.5; // Domyślnie neutralny
+        }
+        private void DialogAvatarVideo_MediaFailed(object sender, MediaFailedEventArgs e)
+        {
+            var a = DialogAvatarVideo.Source;
+            // Użyj Debug.WriteLine lub Console.WriteLine, aby zobaczyć błąd
+            System.Diagnostics.Debug.WriteLine($"MEDIA FAILED! Błąd: {e.ErrorMessage}");
+
+            // Opcjonalnie: przełącz się na obraz awaryjny
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                DialogAvatarVideo.IsVisible = false;
+                DialogAvatarImage.IsVisible = true;
+            });
+        }
+
+        private void DialogAvatarVideo_StateChanged(object sender, MediaStateChangedEventArgs e)
+        {
+            // Zobacz, do jakiego stanu przechodzi MediaElement
+            // Oczekujemy: Loading -> Playing
+            // Jeśli widzisz: Loading -> Stopped lub Loading -> Failed, to masz problem.
+            System.Diagnostics.Debug.WriteLine($"STAN MEDIA ZMIENIONY: {e.NewState}");
         }
     }
 

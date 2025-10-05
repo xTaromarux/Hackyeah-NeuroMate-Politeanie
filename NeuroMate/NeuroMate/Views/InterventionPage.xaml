@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:skia="clr-namespace:SkiaSharp.Extended.UI.Controls;assembly=SkiaSharp.Extended.UI"
+             x:Class="NeuroMate.Views.InterventionPage"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="{StaticResource PageBackground}">
+
+    <ScrollView>
+        <Grid Padding="20" RowSpacing="20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <!-- Header z awatarem -->
+            <Frame Grid.Row="0" Style="{StaticResource ElevatedCard}">
+                <Grid ColumnSpacing="15">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="70" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <Frame Grid.Column="0" Style="{StaticResource AvatarFrame}">
+                        <skia:SKLottieView Source="turtle.json"
+                                           RepeatCount="-1"
+                                           IsAnimationEnabled="True"
+                                           WidthRequest="56"
+                                           HeightRequest="56" />
+                    </Frame>
+
+                    <StackLayout Grid.Column="1" Spacing="5">
+                        <Label Text="🎯 Interwencje Biohackingu" 
+                               Style="{StaticResource SectionTitle}" />
+                        <Label Text="Mikro-przerwy i porady dla lepszej wydajności mózgu"
+                               Style="{StaticResource Subtitle}" />
+                    </StackLayout>
+
+                    <Frame Grid.Column="2" 
+                           BackgroundColor="{StaticResource Success}"
+                           CornerRadius="15"
+                           Padding="10,5"
+                           HasShadow="False">
+                        <Label x:Name="TodayCountLabel"
+                               Text="5/8"
+                               FontAttributes="Bold"
+                               FontSize="14"
+                               TextColor="White"
+                               HorizontalOptions="Center" />
+                    </Frame>
+                </Grid>
+            </Frame>
+
+            <!-- Kategorie interwencji -->
+            <Frame Grid.Row="1" Style="{StaticResource CardFrame}">
+                <StackLayout Spacing="15">
+                    <Label Text="🏷️ Kategorie" Style="{StaticResource SectionTitle}" />
+                    
+                    <Grid ColumnSpacing="10" RowSpacing="10">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <Button Grid.Row="0" Grid.Column="0"
+                                x:Name="CognitiveBtn"
+                                Text="🧠 Kognitywne"
+                                Style="{StaticResource PrimaryButton}"
+                                Clicked="OnCategorySelected" />
+
+                        <Button Grid.Row="0" Grid.Column="1"
+                                x:Name="PhysicalBtn"
+                                Text="💪 Fizyczne"
+                                Style="{StaticResource OutlineButton}"
+                                Clicked="OnCategorySelected" />
+
+                        <Button Grid.Row="1" Grid.Column="0"
+                                x:Name="EyesBtn"
+                                Text="👁️ Oczy"
+                                Style="{StaticResource OutlineButton}"
+                                Clicked="OnCategorySelected" />
+
+                        <Button Grid.Row="1" Grid.Column="1"
+                                x:Name="NutritionBtn"
+                                Text="🥗 Odżywianie"
+                                Style="{StaticResource OutlineButton}"
+                                Clicked="OnCategorySelected" />
+                    </Grid>
+                </StackLayout>
+            </Frame>
+
+            <!-- Aktualna interwencja -->
+            <Frame Grid.Row="2" Style="{StaticResource ElevatedCard}" x:Name="CurrentInterventionFrame">
+                <StackLayout Spacing="20">
+                    <Grid>
+                        <Label Text="🎯 Aktualna interwencja" Style="{StaticResource SectionTitle}" />
+                        <Label x:Name="InterventionTimeLabel" 
+                               Text="30s" 
+                               Style="{StaticResource StatLabel}"
+                               HorizontalOptions="End"
+                               TextColor="{StaticResource Primary}" />
+                    </Grid>
+
+                    <Label x:Name="InterventionTitleLabel"
+                           Text="Reset Oczu - Patrzenie w Dal"
+                           Style="{StaticResource HeadlineLabel}"
+                           HorizontalOptions="Center" />
+
+                    <Label x:Name="InterventionDescriptionLabel"
+                           Text="Popatrz przez okno na najdalszy punkt przez 20 sekund. To zrelaksuje mięśnie oczne i poprawie skupienie."
+                           Style="{StaticResource BodyLabel}"
+                           HorizontalTextAlignment="Center" />
+
+                    <!-- Timer interwencji -->
+                    <Frame Background="{StaticResource AccentGradient}"
+                           CornerRadius="25"
+                           Padding="20"
+                           HorizontalOptions="Center">
+                        <Label x:Name="CountdownLabel"
+                               Text="20"
+                               FontSize="36"
+                               FontAttributes="Bold"
+                               TextColor="White"
+                               HorizontalOptions="Center" />
+                    </Frame>
+
+                    <!-- Kontrolki -->
+                    <Grid ColumnSpacing="15">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <Button Grid.Column="0"
+                                x:Name="StartInterventionBtn"
+                                Text="▶️ Start"
+                                Style="{StaticResource PrimaryButton}"
+                                Clicked="OnStartIntervention" />
+
+                        <Button Grid.Column="1"
+                                x:Name="SkipInterventionBtn"
+                                Text="⏭️ Pomiń"
+                                Style="{StaticResource OutlineButton}"
+                                Clicked="OnSkipIntervention" />
+                    </Grid>
+                </StackLayout>
+            </Frame>
+
+            <!-- Szybkie interwencje -->
+            <Frame Grid.Row="3" Style="{StaticResource CardFrame}">
+                <StackLayout Spacing="15">
+                    <Label Text="⚡ Szybkie interwencje (30-60s)" Style="{StaticResource SectionTitle}" />
+                    
+                    <StackLayout x:Name="QuickInterventionsList" Spacing="8">
+                        <!-- Będą dodawane dynamicznie -->
+                    </StackLayout>
+                </StackLayout>
+            </Frame>
+
+            <!-- Historia interwencji -->
+            <Frame Grid.Row="4" Style="{StaticResource CardFrame}">
+                <StackLayout Spacing="15">
+                    <Label Text="📈 Dzisiejsze interwencje" Style="{StaticResource SectionTitle}" />
+                    
+                    <StackLayout x:Name="TodayInterventionsList" Spacing="8">
+                        <!-- Będą dodawane dynamicznie -->
+                    </StackLayout>
+                </StackLayout>
+            </Frame>
+
+            <!-- Porady dnia -->
+            <Frame Grid.Row="5" Style="{StaticResource CardFrame}">
+                <StackLayout Spacing="15">
+                    <Label Text="💡 Porada dnia" Style="{StaticResource SectionTitle}" />
+                    
+                    <Frame BackgroundColor="{StaticResource PrimaryLight}"
+                           CornerRadius="12"
+                           Padding="15"
+                           HasShadow="False">
+                        <StackLayout Spacing="10">
+                            <Label Text="🧠 Dla lepszej koncentracji:"
+                                   FontAttributes="Bold"
+                                   TextColor="White" />
+                            <Label x:Name="TipOfTheDayLabel"
+                                   Text="Spróbuj techniki Pomodoro: 25 minut pracy + 5 minut przerwy. To pomaga utrzymać wysoką koncentrację przez cały dzień."
+                                   TextColor="White"
+                                   LineBreakMode="WordWrap" />
+                        </StackLayout>
+                    </Frame>
+                </StackLayout>
+            </Frame>
+
+        </Grid>
+    </ScrollView>
+</ContentPage>

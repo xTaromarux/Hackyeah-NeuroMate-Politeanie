@@ -1,0 +1,34 @@
+ Widoki NeuroMate (MVP)
+
+Onboarding / Wywiad (pierwsze uruchomienie)
+-x Awatar wita: „Cześć, jestem NeuroMate, pomogę Ci utrzymać fokus i energię.”
+-x Pytania:
+  • Cel: [koncentracja / redukcja stresu / energia / pamięć]
+  • Godziny pracy i snu (np. 9:00–17:00, 23:00–7:00)
+  • Czy chcesz importować dane z zegarka (tak/nie, CSV drag&drop)
+  • Preferencje: interwencje krótkie (30–60 s) czy dłuższe (2–5 min)
+
+Dashboard dnia (główne okno)
+-x SleepScore (np. 72/100)
+-x FocusLevel (Low/Med/High)
+-x StressFlag (jeśli HRV niskie)
+-x Wizualizacja snu, kroków, HR/HRV
+-x Awatar komentuje np.: „Dziś Twój sen był średni – potrzebujesz dodatkowych przerw.”
+
+Pop-up interwencji (aktywne powiadomienie)
+-x Automatyczne wyzwalanie (np. 90 min bez przerwy)
+-x Zawartość: mini-gra (Stroop/N-back/PVT) lub krótka aktywność (wstań na 45 s) lub sugestia (kawa/woda)
+-x Pop-up zamykany dopiero po wykonaniu - jeśli jest to typu picie wody czy wstann od komputera to blokuje ekran na 5 minut
+-x Awatar reaguje emocjami (smutny → wesoły po ukończeniu)
+
+Mini-gry (moduł osobny)
+-x Dostępne z menu
+-x Stroop, N-back, Reaction Time, Task Switching
+-x Wyniki zapisują się do bazy i aktualizują Neuro-Score
+-x Awatar chwali lub podpowiada po zakończeniu
+
+Podsumowanie dnia - nie wyswietla sie na zakonczenie tylko po prostu mozna do tego przejsc z glownego
+-x Liczba interwencji, ukończone gry, średnia poprawa RT/accuracy
+-x SleepScore → trend (7 dni)
+-x Neuro-Score (syntetyczny 0–100)
+-x Awatar: „Dziś 3 interwencje, poprawa reakcji o 12%. Jutro spróbuj dodać drzemkę.” 

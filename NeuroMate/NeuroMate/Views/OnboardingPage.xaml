@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:skia="clr-namespace:SkiaSharp.Extended.UI.Controls;assembly=SkiaSharp.Extended.UI"
+             x:Class="NeuroMate.Views.OnboardingPage"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="{StaticResource PageBackground}">
+
+    <ScrollView>
+        <Grid Padding="20" RowSpacing="20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <!-- Header z awatarem -->
+            <Frame Grid.Row="0" Style="{StaticResource ElevatedCard}">
+                <Grid ColumnSpacing="15">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="70" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Frame Grid.Column="0" Style="{StaticResource AvatarFrame}">
+                        <skia:SKLottieView Source="turtle.json"
+                                           RepeatCount="-1"
+                                           IsAnimationEnabled="True"
+                                           WidthRequest="56"
+                                           HeightRequest="56" />
+                    </Frame>
+
+                    <StackLayout Grid.Column="1" Spacing="5">
+                        <Label Text="Personalizacja NeuroMate" 
+                               Style="{StaticResource SectionTitle}" />
+                        <Label Text="Dostosuj asystenta do swoich potrzeb i celów biohackingu"
+                               Style="{StaticResource Subtitle}" />
+                    </StackLayout>
+                </Grid>
+            </Frame>
+
+            <!-- Główny cel -->
+            <Frame Grid.Row="1" Style="{StaticResource CardFrame}">
+                <StackLayout Spacing="15">
+                    <Label Text="🎯 Twój główny cel" Style="{StaticResource SectionTitle}" />
+                    
+                    <Grid ColumnSpacing="10" RowSpacing="10">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <Button Grid.Row="0" Grid.Column="0"
+                                x:Name="ConcentrationGoalBtn"
+                                Text="🧠 Koncentracja"
+                                Style="{StaticResource PrimaryButton}"
+                                Clicked="OnGoalSelected" />
+
+                        <Button Grid.Row="0" Grid.Column="1"
+                                x:Name="StressGoalBtn"
+                                Text="😌 Redukcja stresu"
+                                Style="{StaticResource OutlineButton}"
+                                Clicked="OnGoalSelected" />
+
+                        <Button Grid.Row="1" Grid.Column="0"
+                                x:Name="EnergyGoalBtn"
+                                Text="⚡ Energia"
+                                Style="{StaticResource OutlineButton}"
+                                Clicked="OnGoalSelected" />
+
+                        <Button Grid.Row="1" Grid.Column="1"
+                                x:Name="MemoryGoalBtn"
+                                Text="🎭 Pamięć"
+                                Style="{StaticResource OutlineButton}"
+                                Clicked="OnGoalSelected" />
+                    </Grid>
+                </StackLayout>
+            </Frame>
+
+            <!-- Preferencje interwencji -->
+            <Frame Grid.Row="2" Style="{StaticResource CardFrame}">
+                <StackLayout Spacing="15">
+                    <Label Text="⏱️ Preferencje interwencji" Style="{StaticResource SectionTitle}" />
+                    
+                    <StackLayout Spacing="10">
+                        <Label Text="Preferowana długość sesji:" Style="{StaticResource Subtitle}" />
+                        
+                        <Grid ColumnSpacing="10" RowSpacing="10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <Button Grid.Column="0"
+                                    x:Name="ShortSessionBtn"
+                                    Text="Krótkie (30-60s)"
+                                    Style="{StaticResource PrimaryButton}"
+                                    Clicked="OnSessionLengthSelected" />
+
+                            <Button Grid.Column="1"
+                                    x:Name="LongSessionBtn"
+                                    Text="Dłuższe (2-5min)"
+                                    Style="{StaticResource OutlineButton}"
+                                    Clicked="OnSessionLengthSelected" />
+                        </Grid>
+                    </StackLayout>
+                </StackLayout>
+            </Frame>
+
+            <!-- Harmonogram pracy -->
+            <Frame Grid.Row="3" Style="{StaticResource CardFrame}">
+                <StackLayout Spacing="15">
+                    <Label Text="🕒 Harmonogram pracy" Style="{StaticResource SectionTitle}" />
+                    
+                    <Grid RowSpacing="10" ColumnSpacing="15">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <Label Grid.Row="0" Grid.Column="0" Text="Początek:" Style="{StaticResource StatDescription}" VerticalOptions="Center" />
+                        <TimePicker Grid.Row="0" Grid.Column="1" x:Name="WorkStartTime" Time="09:00:00" />
+
+                        <Label Grid.Row="1" Grid.Column="0" Text="Koniec:" Style="{StaticResource StatDescription}" VerticalOptions="Center" />
+                        <TimePicker Grid.Row="1" Grid.Column="1" x:Name="WorkEndTime" Time="17:00:00" />
+                    </Grid>
+                </StackLayout>
+            </Frame>
+
+            <!-- Integracje -->
+            <Frame Grid.Row="4" Style="{StaticResource CardFrame}">
+                <StackLayout Spacing="15">
+                    <Label Text="🔗 Integracje (opcjonalne)" Style="{StaticResource SectionTitle}" />
+                    
+                    <StackLayout Spacing="10">
+                        <Grid ColumnSpacing="15">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <Label Grid.Column="0" Text="Smartband/Smartwatch (HRV, sen)" VerticalOptions="Center" />
+                            <Switch Grid.Column="1" x:Name="SmartbandSwitch" />
+
+                        </Grid>
+
+                        <Grid ColumnSpacing="15">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <Label Grid.Column="0" Text="Kalendarz (Google/Outlook)" VerticalOptions="Center" />
+                            <Switch Grid.Column="1" x:Name="CalendarSwitch" />
+
+                        </Grid>
+
+                        <Grid ColumnSpacing="15">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <Label Grid.Column="0" Text="Monitorowanie aktywności komputera" VerticalOptions="Center" />
+                            <Switch Grid.Column="1" x:Name="ActivitySwitch" IsToggled="True" />
+                        </Grid>
+                    </StackLayout>
+                </StackLayout>
+            </Frame>
+
+            <!-- Przycisk zapisz -->
+            <Button Grid.Row="5"
+                    Text="💾 Zapisz ustawienia"
+                    Style="{StaticResource PrimaryButton}"
+                    HeightRequest="50"
+                    Margin="0,20,0,0"
+                    Clicked="OnSaveSettings" />
+
+        </Grid>
+    </ScrollView>
+</ContentPage>

@@ -1,0 +1,312 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             x:Class="NeuroMate.Views.AvatarShopPage"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="{StaticResource PageBackground}">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Header z punktami -->
+        <Frame Grid.Row="0" Style="{StaticResource ElevatedCard}" 
+               Margin="16,24,16,12"
+               Background="{StaticResource CardGradient}">
+            <Grid ColumnSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Powrót -->
+                <Button Grid.Column="0" 
+                        Text="←" 
+                        Style="{StaticResource CircleButton}"
+                        WidthRequest="50" HeightRequest="50"
+                        Clicked="OnBackClicked" />
+
+                <!-- Informacje o sklepie -->
+                <StackLayout Grid.Column="1" VerticalOptions="Center" Spacing="4">
+                    <Label Text="🛒 Sklep Awatarów" 
+                           Style="{StaticResource TitleStyle}" 
+                           FontSize="22" />
+                    <Label x:Name="PointsLabel"
+                           Text="💎 Punkty: 0"
+                           Style="{StaticResource SubtitleStyle}"
+                           FontSize="16" />
+                </StackLayout>
+
+                <!-- Przycisk do lootboxów -->
+                <Button Grid.Column="2" 
+                        Text="📦" 
+                        Style="{StaticResource CircleButton}"
+                        WidthRequest="50" HeightRequest="50"
+                        Clicked="OnLootBoxClicked" />
+            </Grid>
+        </Frame>
+
+        <!-- Filtry rzadkości -->
+        <Frame Grid.Row="1" Style="{StaticResource CardFrame}" Margin="16,0">
+            <StackLayout Orientation="Horizontal" Spacing="10" HorizontalOptions="Center">
+                <Button x:Name="AllFilterButton" Text="Wszystkie" Style="{StaticResource FilterButton}" 
+                        Clicked="OnFilterClicked" CommandParameter="All" />
+                <Button x:Name="CommonFilterButton" Text="⚪ Zwykłe" Style="{StaticResource FilterButton}" 
+                        Clicked="OnFilterClicked" CommandParameter="Common" />
+                <Button x:Name="RareFilterButton" Text="🔵 Rzadkie" Style="{StaticResource FilterButton}" 
+                        Clicked="OnFilterClicked" CommandParameter="Rare" />
+                <Button x:Name="EpicFilterButton" Text="🟣 Epickie" Style="{StaticResource FilterButton}" 
+                        Clicked="OnFilterClicked" CommandParameter="Epic" />
+                <Button x:Name="LegendaryFilterButton" Text="🟠 Legendarne" Style="{StaticResource FilterButton}" 
+                        Clicked="OnFilterClicked" CommandParameter="Legendary" />
+            </StackLayout>
+        </Frame>
+
+        <!-- Lista awatarów -->
+        <ScrollView Grid.Row="2" Margin="16">
+            <CollectionView x:Name="AvatarsCollection"
+                            ItemsLayout="VerticalGrid, 2"
+                            VerticalScrollBarVisibility="Never">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Frame Style="{StaticResource CardFrame}" Margin="8" Padding="12">
+                            <Grid RowSpacing="10">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="80" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+
+                                <!-- Avatar Preview -->
+                                <Frame Grid.Row="0" 
+                                       Style="{StaticResource AvatarFrame}"
+                                       WidthRequest="80" HeightRequest="80"
+                                       HorizontalOptions="Center">
+                                    <Image Source="{Binding LottieFileName}"
+                                           WidthRequest="64"
+                                           HeightRequest="64"
+                                           Aspect="AspectFit">
+                                        <Image.GestureRecognizers>
+                                            <TapGestureRecognizer Tapped="OnAvatarImageTapped" />
+                                        </Image.GestureRecognizers>
+                                    </Image>
+                                </Frame>
+
+                                <!-- Nazwa awatara -->
+                                <Label Grid.Row="1" 
+                                       Text="{Binding Name}"
+                                       Style="{StaticResource SectionTitle}"
+                                       FontSize="16"
+                                       HorizontalOptions="Center"
+                                       HorizontalTextAlignment="Center" />
+
+                                <!-- Opis -->
+                                <Label Grid.Row="2" 
+                                       Text="{Binding Description}"
+                                       Style="{StaticResource Subtitle}"
+                                       FontSize="12"
+                                       HorizontalOptions="Center"
+                                       HorizontalTextAlignment="Center"
+                                       MaxLines="2" />
+
+                                <!-- Cena/Status -->
+                                <StackLayout Grid.Row="3" Orientation="Horizontal" 
+                                           HorizontalOptions="Center" Spacing="5">
+                                    <Label Text="{Binding RarityIcon}" FontSize="16" />
+                                    <Label Text="{Binding PriceText}" 
+                                           Style="{StaticResource Subtitle}"
+                                           FontAttributes="Bold" />
+                                </StackLayout>
+
+                                <!-- Przycisk akcji -->
+                                <Button Grid.Row="4" 
+                                        Text="{Binding ActionButtonText}"
+                                        Clicked="OnAvatarActionClicked"
+                                        CommandParameter="{Binding Id}"
+                                        IsEnabled="{Binding CanPerformAction}"
+                                        BackgroundColor="{Binding ActionButtonColor}"
+                                        TextColor="White"
+                                        FontAttributes="Bold"
+                                        CornerRadius="8"
+                                        HeightRequest="40" />
+                            </Grid>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </ScrollView>
+
+        <!-- Loading indicator -->
+        <ActivityIndicator x:Name="LoadingIndicator" 
+                           Grid.Row="2"
+                           IsVisible="False"
+                           IsRunning="False"
+                           Color="{StaticResource Primary}" />
+
+        <!-- Okno dialogowe podglądu avatara -->
+        <Grid x:Name="AvatarPreviewOverlay" 
+              Style="{StaticResource DialogOverlay}"
+              Grid.RowSpan="3"
+              IsVisible="False">
+            <Grid.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnPreviewOverlayTapped" />
+            </Grid.GestureRecognizers>
+
+            <!-- Okno dialogowe z podglądem -->
+            <Frame x:Name="AvatarPreviewCard" Style="{StaticResource DialogCard}">
+                <Frame.GestureRecognizers>
+                    <TapGestureRecognizer />
+                </Frame.GestureRecognizers>
+                
+                <StackLayout Spacing="20">
+                    <!-- Header z przyciskiem zamknięcia -->
+                    <Grid>
+                        <Label Text="Podgląd avatara"
+                               Style="{StaticResource TitleStyle}"
+                               FontSize="18"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center" />
+                        
+                        <!-- Przycisk zamknięcia w prawym górnym rogu -->
+                        <Button Text="✕"
+                                Style="{StaticResource CircleButton}"
+                                BackgroundColor="{StaticResource SurfaceBackground}"
+                                TextColor="{StaticResource TextSecondary}"
+                                BorderColor="{StaticResource BorderMedium}"
+                                BorderWidth="1"
+                                WidthRequest="35"
+                                HeightRequest="35"
+                                FontSize="16"
+                                HorizontalOptions="End"
+                                VerticalOptions="Start"
+                                Clicked="OnClosePreviewClicked"
+                                Margin="0,0,0,0" />
+                    </Grid>
+
+                    <!-- Duży podgląd avatara -->
+                    <Grid>
+                        <Frame Style="{StaticResource AvatarFrame}" 
+                               WidthRequest="180" 
+                               HeightRequest="180"
+                               HorizontalOptions="Center">
+                            <Grid>
+                                <!-- MediaElement dla animacji WebM -->
+                                <toolkit:MediaElement x:Name="PreviewAvatarVideo"
+                                             WidthRequest="160"
+                                             HeightRequest="160"
+                                             Aspect="AspectFit"
+                                             ShouldAutoPlay="True"
+                                             ShouldLoopPlayback="True"
+                                             ShouldShowPlaybackControls="False"
+                                             Volume="0"
+                                             ShouldMute="True" />
+                                
+                                <!-- Fallback Image -->
+                                <Image x:Name="PreviewAvatarImage"
+                                       WidthRequest="160"
+                                       HeightRequest="160"
+                                       Aspect="AspectFit"
+                                       IsVisible="False" />
+                            </Grid>
+                        </Frame>
+                        
+                        <!-- Rzadkość w rogu -->
+                        <Label x:Name="PreviewRarityLabel"
+                               Text="🟠"
+                               FontSize="28"
+                               HorizontalOptions="End"
+                               VerticalOptions="Start"
+                               Margin="8" />
+                    </Grid>
+
+                    <!-- Nazwa avatara -->
+                    <Label x:Name="PreviewAvatarNameLabel"
+                           Text="Nazwa Avatara"
+                           Style="{StaticResource TitleStyle}"
+                           FontSize="24"
+                           HorizontalOptions="Center"
+                           TextColor="{StaticResource Primary}" />
+
+                    <!-- Opis avatara -->
+                    <Frame BackgroundColor="{StaticResource SurfaceBackground}"
+                           CornerRadius="16"
+                           Padding="16"
+                           BorderColor="Transparent">
+                        <Label x:Name="PreviewAvatarDescriptionLabel"
+                               Text="Opis avatara"
+                               Style="{StaticResource BodyLabel}"
+                               FontSize="15"
+                               HorizontalOptions="Center"
+                               HorizontalTextAlignment="Center"
+                               LineBreakMode="WordWrap" />
+                    </Frame>
+
+                    <!-- Informacje o cenie i rzadkości -->
+                    <Grid ColumnSpacing="20">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Rzadkość -->
+                        <Frame Grid.Column="0" 
+                               BackgroundColor="{StaticResource SurfaceBackground}"
+                               CornerRadius="12"
+                               Padding="12">
+                            <StackLayout Spacing="4">
+                                <Label Text="Rzadkość" 
+                                       Style="{StaticResource CaptionLabel}"
+                                       HorizontalOptions="Center" />
+                                <Label x:Name="PreviewRarityTextLabel"
+                                       Text="Legendarna"
+                                       Style="{StaticResource SectionTitle}"
+                                       FontSize="14"
+                                       HorizontalOptions="Center" />
+                            </StackLayout>
+                        </Frame>
+
+                        <!-- Cena -->
+                        <Frame Grid.Column="1" 
+                               BackgroundColor="{StaticResource SurfaceBackground}"
+                               CornerRadius="12"
+                               Padding="12">
+                            <StackLayout Spacing="4">
+                                <Label Text="Cena" 
+                                       Style="{StaticResource CaptionLabel}"
+                                       HorizontalOptions="Center" />
+                                <Label x:Name="PreviewPriceLabel"
+                                       Text="500 pkt"
+                                       Style="{StaticResource SectionTitle}"
+                                       FontSize="14"
+                                       HorizontalOptions="Center" />
+                            </StackLayout>
+                        </Frame>
+                    </Grid>
+
+                    <!-- Przyciski akcji -->
+                    <StackLayout Spacing="12">
+                        <Button x:Name="PreviewActionButton"
+                                Text="Kup za 500 pkt"
+                                Style="{StaticResource PrimaryButton}"
+                                Clicked="OnPreviewActionClicked" />
+                        
+                        <Button Text="✕ Zamknij"
+                                Style="{StaticResource OutlineButton}"
+                                TextColor="{StaticResource TextSecondary}"
+                                BorderColor="{StaticResource BorderMedium}"
+                                Clicked="OnClosePreviewClicked"
+                                FontSize="14"
+                                Padding="12,8" />
+                    </StackLayout>
+                </StackLayout>
+            </Frame>
+        </Grid>
+    </Grid>
+</ContentPage>
