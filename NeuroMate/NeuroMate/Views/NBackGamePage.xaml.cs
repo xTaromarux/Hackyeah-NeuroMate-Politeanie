@@ -10,48 +10,75 @@ namespace NeuroMate.Views
         private int _currentTrial = 0;
         private int _totalTrials = 30;
         private int _gameTimeLeft = 120; // 2 minuty
-        private int _nBackLevel = 1; // 1-back lub 2-back
+        private const int _nBackLevel = 1; // Stały poziom 1-back
         
-        private List<int> _stimulusHistory = new();
-        private List<bool> _userResponses = new();
-        private List<bool> _correctAnswers = new();
-        private Frame[] _gamePositions = new Frame[9];
+        // Zmienne dla gry z kształtami
+        private List<ShapeType> _shapeHistory = new();
+        private List<ShapeType> _userResponses = new();
+        private List<ShapeType> _correctAnswers = new();
+        private readonly string[] _shapes = { "●", "■", "▲", "♦" }; // Koło, Kwadrat, Trójkąt, Romb
+        private readonly ShapeType[] _shapeTypes = { ShapeType.Circle, ShapeType.Square, ShapeType.Triangle, ShapeType.Diamond };
+        
+        private bool _waitingForResponse = false;
+        private ShapeType _currentCorrectAnswer = ShapeType.None;
+        
+        // Oryginalne kolory przycisków
+        private Color _originalButtonColor;
         
         public NBackGamePage()
         {
             InitializeComponent();
-            InitializeGameBoard();
+            InitializeColors();
             ResetGameStats();
+            ShowInitialShape();
         }
 
-        private void InitializeGameBoard()
+        private void InitializeColors()
         {
-            // Mapuj pozycje na planszy do tablicy
-            _gamePositions[0] = Pos00;
-            _gamePositions[1] = Pos01;
-            _gamePositions[2] = Pos02;
-            _gamePositions[3] = Pos10;
-            _gamePositions[4] = Pos11;
-            _gamePositions[5] = Pos12;
-            _gamePositions[6] = Pos20;
-            _gamePositions[7] = Pos21;
-            _gamePositions[8] = Pos22;
+            // Pobierz oryginalny kolor z zasobów aplikacji
+            if (Application.Current?.Resources.TryGetValue("CardBackground", out var cardBgResource) == true)
+            {
+                _originalButtonColor = (Color)cardBgResource;
+            }
+            else
+            {
+                _originalButtonColor = Colors.White; // Fallback
+            }
+        }
+
+        private void ShowInitialShape()
+        {
+            // Pokaż kwadrat jako początkowy kształt
+            CurrentShapeDisplay.Text = "■";
+            CurrentShapeDisplay.IsVisible = true;
+            WaitingLabel.Text = "To jest kwadrat - kliknij Start aby rozpocząć";
         }
 
         private void ResetGameStats()
         {
             _currentTrial = 0;
-            _stimulusHistory.Clear();
+            _shapeHistory.Clear();
             _userResponses.Clear();
             _correctAnswers.Clear();
+            _waitingForResponse = false;
+            _currentCorrectAnswer = ShapeType.None;
+            
             UpdateStats();
-            HideAllStimuli();
+            DisableShapeButtons();
+            ResetButtonColors(); // Resetuj kolory przycisków
+        }
+
+        private void ResetButtonColors()
+        {
+            CircleButton.BackgroundColor = _originalButtonColor;
+            SquareButton.BackgroundColor = _originalButtonColor;
+            TriangleButton.BackgroundColor = _originalButtonColor;
+            DiamondButton.BackgroundColor = _originalButtonColor;
         }
 
         private void UpdateStats()
         {
             TrialsLabel.Text = $"{_currentTrial}/{_totalTrials}";
-            LevelLabel.Text = $"{_nBackLevel}-back";
             
             if (_userResponses.Count > 0)
             {
@@ -67,25 +94,6 @@ namespace NeuroMate.Views
             {
                 AccuracyLabel.Text = "0%";
             }
-        }
-
-        private void OnLevelSelected(object sender, EventArgs e)
-        {
-            // Reset stylów przycisków
-            OneBackBtn.Style = (Style)Application.Current.Resources["OutlineButton"];
-            TwoBackBtn.Style = (Style)Application.Current.Resources["OutlineButton"];
-
-            var button = sender as Button;
-            button.Style = (Style)Application.Current.Resources["PrimaryButton"];
-
-            _nBackLevel = button.Text.Contains("1") ? 1 : 2;
-            
-            // Resetuj grę przy zmianie poziomu
-            if (_isGameRunning)
-            {
-                StopGame();
-            }
-            ResetGameStats();
         }
 
         private async void OnStartStopClicked(object sender, EventArgs e)
@@ -108,11 +116,8 @@ namespace NeuroMate.Views
             
             StartStopButton.Text = "⏹️ Stop";
             PauseButton.IsVisible = true;
-            InstructionLabel.Text = $"Gra {_nBackLevel}-back rozpoczęta!";
-            
-            // Wyłącz przyciski poziomu podczas gry
-            OneBackBtn.IsEnabled = false;
-            TwoBackBtn.IsEnabled = false;
+            InstructionLabel.Text = "Test rozpoczęty! Wybierz kształt z poprzedniego kroku.";
+            WaitingLabel.IsVisible = false;
             
             // Timer gry (odliczanie)
             _gameTimer = new Timer(GameTimerTick, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
@@ -143,11 +148,10 @@ namespace NeuroMate.Views
             while (_isGameRunning && !_isPaused && _currentTrial < _totalTrials)
             {
                 await PresentStimulus();
-                await Task.Delay(500); // Czas na odpowiedź
                 
                 if (_isGameRunning && !_isPaused)
                 {
-                    await Task.Delay(1500); // Przerwa między bodźcami
+                    await Task.Delay(400); // Krótka przerwa między bodźcami
                 }
             }
         }
@@ -158,100 +162,114 @@ namespace NeuroMate.Views
 
             _currentTrial++;
             
-            // Wylosuj pozycję (0-8)
-            var position = _random.Next(0, 9);
-            _stimulusHistory.Add(position);
+            // Wylosuj kształt (0-3)
+            var shapeIndex = _random.Next(0, 4);
+            var currentShape = _shapeTypes[shapeIndex];
+            _shapeHistory.Add(currentShape);
             
-            // Sprawdź czy to match (pozycja n kroków wstecz)
-            bool isMatch = false;
-            if (_stimulusHistory.Count > _nBackLevel)
+            // Sprawdź jaka jest poprawna odpowiedź (kształt 1 krok wstecz)
+            ShapeType correctAnswer = ShapeType.None;
+            if (_shapeHistory.Count > _nBackLevel)
             {
-                var nBackPosition = _stimulusHistory[_stimulusHistory.Count - 1 - _nBackLevel];
-                isMatch = position == nBackPosition;
+                correctAnswer = _shapeHistory[_shapeHistory.Count - 1 - _nBackLevel];
             }
-            _correctAnswers.Add(isMatch);
+            _correctAnswers.Add(correctAnswer);
+            _currentCorrectAnswer = correctAnswer;
             
             // Pokaż bodziec
-            ShowStimulusAt(position);
+            ShowShape(currentShape);
             
-            // Czekaj na odpowiedź użytkownika (2 sekundy)
-            var responseReceived = false;
-            var responseTask = Task.Delay(2000);
-            
-            // Reset user response flag
+            // Włącz przyciski wyboru
+            EnableShapeButtons();
             _waitingForResponse = true;
-            _lastResponse = false;
             
+            // Czekaj na odpowiedź użytkownika (3 sekundy)
+            var responseTask = Task.Delay(3000);
             await responseTask;
             
-            _waitingForResponse = false;
-            
-            // Jeśli użytkownik nie odpowiedział, uznaj jako "No Match"
-            if (!responseReceived)
+            // Jeśli użytkownik nie odpowiedział, uznaj jako brak odpowiedzi
+            if (_waitingForResponse)
             {
-                _userResponses.Add(false);
+                _userResponses.Add(ShapeType.None);
+                _waitingForResponse = false;
             }
             
-            // Ukryj bodziec
-            HideAllStimuli();
+            // Wyłącz przyciski i ukryj kształt
+            DisableShapeButtons();
+            HideCurrentShape();
             
             UpdateStats();
-        }
-
-        private bool _waitingForResponse = false;
-        private bool _lastResponse = false;
-
-        private void ShowStimulusAt(int position)
-        {
-            HideAllStimuli();
             
-            // Ustaw bodziec na wybranej pozycji
-            CurrentStimulus.IsVisible = true;
-            Grid.SetRow(CurrentStimulus, position / 3);
-            Grid.SetColumn(CurrentStimulus, position % 3);
-        }
-
-        private void HideAllStimuli()
-        {
-            CurrentStimulus.IsVisible = false;
-        }
-
-        private void OnMatchClicked(object sender, EventArgs e)
-        {
-            if (_waitingForResponse)
+            // Krótka przerwa przed następnym bodźcem
+            if (_isGameRunning && !_isPaused)
             {
-                _userResponses.Add(true);
-                _waitingForResponse = false;
-                
-                // Feedback wizualny
-                MatchButton.BackgroundColor = Color.FromArgb("#48bb78");
-                Task.Delay(200).ContinueWith(_ => 
-                {
-                    MainThread.BeginInvokeOnMainThread(() =>
-                    {
-                        MatchButton.BackgroundColor = Color.FromArgb("#667eea");
-                    });
-                });
+                await Task.Delay(1000);
             }
         }
 
-        private void OnNoMatchClicked(object sender, EventArgs e)
+        private void ShowShape(ShapeType shape)
         {
-            if (_waitingForResponse)
+            var shapeIndex = (int)shape;
+            CurrentShapeDisplay.Text = _shapes[shapeIndex];
+            CurrentShapeDisplay.IsVisible = true;
+        }
+
+        private void HideCurrentShape()
+        {
+            CurrentShapeDisplay.IsVisible = false;
+        }
+
+        private void EnableShapeButtons()
+        {
+            ResetButtonColors(); // Resetuj kolory przed włączeniem
+            CircleButton.IsEnabled = true;
+            SquareButton.IsEnabled = true;
+            TriangleButton.IsEnabled = true;
+            DiamondButton.IsEnabled = true;
+        }
+
+        private void DisableShapeButtons()
+        {
+            CircleButton.IsEnabled = false;
+            SquareButton.IsEnabled = false;
+            TriangleButton.IsEnabled = false;
+            DiamondButton.IsEnabled = false;
+        }
+
+        private void OnShapeSelected(object sender, EventArgs e)
+        {
+            if (!_waitingForResponse) return;
+
+            var button = sender as Button;
+            ShapeType selectedShape = ShapeType.None;
+
+            // Określ wybrany kształt na podstawie przycisku
+            if (button == CircleButton) selectedShape = ShapeType.Circle;
+            else if (button == SquareButton) selectedShape = ShapeType.Square;
+            else if (button == TriangleButton) selectedShape = ShapeType.Triangle;
+            else if (button == DiamondButton) selectedShape = ShapeType.Diamond;
+
+            _userResponses.Add(selectedShape);
+            _waitingForResponse = false;
+
+            // Feedback wizualny
+            ShowButtonFeedback(button, selectedShape == _currentCorrectAnswer);
+        }
+
+        private async void ShowButtonFeedback(Button button, bool isCorrect)
+        {
+            // Użyj zapisanego oryginalnego koloru
+            button.BackgroundColor = isCorrect ? Colors.LightGreen : Colors.LightCoral;
+            
+            await Task.Delay(400);
+            
+            MainThread.BeginInvokeOnMainThread(() =>
             {
-                _userResponses.Add(false);
-                _waitingForResponse = false;
-                
-                // Feedback wizualny
-                NoMatchButton.BackgroundColor = Color.FromArgb("#48bb78");
-                Task.Delay(200).ContinueWith(_ => 
+                if (button != null)
                 {
-                    MainThread.BeginInvokeOnMainThread(() =>
-                    {
-                        NoMatchButton.BackgroundColor = Color.FromArgb("#f093fb");
-                    });
-                });
-            }
+                    button.BackgroundColor = _originalButtonColor;
+                }
+            });
         }
 
         private void OnPauseClicked(object sender, EventArgs e)
@@ -270,15 +288,17 @@ namespace NeuroMate.Views
         {
             _isPaused = true;
             PauseButton.Text = "▶️ Wznów";
-            InstructionLabel.Text = "Gra wstrzymana";
-            HideAllStimuli();
+            InstructionLabel.Text = "Test wstrzymany";
+            HideCurrentShape();
+            DisableShapeButtons();
+            _waitingForResponse = false;
         }
 
         private async void ResumeGame()
         {
             _isPaused = false;
             PauseButton.Text = "⏸️ Pauza";
-            InstructionLabel.Text = $"Gra {_nBackLevel}-back wznowiona";
+            InstructionLabel.Text = "Test wznowiony! Wybierz kształt z poprzedniego kroku.";
             
             await StartStimulusSequence();
         }
@@ -291,12 +311,11 @@ namespace NeuroMate.Views
             StartStopButton.Text = "🚀 Start";
             PauseButton.IsVisible = false;
             InstructionLabel.Text = "Kliknij Start aby rozpocząć test pamięci";
+            ShowInitialShape(); // Pokaż ponownie początkowy kształt
             
-            // Włącz z powrotem przyciski poziomu
-            OneBackBtn.IsEnabled = true;
-            TwoBackBtn.IsEnabled = true;
-            
-            HideAllStimuli();
+            DisableShapeButtons();
+            ResetButtonColors(); // Resetuj kolory przycisków
+            _waitingForResponse = false;
         }
 
         private async void EndGame()
@@ -305,17 +324,24 @@ namespace NeuroMate.Views
             
             // Oblicz wyniki końcowe
             var correct = 0;
+            var answered = 0;
             for (int i = 0; i < Math.Min(_userResponses.Count, _correctAnswers.Count); i++)
             {
-                if (_userResponses[i] == _correctAnswers[i]) correct++;
+                if (_correctAnswers[i] != ShapeType.None) // Tylko próby gdzie była możliwa poprawna odpowiedź
+                {
+                    answered++;
+                    if (_userResponses[i] == _correctAnswers[i]) correct++;
+                }
             }
-            var accuracy = _userResponses.Count > 0 ? (double)correct / _userResponses.Count * 100 : 0;
+            
+            var accuracy = answered > 0 ? (double)correct / answered * 100 : 0;
+            var totalValidTrials = _correctAnswers.Count(x => x != ShapeType.None);
             
             await DisplayAlert("🧠 Test zakończony!", 
-                $"Poziom: {_nBackLevel}-back\n" +
                 $"Wykonałeś {_currentTrial} prób\n" +
+                $"Próby wymagające odpowiedzi: {totalValidTrials}\n" +
                 $"Dokładność: {accuracy:F1}%\n" +
-                $"Poprawnych odpowiedzi: {correct}/{_userResponses.Count}\n\n" +
+                $"Poprawnych odpowiedzi: {correct}/{answered}\n\n" +
                 $"Wynik zostanie zapisany w Twoim profilu!", 
                 "OK");
         }
@@ -340,5 +366,15 @@ namespace NeuroMate.Views
             base.OnDisappearing();
             StopGame();
         }
+    }
+
+    // Enum dla typów kształtów
+    public enum ShapeType
+    {
+        None = -1,
+        Circle = 0,
+        Square = 1,
+        Triangle = 2,
+        Diamond = 3
     }
 }

@@ -104,4 +104,10 @@
                       Shell.UnselectedColor="{StaticResource TextSecondary}" />
     </TabBar>
 
+    <ShellContent
+        Title="Sleep"
+        ContentTemplate="{DataTemplate local:SleepPage}" 
+        Route="SleepPage" />
+
 </Shell>
+

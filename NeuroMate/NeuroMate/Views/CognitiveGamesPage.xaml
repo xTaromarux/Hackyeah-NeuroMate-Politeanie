@@ -192,10 +192,10 @@
                                VerticalTextAlignment="Center" />
 
                         <StackLayout Grid.Column="1" Spacing="5">
-                            <Label Text="N-back (Pamięć)" 
+                            <Label Text="Test Pamięci Roboczej" 
                                    Style="{StaticResource TitleStyle}"
                                    FontSize="18" />
-                            <Label Text="Reaguj gdy pozycja powtarza się sprzed N kroków. Trenuje pamięć roboczą." 
+                            <Label Text="Wybierz kształt, który pojawił się jeden krok wcześniej. Trenuje pamięć roboczą." 
                                    Style="{StaticResource BodyLabel}"
                                    LineBreakMode="WordWrap" />
                         </StackLayout>
@@ -214,33 +214,25 @@
 
                     <Grid ColumnSpacing="10">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="2*" />
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
 
                         <Button Grid.Column="0"
-                                Text="1-back"
-                                Style="{StaticResource OutlineButton}"
-                                FontSize="12"
-                                Clicked="OnNBackGameClicked" />
-
-                        <Button Grid.Column="1"
-                                Text="2-back"
+                                Text="🧠 Rozpocznij Test Pamięci"
                                 Style="{StaticResource PrimaryButton}"
-                                FontSize="12"
                                 Clicked="OnNBackGameClicked" />
 
-                        <Frame Grid.Column="2" 
+                        <Frame Grid.Column="1" 
                                BackgroundColor="{StaticResource SurfaceBackground}"
                                CornerRadius="12"
                                Padding="10"
                                HasShadow="False">
                             <StackLayout Spacing="2">
-                                <Label Text="Poziom" 
+                                <Label Text="Rekord" 
                                        Style="{StaticResource CaptionLabel}" 
                                        HorizontalTextAlignment="Center" />
-                                <Label Text="2" 
+                                <Label Text="78%" 
                                        Style="{StaticResource BodyLabel}"
                                        FontAttributes="Bold"
                                        HorizontalTextAlignment="Center" />
@@ -250,7 +242,7 @@
                 </StackLayout>
             </Frame>
 
-            <!-- Task Switching -->
+            <!-- Gra Kasjer (dawniej Task Switching) -->
             <Frame Grid.Row="4" Style="{StaticResource ModernCard}">
                 <StackLayout Spacing="15">
                     <Grid ColumnSpacing="15">
@@ -261,15 +253,15 @@
                         </Grid.ColumnDefinitions>
 
                         <Label Grid.Column="0" 
-                               Text="🔄" 
+                               Text="💰" 
                                FontSize="30" 
                                VerticalTextAlignment="Center" />
 
                         <StackLayout Grid.Column="1" Spacing="5">
-                            <Label Text="Task Switching" 
+                            <Label Text="Gra Kasjer" 
                                    Style="{StaticResource TitleStyle}"
                                    FontSize="18" />
-                            <Label Text="Przełączaj się między zadaniami. Trenuje elastyczność umysłu."
+                            <Label Text="Wydaj resztę używając najmniejszej liczby monet. Trenuje logiczne myślenie."
                                    Style="{StaticResource BodyLabel}"
                                    LineBreakMode="WordWrap" />
                         </StackLayout>
@@ -279,7 +271,7 @@
                                CornerRadius="15"
                                Padding="8"
                                HasShadow="False">
-                            <Label Text="90s" 
+                            <Label Text="60s" 
                                    TextColor="{StaticResource TextPrimary}" 
                                    FontAttributes="Bold"
                                    FontSize="12" />
@@ -293,7 +285,7 @@
                         </Grid.ColumnDefinitions>
 
                         <Button Grid.Column="0"
-                                Text="🔄 Rozpocznij Task Switch"
+                                Text="💰 Rozpocznij Kasjer"
                                 Style="{StaticResource SecondaryButton}"
                                 Clicked="OnTaskSwitchingClicked" />
 
@@ -303,10 +295,10 @@
                                Padding="10"
                                HasShadow="False">
                             <StackLayout Spacing="2">
-                                <Label Text="Dokładność" 
+                                <Label Text="Efektywność" 
                                        Style="{StaticResource CaptionLabel}" 
                                        HorizontalTextAlignment="Center" />
-                                <Label Text="87%" 
+                                <Label Text="89%" 
                                        Style="{StaticResource BodyLabel}"
                                        FontAttributes="Bold"
                                        HorizontalTextAlignment="Center" />

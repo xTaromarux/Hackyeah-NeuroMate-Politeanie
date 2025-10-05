@@ -53,10 +53,10 @@ namespace NeuroMate
             
             // Uruchom timer interwencji
             StartInterventionTimer();
-            
+
             // Aktualizuj dane startowe
             UpdateDashboardData();
-            
+
             // Inicjalizuj dialog avatara
             InitializeAvatarDialog();
         }
@@ -101,16 +101,16 @@ namespace NeuroMate
         protected override void OnHandlerChanged()
         {
             base.OnHandlerChanged();
-            
+
             if (Handler != null)
             {
                 // Opóźnij inicjalizację avatara, żeby strona była w pełni załadowana
                 Dispatcher.Dispatch(async () =>
                 {
                     await Task.Delay(1000);
-                    
+
                     _floatingAvatarService = Handler.MauiContext?.Services?.GetService<IFloatingAvatarService>();
-                    
+
                     if (_floatingAvatarService != null)
                     {
                         UpdateDashboardData();
@@ -136,12 +136,12 @@ namespace NeuroMate
 
             // Pokaż dialog z animacją
             AvatarDialogOverlay.IsVisible = true;
-            
+
             await Task.WhenAll(
                 AvatarDialogOverlay.FadeTo(1, 300, Easing.CubicOut),
                 AvatarDialogCard.ScaleTo(1, 300, Easing.SpringOut)
             );
-            
+
             // Rozpocznij animację wskaźnika mowy
             StartSpeechIndicatorAnimation();
         }
@@ -152,7 +152,7 @@ namespace NeuroMate
                 AvatarDialogOverlay.FadeTo(0, 250, Easing.CubicIn),
                 AvatarDialogCard.ScaleTo(0.9, 250, Easing.CubicIn)
             );
-            
+
             AvatarDialogOverlay.IsVisible = false;
         }
 
@@ -180,13 +180,13 @@ namespace NeuroMate
         private async void OnDialogStartTrainingClicked(object sender, EventArgs e)
         {
             await HideAvatarDialog();
-            await Shell.Current.GoToAsync("//CognitiveGames");
+            await Shell.Current.GoToAsync(nameof(CognitiveGamesPage));
         }
 
         private async void OnDialogShowStatsClicked(object sender, EventArgs e)
         {
             await HideAvatarDialog();
-            await Shell.Current.GoToAsync("//DailySummary");
+            await Shell.Current.GoToAsync(nameof(DailySummaryPage));
         }
 
         private async void OnDialogSettingsClicked(object sender, EventArgs e)
@@ -197,22 +197,22 @@ namespace NeuroMate
         // Event handlers dla przycisków głównych
         private async void OnStroopTestClicked(object sender, EventArgs e)
         {
-            await Shell.Current.GoToAsync("//StroopGame");
+            await Shell.Current.GoToAsync(nameof(StroopGamePage));
         }
 
         private async void OnPvtTestClicked(object sender, EventArgs e)
         {
-            await Shell.Current.GoToAsync("//PvtGame");
+            await Shell.Current.GoToAsync(nameof(PvtGamePage));
         }
 
         private async void OnTaskSwitchClicked(object sender, EventArgs e)
         {
-            await Shell.Current.GoToAsync("//TaskSwitchingGame");
+            await Shell.Current.GoToAsync(nameof(TaskSwitchingGamePage));
         }
 
         private async void OnSummaryClicked(object sender, EventArgs e)
         {
-            await Shell.Current.GoToAsync("//DailySummary");
+            await Shell.Current.GoToAsync(nameof(DailySummaryPage));
         }
 
         private async void OnToggleAvatarClicked(object sender, EventArgs e)
@@ -225,14 +225,14 @@ namespace NeuroMate
 
         private async void OnStartRecommendationClicked(object sender, EventArgs e)
         {
-            await Shell.Current.GoToAsync("//StroopGame");
+            await Shell.Current.GoToAsync(nameof(StroopGamePage));
         }
 
         private async void OnMoreRecommendationsClicked(object sender, EventArgs e)
         {
             await DisplayAlert(
-                "Rekomendacje AI", 
-                "• Test Stroop - popraw koncentrację\n• Gra PVT - zwiększ szybkość reakcji\n• Task Switching - wzmocnij elastyczność poznawczą\n• N-back - trenuj pamięć roboczą", 
+                "Rekomendacje AI",
+                "• Test Stroop - popraw koncentrację\n• Gra PVT - zwiększ szybkość reakcji\n• Task Switching - wzmocnij elastyczność poznawczą\n• N-back - trenuj pamięć roboczą",
                 "OK"
             );
         }
@@ -276,7 +276,7 @@ namespace NeuroMate
                 if (DateTime.Now - _lastInterventionTime > TimeSpan.FromMinutes(30))
                 {
                     _lastInterventionTime = DateTime.Now;
-                    
+
                     await MainThread.InvokeOnMainThreadAsync(async () =>
                     {
                         await ShowAvatarDialog();
