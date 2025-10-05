@@ -12,6 +12,7 @@ using WinUIWindow = Microsoft.UI.Xaml.Window;
 using SkiaSharp.Extended.UI.Controls;
 using CommunityToolkit.Mvvm.Messaging;
 using NeuroMate.Messages;
+using CommunityToolkit.Maui.Core.Primitives;
 
 namespace NeuroMate
 {
@@ -38,10 +39,10 @@ namespace NeuroMate
             InitializeComponent();
             var viewModel = new MainViewModel();
             BindingContext = viewModel;
-            
+
             // Subskrypcja do zmian w ViewModelu dla aktualizacji UI
             viewModel.PropertyChanged += OnViewModelPropertyChanged;
-            
+
             // Używam nowoczesnego WeakReferenceMessenger zamiast przestarzałego MessagingCenter
             WeakReferenceMessenger.Default.Register<AvatarChangedMessage>(this, (r, m) =>
             {
@@ -53,7 +54,7 @@ namespace NeuroMate
                     }
                 });
             });
-            
+
             WeakReferenceMessenger.Default.Register<PointsChangedMessage>(this, (r, m) =>
             {
                 MainThread.BeginInvokeOnMainThread(async () =>
@@ -64,7 +65,7 @@ namespace NeuroMate
                     }
                 });
             });
-            
+
             // Uruchom timer interwencji
             StartInterventionTimer();
 
@@ -140,9 +141,11 @@ namespace NeuroMate
         private async Task ShowAvatarDialog()
         {
             // Wybierz odpowiednią animację na podstawie wyników
-            string animationFile = GetAvatarAnimationBasedOnPerformance();
-            DialogAvatarVideo.Source = animationFile;
-            
+            //string animationFile = GetAvatarAnimationBasedOnPerformance();
+            //DialogAvatarVideo.Source = animationFile;
+            DialogAvatarVideo.ShouldAutoPlay = true;
+            DialogAvatarVideo.ShouldLoopPlayback = true;
+            DialogAvatarVideo.Play();
             // Ustaw wiadomość na podstawie wyników
             var message = GetAvatarMessageBasedOnPerformance();
             AvatarMessageLabel.Text = message;
@@ -159,10 +162,13 @@ namespace NeuroMate
 
         private async Task HideAvatarDialog()
         {
+            DialogAvatarVideo.ShouldAutoPlay = false;
+            DialogAvatarVideo.ShouldLoopPlayback = false;
             await Task.WhenAll(
                 AvatarDialogOverlay.FadeTo(0, 250, Easing.CubicIn),
                 AvatarDialogCard.ScaleTo(0.9, 250, Easing.CubicIn)
             );
+            DialogAvatarVideo.Stop();
 
             AvatarDialogOverlay.IsVisible = false;
         }
@@ -263,7 +269,7 @@ namespace NeuroMate
         protected override async void OnAppearing()
         {
             base.OnAppearing();
-            
+
             // Odśwież dane ViewModelu, w tym aktualnego awatara
             if (BindingContext is MainViewModel viewModel)
             {
@@ -274,7 +280,7 @@ namespace NeuroMate
         protected override void OnDisappearing()
         {
             base.OnDisappearing();
-            
+
             // Wyczyść subskrypcje MessagingCenter aby uniknąć memory leaks
             WeakReferenceMessenger.Default.Unregister<AvatarChangedMessage>(this);
             WeakReferenceMessenger.Default.Unregister<PointsChangedMessage>(this);
@@ -282,30 +288,26 @@ namespace NeuroMate
 
         private string GetAvatarAnimationBasedOnPerformance()
         {
-            // TYMCZASOWO: zawsze zwraca wave.webm dla testowania
-            return "wave.webm";
-            
-            /* Oryginalna logika - przywrócę po testach
+            //Oryginalna logika - przywrócę po testach
             // Pobierz aktualne dane z ViewModelu
             if (BindingContext is not MainViewModel viewModel)
-                return "idle.webm"; // Domyślna animacja
+                return "embed://idle.mp4"; // Domyślna animacja
 
             // Analiza wyników użytkownika
             int neuroScore = viewModel.NeuroScore;
             int avgReactionMs = viewModel.AvgReactionMs;
             int pointsEarnedToday = viewModel.PointsEarnedToday;
-            
+
             // Oblicz ogólny wynik na podstawie różnych metryk
             double performanceScore = CalculateOverallPerformance(neuroScore, avgReactionMs, pointsEarnedToday);
-            
+
             // Wybierz animację na podstawie wyniku
             return performanceScore switch
             {
-                > 0.7 => "wave.webm",     // Dobry wynik - machanie
-                < 0.3 => "sad.webm",      // Słaby wynik - smutek
-                _ => "idle.webm"          // Neutralny wynik - spokojny
+                > 0.7 => "embed://wave.mp4",     // Dobry wynik - machanie
+                < 0.3 => "embed://sad.mp4",      // Słaby wynik - smutek
+                _ => "embed://idle.mp4"          // Neutralny wynik - spokojny
             };
-            */
         }
 
         private string GetAvatarMessageBasedOnPerformance()
@@ -316,9 +318,9 @@ namespace NeuroMate
             int neuroScore = viewModel.NeuroScore;
             int avgReactionMs = viewModel.AvgReactionMs;
             int pointsEarnedToday = viewModel.PointsEarnedToday;
-            
+
             double performanceScore = CalculateOverallPerformance(neuroScore, avgReactionMs, pointsEarnedToday);
-            
+
             var goodMessages = new[]
             {
                 "🎉 Świetna robota! Twoje wyniki są imponujące!",
@@ -387,5 +389,27 @@ namespace NeuroMate
 
             return factors > 0 ? score / factors : 0.5; // Domyślnie neutralny
         }
+        private void DialogAvatarVideo_MediaFailed(object sender, MediaFailedEventArgs e)
+        {
+            var a = DialogAvatarVideo.Source;
+            // Użyj Debug.WriteLine lub Console.WriteLine, aby zobaczyć błąd
+            System.Diagnostics.Debug.WriteLine($"MEDIA FAILED! Błąd: {e.ErrorMessage}");
+
+            // Opcjonalnie: przełącz się na obraz awaryjny
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                DialogAvatarVideo.IsVisible = false;
+                DialogAvatarImage.IsVisible = true;
+            });
+        }
+
+        private void DialogAvatarVideo_StateChanged(object sender, MediaStateChangedEventArgs e)
+        {
+            // Zobacz, do jakiego stanu przechodzi MediaElement
+            // Oczekujemy: Loading -> Playing
+            // Jeśli widzisz: Loading -> Stopped lub Loading -> Failed, to masz problem.
+            System.Diagnostics.Debug.WriteLine($"STAN MEDIA ZMIENIONY: {e.NewState}");
+        }
     }
+
 }

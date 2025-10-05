@@ -1,11 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<ContentPage x:Class="NeuroMate.MainPage"
-             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:skia="clr-namespace:SkiaSharp.Extended.UI.Controls;assembly=SkiaSharp.Extended.UI"
-             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
-             Shell.NavBarIsVisible="False"
-             BackgroundColor="{StaticResource PageBackground}">
+<ContentPage
+    x:Class="NeuroMate.MainPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:skia="clr-namespace:SkiaSharp.Extended.UI.Controls;assembly=SkiaSharp.Extended.UI"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    BackgroundColor="{StaticResource PageBackground}"
+    Shell.NavBarIsVisible="False">
 
     <Grid>
         <Grid.RowDefinitions>
@@ -13,10 +14,12 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <!-- Nowoczesny header z gradientem -->
-        <Frame Grid.Row="0" Style="{StaticResource ElevatedCard}" 
-               Margin="16,24,16,12"
-               Background="{StaticResource CardGradient}">
+        <!--  Nowoczesny header z gradientem  -->
+        <Frame
+            Grid.Row="0"
+            Margin="16,24,16,12"
+            Background="{StaticResource CardGradient}"
+            Style="{StaticResource ElevatedCard}">
             <Grid ColumnSpacing="16">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
@@ -24,60 +27,75 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
-                <!-- Awatar z nowym designem -->
-                <Frame Grid.Column="0" Style="{StaticResource AvatarFrame}" 
-                       WidthRequest="70" HeightRequest="70">
-                    <Image x:Name="MainAvatarImage"
-                           Source="hackyeah_default.png"
-                           WidthRequest="54"
-                           HeightRequest="54"
-                           Aspect="AspectFit">
+                <!--  Awatar z nowym designem  -->
+                <Frame
+                    Grid.Column="0"
+                    HeightRequest="70"
+                    Style="{StaticResource AvatarFrame}"
+                    WidthRequest="70">
+                    <Image
+                        x:Name="MainAvatarImage"
+                        Aspect="AspectFit"
+                        HeightRequest="54"
+                        Source="hackyeah_default.png"
+                        WidthRequest="54">
                         <Image.GestureRecognizers>
                             <TapGestureRecognizer Tapped="OnAvatarTapped" />
                         </Image.GestureRecognizers>
                     </Image>
                 </Frame>
 
-                <!-- Informacje powitalne -->
-                <StackLayout Grid.Column="1" VerticalOptions="Center" Spacing="4">
-                    <Label Text="NeuroMate 🧠"
-                           Style="{StaticResource TitleStyle}" 
-                           FontSize="{OnPlatform iOS=20, Android=20, WinUI=24}" />
-                    <Label x:Name="StatusLabel"
-                           Text="Gotowy do treningu!"
-                           Style="{StaticResource SubtitleStyle}"
-                           FontSize="{OnPlatform iOS=14, Android=14, WinUI=16}" />
+                <!--  Informacje powitalne  -->
+                <StackLayout
+                    Grid.Column="1"
+                    Spacing="4"
+                    VerticalOptions="Center">
+                    <Label
+                        FontSize="{OnPlatform iOS=20,
+                                              Android=20,
+                                              WinUI=24}"
+                        Style="{StaticResource TitleStyle}"
+                        Text="NeuroMate 🧠" />
+                    <Label
+                        x:Name="StatusLabel"
+                        FontSize="{OnPlatform iOS=14,
+                                              Android=14,
+                                              WinUI=16}"
+                        Style="{StaticResource SubtitleStyle}"
+                        Text="Gotowy do treningu!" />
                 </StackLayout>
 
-                <!-- NeuroScore z gradientem -->
-                <Frame Grid.Column="2" 
-                       Background="{StaticResource AccentGradient}"
-                       CornerRadius="20"
-                       Padding="16,12"
-                       HasShadow="True">
-                    <StackLayout Spacing="2" HorizontalOptions="Center">
-                        <Label Text="NeuroScore" 
-                               FontSize="11" 
-                               TextColor="{StaticResource TextLight}" 
-                               HorizontalOptions="Center" />
-                        <Label x:Name="NeuroScoreLabel" 
-                               Text="85"
-                               FontSize="22" 
-                               FontAttributes="Bold"
-                               TextColor="{StaticResource TextLight}" 
-                               HorizontalOptions="Center" />
+                <!--  NeuroScore z gradientem  -->
+                <Frame
+                    Grid.Column="2"
+                    Padding="16,12"
+                    Background="{StaticResource AccentGradient}"
+                    CornerRadius="20"
+                    HasShadow="True">
+                    <StackLayout HorizontalOptions="Center" Spacing="2">
+                        <Label
+                            FontSize="11"
+                            HorizontalOptions="Center"
+                            Text="NeuroScore"
+                            TextColor="{StaticResource TextLight}" />
+                        <Label
+                            x:Name="NeuroScoreLabel"
+                            FontAttributes="Bold"
+                            FontSize="22"
+                            HorizontalOptions="Center"
+                            Text="85"
+                            TextColor="{StaticResource TextLight}" />
                     </StackLayout>
                 </Frame>
             </Grid>
         </Frame>
 
-        <!-- Główna zawartość z przewijaniem -->
+        <!--  Główna zawartość z przewijaniem  -->
         <ScrollView Grid.Row="1" Padding="16,0">
             <StackLayout Spacing="20">
 
-                <!-- Sekcja punktów i awatara - PIERWSZA na liście -->
-                <Frame Style="{StaticResource ElevatedCard}" 
-                       Background="{StaticResource CardGradient}">
+                <!--  Sekcja punktów i awatara - PIERWSZA na liście  -->
+                <Frame Background="{StaticResource CardGradient}" Style="{StaticResource ElevatedCard}">
                     <Grid ColumnSpacing="12">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
@@ -85,49 +103,59 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
 
-                        <!-- Informacje o punktach -->
+                        <!--  Informacje o punktach  -->
                         <StackLayout Grid.Column="0" Spacing="4">
-                            <Label Text="💎 Punkty"
-                                   Style="{StaticResource SectionTitle}"
-                                   FontSize="14" />
-                            <Label x:Name="TotalPointsLabel"
-                                   Text="0"
-                                   Style="{StaticResource TitleStyle}"
-                                   FontSize="20"
-                                   FontAttributes="Bold" />
-                            <Label x:Name="TodayPointsLabel"
-                                   Text="Dziś: +0"
-                                   Style="{StaticResource SubtitleStyle}"
-                                   FontSize="12" />
+                            <Label
+                                FontSize="14"
+                                Style="{StaticResource SectionTitle}"
+                                Text="💎 Punkty" />
+                            <Label
+                                x:Name="TotalPointsLabel"
+                                FontAttributes="Bold"
+                                FontSize="20"
+                                Style="{StaticResource TitleStyle}"
+                                Text="0" />
+                            <Label
+                                x:Name="TodayPointsLabel"
+                                FontSize="12"
+                                Style="{StaticResource SubtitleStyle}"
+                                Text="Dziś: +0" />
                         </StackLayout>
 
-                        <!-- Aktualny awatar -->
-                        <StackLayout Grid.Column="1" VerticalOptions="Center" Spacing="4">
-                            <Label Text="🤖 Aktywny awatar"
-                                   Style="{StaticResource SubtitleStyle}"
-                                   FontSize="12"
-                                   HorizontalTextAlignment="Center" />
-                            <Label x:Name="CurrentAvatarNameLabel"
-                                   Text="Żółw Mistrz"
-                                   Style="{StaticResource SectionTitle}"
-                                   FontSize="14"
-                                   HorizontalTextAlignment="Center" />
+                        <!--  Aktualny awatar  -->
+                        <StackLayout
+                            Grid.Column="1"
+                            Spacing="4"
+                            VerticalOptions="Center">
+                            <Label
+                                FontSize="12"
+                                HorizontalTextAlignment="Center"
+                                Style="{StaticResource SubtitleStyle}"
+                                Text="🤖 Aktywny awatar" />
+                            <Label
+                                x:Name="CurrentAvatarNameLabel"
+                                FontSize="14"
+                                HorizontalTextAlignment="Center"
+                                Style="{StaticResource SectionTitle}"
+                                Text="Żółw Mistrz" />
                         </StackLayout>
 
-                        <!-- Przycisk sklepu -->
-                        <Button Grid.Column="2"
-                                Text="🛒"
-                                Style="{StaticResource CircleButton}"
-                                WidthRequest="50" HeightRequest="50"
-                                Command="{Binding OpenAvatarShopCommand}"
-                                ToolTipProperties.Text="Sklep awatarów" />
+                        <!--  Przycisk sklepu  -->
+                        <Button
+                            Grid.Column="2"
+                            Command="{Binding OpenAvatarShopCommand}"
+                            HeightRequest="50"
+                            Style="{StaticResource CircleButton}"
+                            Text="🛒"
+                            ToolTipProperties.Text="Sklep awatarów"
+                            WidthRequest="50" />
                     </Grid>
                 </Frame>
 
 
-                <!-- Dashboard z responsywnymi kartami -->
+                <!--  Dashboard z responsywnymi kartami  -->
                 <StackLayout Spacing="12">
-                    <!-- Karta koncentracji -->
+                    <!--  Karta koncentracji  -->
                     <Frame Style="{StaticResource StatCard}">
                         <Grid ColumnSpacing="16">
                             <Grid.ColumnDefinitions>
@@ -135,31 +163,40 @@
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            
-                            <Label Grid.Column="0" Text="🎯" 
-                                   FontSize="{OnPlatform iOS=20, Android=20, WinUI=24}" 
-                                   VerticalOptions="Center" />
+
+                            <Label
+                                Grid.Column="0"
+                                FontSize="{OnPlatform iOS=20,
+                                                      Android=20,
+                                                      WinUI=24}"
+                                Text="🎯"
+                                VerticalOptions="Center" />
                             <StackLayout Grid.Column="1" Spacing="4">
-                                <Label Text="Koncentracja" 
-                                       Style="{StaticResource BodyLabel}"
-                                       FontAttributes="Bold"
-                                       FontSize="{OnPlatform iOS=14, Android=14, WinUI=16}" />
-                                <Label x:Name="FocusLevelLabel" 
-                                       Text="Wysoka" 
-                                       Style="{StaticResource TitleStyle}"
-                                       FontSize="18"
-                                       TextColor="{StaticResource Success}" />
+                                <Label
+                                    FontAttributes="Bold"
+                                    FontSize="{OnPlatform iOS=14,
+                                                          Android=14,
+                                                          WinUI=16}"
+                                    Style="{StaticResource BodyLabel}"
+                                    Text="Koncentracja" />
+                                <Label
+                                    x:Name="FocusLevelLabel"
+                                    FontSize="18"
+                                    Style="{StaticResource TitleStyle}"
+                                    Text="Wysoka"
+                                    TextColor="{StaticResource Success}" />
                             </StackLayout>
-                            <ProgressBar Grid.Column="2" 
-                                         x:Name="FocusProgressBar" 
-                                         Progress="0.85" 
-                                         ProgressColor="{StaticResource Success}"
-                                         WidthRequest="60"
-                                         VerticalOptions="Center" />
+                            <ProgressBar
+                                x:Name="FocusProgressBar"
+                                Grid.Column="2"
+                                Progress="0.85"
+                                ProgressColor="{StaticResource Success}"
+                                VerticalOptions="Center"
+                                WidthRequest="60" />
                         </Grid>
                     </Frame>
 
-                    <!-- Karta czasu pracy -->
+                    <!--  Karta czasu pracy  -->
                     <Frame Style="{StaticResource StatCard}">
                         <Grid ColumnSpacing="16">
                             <Grid.ColumnDefinitions>
@@ -167,31 +204,40 @@
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            
-                            <Label Grid.Column="0" Text="⏰" 
-                                   FontSize="{OnPlatform iOS=20, Android=20, WinUI=24}" 
-                                   VerticalOptions="Center" />
+
+                            <Label
+                                Grid.Column="0"
+                                FontSize="{OnPlatform iOS=20,
+                                                      Android=20,
+                                                      WinUI=24}"
+                                Text="⏰"
+                                VerticalOptions="Center" />
                             <StackLayout Grid.Column="1" Spacing="4">
-                                <Label Text="Czas pracy" 
-                                       Style="{StaticResource BodyLabel}"
-                                       FontAttributes="Bold"
-                                       FontSize="{OnPlatform iOS=14, Android=14, WinUI=16}" />
-                                <Label x:Name="WorkTimeLabel" 
-                                       Text="2h 15m" 
-                                       Style="{StaticResource TitleStyle}"
-                                       FontSize="18" />
+                                <Label
+                                    FontAttributes="Bold"
+                                    FontSize="{OnPlatform iOS=14,
+                                                          Android=14,
+                                                          WinUI=16}"
+                                    Style="{StaticResource BodyLabel}"
+                                    Text="Czas pracy" />
+                                <Label
+                                    x:Name="WorkTimeLabel"
+                                    FontSize="18"
+                                    Style="{StaticResource TitleStyle}"
+                                    Text="2h 15m" />
                             </StackLayout>
-                            <Label Grid.Column="2"
-                                   x:Name="WorkStatusLabel" 
-                                   Text="W porządku" 
-                                   Style="{StaticResource CaptionLabel}"
-                                   FontSize="11"
-                                   TextColor="{StaticResource Success}"
-                                   VerticalOptions="Center" />
+                            <Label
+                                x:Name="WorkStatusLabel"
+                                Grid.Column="2"
+                                FontSize="11"
+                                Style="{StaticResource CaptionLabel}"
+                                Text="W porządku"
+                                TextColor="{StaticResource Success}"
+                                VerticalOptions="Center" />
                         </Grid>
                     </Frame>
 
-                    <!-- Karta snu -->
+                    <!--  Karta snu  -->
                     <Frame Style="{StaticResource StatCard}">
                         <Grid ColumnSpacing="16">
                             <Grid.ColumnDefinitions>
@@ -199,30 +245,39 @@
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            
-                            <Label Grid.Column="0" Text="😴" 
-                                   FontSize="{OnPlatform iOS=20, Android=20, WinUI=24}" 
-                                   VerticalOptions="Center" />
+
+                            <Label
+                                Grid.Column="0"
+                                FontSize="{OnPlatform iOS=20,
+                                                      Android=20,
+                                                      WinUI=24}"
+                                Text="😴"
+                                VerticalOptions="Center" />
                             <StackLayout Grid.Column="1" Spacing="4">
-                                <Label Text="Jakość snu" 
-                                       Style="{StaticResource BodyLabel}"
-                                       FontAttributes="Bold"
-                                       FontSize="{OnPlatform iOS=14, Android=14, WinUI=16}" />
-                                <Label x:Name="SleepScoreLabel" 
-                                       Text="72/100" 
-                                       Style="{StaticResource TitleStyle}"
-                                       FontSize="18"
-                                       TextColor="{StaticResource Info}" />
+                                <Label
+                                    FontAttributes="Bold"
+                                    FontSize="{OnPlatform iOS=14,
+                                                          Android=14,
+                                                          WinUI=16}"
+                                    Style="{StaticResource BodyLabel}"
+                                    Text="Jakość snu" />
+                                <Label
+                                    x:Name="SleepScoreLabel"
+                                    FontSize="18"
+                                    Style="{StaticResource TitleStyle}"
+                                    Text="72/100"
+                                    TextColor="{StaticResource Info}" />
                             </StackLayout>
-                            <Label Grid.Column="2"
-                                   Text="7h 23m" 
-                                   Style="{StaticResource CaptionLabel}"
-                                   FontSize="11"
-                                   VerticalOptions="Center" />
+                            <Label
+                                Grid.Column="2"
+                                FontSize="11"
+                                Style="{StaticResource CaptionLabel}"
+                                Text="7h 23m"
+                                VerticalOptions="Center" />
                         </Grid>
                     </Frame>
 
-                    <!-- Karta stresu -->
+                    <!--  Karta stresu  -->
                     <Frame Style="{StaticResource StatCard}">
                         <Grid ColumnSpacing="16">
                             <Grid.ColumnDefinitions>
@@ -230,206 +285,254 @@
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            
-                            <Label Grid.Column="0" Text="💗" 
-                                   FontSize="{OnPlatform iOS=20, Android=20, WinUI=24}" 
-                                   VerticalOptions="Center" />
+
+                            <Label
+                                Grid.Column="0"
+                                FontSize="{OnPlatform iOS=20,
+                                                      Android=20,
+                                                      WinUI=24}"
+                                Text="💗"
+                                VerticalOptions="Center" />
                             <StackLayout Grid.Column="1" Spacing="4">
-                                <Label Text="Stres (HRV)" 
-                                       Style="{StaticResource BodyLabel}"
-                                       FontAttributes="Bold"
-                                       FontSize="{OnPlatform iOS=14, Android=14, WinUI=16}" />
-                                <Label x:Name="StressLevelLabel" 
-                                       Text="Niski" 
-                                       Style="{StaticResource TitleStyle}"
-                                       FontSize="18"
-                                       TextColor="{StaticResource Success}" />
+                                <Label
+                                    FontAttributes="Bold"
+                                    FontSize="{OnPlatform iOS=14,
+                                                          Android=14,
+                                                          WinUI=16}"
+                                    Style="{StaticResource BodyLabel}"
+                                    Text="Stres (HRV)" />
+                                <Label
+                                    x:Name="StressLevelLabel"
+                                    FontSize="18"
+                                    Style="{StaticResource TitleStyle}"
+                                    Text="Niski"
+                                    TextColor="{StaticResource Success}" />
                             </StackLayout>
-                            <Label Grid.Column="2"
-                                   Text="65 ms" 
-                                   Style="{StaticResource CaptionLabel}"
-                                   FontSize="11"
-                                   VerticalOptions="Center" />
+                            <Label
+                                Grid.Column="2"
+                                FontSize="11"
+                                Style="{StaticResource CaptionLabel}"
+                                Text="65 ms"
+                                VerticalOptions="Center" />
                         </Grid>
                     </Frame>
                 </StackLayout>
 
-                <!-- Sekcja szybkich akcji -->
+                <!--  Sekcja szybkich akcji  -->
                 <Frame Style="{StaticResource ModernCard}">
                     <StackLayout Spacing="16">
-                        <Label Text="⚡ Szybkie akcje" 
-                               Style="{StaticResource TitleStyle}"
-                               FontSize="{OnPlatform iOS=18, Android=18, WinUI=22}" />
-                        
-                        <StackLayout Spacing="12">
-                            <Button Text="🎨 Test Stroop"
-                                    Style="{StaticResource PrimaryButton}"
-                                    Clicked="OnStroopTestClicked" />
-                            
-                            <Button Text="⚡ Reakcja (PVT)"
-                                    Style="{StaticResource AccentButton}"
-                                    Clicked="OnPvtTestClicked" />
-                            
-                            <Button Text="🔄 Task Switch"
-                                    Style="{StaticResource SecondaryButton}"
-                                    Clicked="OnTaskSwitchClicked" />
-                            
-                            <Button Text="📊 Podsumowanie"
-                                    Style="{StaticResource OutlineButton}"
-                                    Clicked="OnSummaryClicked" />
+                        <Label
+                            FontSize="{OnPlatform iOS=18,
+                                                  Android=18,
+                                                  WinUI=22}"
+                            Style="{StaticResource TitleStyle}"
+                            Text="⚡ Szybkie akcje" />
 
-                            <!-- Avatar toggle button -->
-                            <Button Text="🐢 Pokaż/Ukryj Avatara"
-                                    Style="{StaticResource SecondaryButton}"
-                                    Clicked="OnToggleAvatarClicked" />
+                        <StackLayout Spacing="12">
+                            <Button
+                                Clicked="OnStroopTestClicked"
+                                Style="{StaticResource PrimaryButton}"
+                                Text="🎨 Test Stroop" />
+
+                            <Button
+                                Clicked="OnPvtTestClicked"
+                                Style="{StaticResource AccentButton}"
+                                Text="⚡ Reakcja (PVT)" />
+
+                            <Button
+                                Clicked="OnTaskSwitchClicked"
+                                Style="{StaticResource SecondaryButton}"
+                                Text="🔄 Task Switch" />
+
+                            <Button
+                                Clicked="OnSummaryClicked"
+                                Style="{StaticResource OutlineButton}"
+                                Text="📊 Podsumowanie" />
+
+                            <!--  Avatar toggle button  -->
+                            <Button
+                                Clicked="OnToggleAvatarClicked"
+                                Style="{StaticResource SecondaryButton}"
+                                Text="🐢 Pokaż/Ukryj Avatara" />
                         </StackLayout>
                     </StackLayout>
                 </Frame>
 
-                <!-- Sekcja rekomendacji AI -->
+                <!--  Sekcja rekomendacji AI  -->
                 <Frame Style="{StaticResource ModernCard}">
                     <StackLayout Spacing="16">
-                        <Label Text="🤖 Rekomendacje AI" 
-                               Style="{StaticResource TitleStyle}"
-                               FontSize="{OnPlatform iOS=18, Android=18, WinUI=22}" />
-                        
-                        <Frame BackgroundColor="{StaticResource SurfaceBackground}"
-                               CornerRadius="12"
-                               Padding="16"
-                               BorderColor="Transparent">
+                        <Label
+                            FontSize="{OnPlatform iOS=18,
+                                                  Android=18,
+                                                  WinUI=22}"
+                            Style="{StaticResource TitleStyle}"
+                            Text="🤖 Rekomendacje AI" />
+
+                        <Frame
+                            Padding="16"
+                            BackgroundColor="{StaticResource SurfaceBackground}"
+                            BorderColor="Transparent"
+                            CornerRadius="12">
                             <StackLayout Spacing="12">
-                                <Label x:Name="AIRecommendationLabel"
-                                       Text="Na podstawie Twoich ostatnich wyników sugeruję skupienie się na ćwiczeniach koncentracji. Twój wynik w teście Stroop można poprawić!"
-                                       Style="{StaticResource BodyLabel}"
-                                       FontSize="{OnPlatform iOS=14, Android=14, WinUI=15}"
-                                       LineBreakMode="WordWrap" />
-                                
+                                <Label
+                                    x:Name="AIRecommendationLabel"
+                                    FontSize="{OnPlatform iOS=14,
+                                                          Android=14,
+                                                          WinUI=15}"
+                                    LineBreakMode="WordWrap"
+                                    Style="{StaticResource BodyLabel}"
+                                    Text="Na podstawie Twoich ostatnich wyników sugeruję skupienie się na ćwiczeniach koncentracji. Twój wynik w teście Stroop można poprawić!" />
+
                                 <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
-                                    <Button Grid.Column="0"
-                                            Text="🎯 Zacznij"
-                                            Style="{StaticResource PrimaryButton}"
-                                            Clicked="OnStartRecommendationClicked" />
-                                    
-                                    <Button Grid.Column="1"
-                                            Text="📈 Więcej"
-                                            Style="{StaticResource OutlineButton}"
-                                            Clicked="OnMoreRecommendationsClicked" />
+                                    <Button
+                                        Grid.Column="0"
+                                        Clicked="OnStartRecommendationClicked"
+                                        Style="{StaticResource PrimaryButton}"
+                                        Text="🎯 Zacznij" />
+
+                                    <Button
+                                        Grid.Column="1"
+                                        Clicked="OnMoreRecommendationsClicked"
+                                        Style="{StaticResource OutlineButton}"
+                                        Text="📈 Więcej" />
                                 </Grid>
                             </StackLayout>
                         </Frame>
                     </StackLayout>
                 </Frame>
 
-                <!-- Odstęp na dole -->
+                <!--  Odstęp na dole  -->
                 <BoxView HeightRequest="20" Color="Transparent" />
             </StackLayout>
         </ScrollView>
 
-        <!-- Okno dialogowe avatara -->
-        <Grid x:Name="AvatarDialogOverlay" 
-              Style="{StaticResource DialogOverlay}"
-              Grid.RowSpan="2">
+        <!--  Okno dialogowe avatara  -->
+        <Grid
+            x:Name="AvatarDialogOverlay"
+            Grid.RowSpan="2"
+            Style="{StaticResource DialogOverlay}">
             <Grid.GestureRecognizers>
                 <TapGestureRecognizer Tapped="OnDialogOverlayTapped" />
             </Grid.GestureRecognizers>
 
-            <!-- Okno dialogowe z avatarem -->
+            <!--  Okno dialogowe z avatarem  -->
             <Frame x:Name="AvatarDialogCard" Style="{StaticResource DialogCard}">
                 <Frame.GestureRecognizers>
                     <TapGestureRecognizer />
                 </Frame.GestureRecognizers>
-                
+
                 <StackLayout Spacing="20">
-                    <!-- Avatar i animacja -->
+                    <!--  Avatar i animacja  -->
                     <Grid>
-                        <Frame Style="{StaticResource AvatarFrame}" 
-                               WidthRequest="120" 
-                               HeightRequest="120"
-                               HorizontalOptions="Center">
-                            <!-- MediaElement dla animacji WebM -->
-                            <toolkit:MediaElement x:Name="DialogAvatarVideo"
-                                         Source="wave.webm"
-                                         WidthRequest="100"
-                                         HeightRequest="100"
-                                         Aspect="AspectFit"
-                                         ShouldAutoPlay="True"
-                                         ShouldLoopPlayback="True"
-                                         ShouldShowPlaybackControls="False"
-                                         Volume="0"
-                                         ShouldMute="True" />
-                            
-                            <!-- Fallback Image (ukryty domyślnie) -->
-                            <Image x:Name="DialogAvatarImage"
-                                   Source="hackyeah_default.png"
-                                   WidthRequest="100"
-                                   HeightRequest="100"
-                                   Aspect="AspectFit"
-                                   IsVisible="False" />
+                        <Frame
+                            HeightRequest="150"
+                            HorizontalOptions="Center"
+                            Style="{StaticResource AvatarFrame}"
+                            WidthRequest="300">
+
+                            <Grid>
+
+                                <toolkit:MediaElement
+                                    x:Name="DialogAvatarVideo"
+                                    Aspect="AspectFill"
+                                    HeightRequest="230"
+                                    MediaFailed="DialogAvatarVideo_MediaFailed"
+                                    ShouldAutoPlay="false"
+                                    ShouldLoopPlayback="True"
+                                    ShouldMute="False"
+                                    ShouldShowPlaybackControls="False"
+                                    Source="embed://wave.mp4"
+                                    StateChanged="DialogAvatarVideo_StateChanged"
+                                    Volume="0.8"
+                                    WidthRequest="230" />
+
+                                <Image
+                                    x:Name="DialogAvatarImage"
+                                    Aspect="AspectFit"
+                                    HeightRequest="100"
+                                    IsVisible="False"
+                                    Source="hackyeah_default.png"
+                                    WidthRequest="100" />
+
+                            </Grid>
                         </Frame>
-                        
-                        <!-- Indicator mówiącej postaci -->
-                        <Ellipse x:Name="SpeechIndicator"
-                                 Fill="{StaticResource Success}"
-                                 WidthRequest="16"
-                                 HeightRequest="16"
-                                 HorizontalOptions="End"
-                                 VerticalOptions="Start"
-                                 Margin="8"
-                                 Opacity="0.8" />
+
+                        <!--  Indicator mówiącej postaci  -->
+                        <Ellipse
+                            x:Name="SpeechIndicator"
+                            Margin="8"
+                            Fill="{StaticResource Success}"
+                            HeightRequest="16"
+                            HorizontalOptions="End"
+                            Opacity="0.8"
+                            VerticalOptions="Start"
+                            WidthRequest="16" />
                     </Grid>
 
-                    <!-- Imię assistenta -->
-                    <Label Text="NeuroMate Assistant 🧠"
-                           Style="{StaticResource TitleStyle}"
-                           FontSize="20"
-                           HorizontalOptions="Center"
-                           TextColor="{StaticResource Primary}" />
+                    <!--  Imię assistenta  -->
+                    <Label
+                        FontSize="20"
+                        HorizontalOptions="Center"
+                        Style="{StaticResource TitleStyle}"
+                        Text="NeuroMate Assistant 🧠"
+                        TextColor="{StaticResource Primary}" />
 
-                    <!-- Wiadomość od avatara -->
-                    <Frame BackgroundColor="{StaticResource SurfaceBackground}"
-                           CornerRadius="16"
-                           Padding="16"
-                           BorderColor="Transparent">
-                        <Label x:Name="AvatarMessageLabel"
-                               Text="Cześć! Jestem twoim asystentem neurokognitywnym. Mogę pomóc Ci w treningu mózgu i monitorowaniu wydajności!"
-                               Style="{StaticResource BodyLabel}"
-                               FontSize="{OnPlatform iOS=14, Android=14, WinUI=15}"
-                               HorizontalOptions="Center"
-                               HorizontalTextAlignment="Center"
-                               LineBreakMode="WordWrap" />
+                    <!--  Wiadomość od avatara  -->
+                    <Frame
+                        Padding="16"
+                        BackgroundColor="{StaticResource SurfaceBackground}"
+                        BorderColor="Transparent"
+                        CornerRadius="16">
+                        <Label
+                            x:Name="AvatarMessageLabel"
+                            FontSize="{OnPlatform iOS=14,
+                                                  Android=14,
+                                                  WinUI=15}"
+                            HorizontalOptions="Center"
+                            HorizontalTextAlignment="Center"
+                            LineBreakMode="WordWrap"
+                            Style="{StaticResource BodyLabel}"
+                            Text="Cześć! Jestem twoim asystentem neurokognitywnym. Mogę pomóc Ci w treningu mózgu i monitorowaniu wydajności!" />
                     </Frame>
 
-                    <!-- Przyciski akcji -->
+                    <!--  Przyciski akcji  -->
                     <StackLayout Spacing="12">
-                        <Button x:Name="StartTrainingButton"
-                                Text="🎯 Rozpocznij trening"
-                                Style="{StaticResource PrimaryButton}"
-                                Clicked="OnDialogStartTrainingClicked" />
-                        
-                        <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
-                            <Button Grid.Column="0"
-                                    x:Name="ShowStatsButton"
-                                    Text="📊 Statystyki"
-                                    Style="{StaticResource SecondaryButton}"
-                                    Clicked="OnDialogShowStatsClicked" />
-                            
-                            <Button Grid.Column="1"
-                                    x:Name="SettingsButton"
-                                    Text="⚙️ Ustawienia"
-                                    Style="{StaticResource OutlineButton}"
-                                    Clicked="OnDialogSettingsClicked" />
+                        <Button
+                            x:Name="StartTrainingButton"
+                            Clicked="OnDialogStartTrainingClicked"
+                            Style="{StaticResource PrimaryButton}"
+                            Text="🎯 Rozpocznij trening" />
+
+                        <Grid
+                            ColumnDefinitions="*,*"
+                            ColumnSpacing="12"
+                            IsVisible="Collapse">
+                            <Button
+                                x:Name="ShowStatsButton"
+                                Grid.Column="0"
+                                Clicked="OnDialogShowStatsClicked"
+                                Style="{StaticResource SecondaryButton}"
+                                Text="📊 Statystyki" />
+
+                            <Button
+                                x:Name="SettingsButton"
+                                Grid.Column="1"
+                                Clicked="OnDialogSettingsClicked"
+                                Style="{StaticResource OutlineButton}"
+                                Text="⚙️ Ustawienia" />
                         </Grid>
                     </StackLayout>
 
-                    <!-- Przycisk zamknij -->
-                    <Button Text="✕ Zamknij"
-                            x:Name="CloseDialogButton"
-                            Style="{StaticResource OutlineButton}"
-                            TextColor="{StaticResource TextSecondary}"
-                            BorderColor="{StaticResource BorderMedium}"
-                            Clicked="OnCloseDialogClicked"
-                            FontSize="14"
-                            Padding="12,8" />
+                    <!--  Przycisk zamknij  -->
+                    <Button
+                        x:Name="CloseDialogButton"
+                        Padding="12,8"
+                        BorderColor="{StaticResource BorderMedium}"
+                        Clicked="OnCloseDialogClicked"
+                        FontSize="14"
+                        Style="{StaticResource OutlineButton}"
+                        Text="✕ Zamknij"
+                        TextColor="{StaticResource TextSecondary}" />
                 </StackLayout>
             </Frame>
         </Grid>
