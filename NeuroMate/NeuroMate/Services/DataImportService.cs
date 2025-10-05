@@ -1,4 +1,5 @@
 using NeuroMate.Models;
+using NeuroMate.Database;
 using System.Globalization;
 
 namespace NeuroMate.Services
@@ -6,6 +7,12 @@ namespace NeuroMate.Services
     public class DataImportService : IDataImportService
     {
         private readonly string[] _requiredHeaders = { "timestamp", "hr", "hrv", "steps", "sleep_minutes" };
+        private readonly DatabaseService _db;
+
+        public DataImportService(DatabaseService db)
+        {
+            _db = db;
+        }
 
         public async Task<ImportResult> ImportCsvAsync(string filePath)
         {

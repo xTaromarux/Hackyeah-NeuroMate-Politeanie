@@ -3,7 +3,7 @@ using System;
 
 namespace NeuroMate.Database.Entities
 {
-    public class PointsHistory
+    public class PointsHistoryData
     {
         [PrimaryKey, AutoIncrement]
         public int Id { get; set; }

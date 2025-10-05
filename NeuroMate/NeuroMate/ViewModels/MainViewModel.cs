@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using NeuroMate.Models;
 using NeuroMate.Services;
 using NeuroMate.Helpers;
+using NeuroMate.Database;
 
 namespace NeuroMate.ViewModels
 {
@@ -11,6 +12,7 @@ namespace NeuroMate.ViewModels
     {
         #region Services
 
+        private readonly DatabaseService _db;
         private readonly INeuroScoreService _neuroScoreService;
         private readonly IInterventionService _interventionService;
         private readonly IPVTGameService _pvtGameService;
@@ -94,13 +96,16 @@ namespace NeuroMate.ViewModels
 
         public MainViewModel()
         {
-            // Inicjalizacja serwisów - tymczasowo bez DI
-            _neuroScoreService = new NeuroScoreService();
-            _interventionService = new InterventionService();
-            _pvtGameService = new PvtGameService();
-            _dataImportService = new DataImportService();
-            _pointsService = new PointsService();
+            // Inicjalizacja bazy danych
+            _db = new DatabaseService();
+
+            // Inicjalizacja serwisów z bazą danych
+            _pointsService = new PointsService(_db);
             _avatarService = new AvatarService(_pointsService);
+            _neuroScoreService = new NeuroScoreService(_db);
+            _interventionService = new InterventionService(_db);
+            _pvtGameService = new PvtGameService(_db);
+            _dataImportService = new DataImportService(_db);
 
             // Inicjalizacja danych
             InitializeTrendData();

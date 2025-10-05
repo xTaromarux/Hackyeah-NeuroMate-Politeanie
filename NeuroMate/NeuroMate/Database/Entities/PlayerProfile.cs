@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace NeuroMate.Database.Entities
 {
-    public class PlayerProfile
+    public class PlayerProfileData
     {
         [PrimaryKey, AutoIncrement]
         public int Id { get; set; }

@@ -1,4 +1,5 @@
 using NeuroMate.Models;
+using NeuroMate.Database;
 
 namespace NeuroMate.Services
 {
@@ -37,6 +38,13 @@ namespace NeuroMate.Services
                 Priority = 3
             }
         };
+
+        private readonly DatabaseService _db;
+
+        public InterventionService(DatabaseService db)
+        {
+            _db = db;
+        }
 
         public Task<Intervention?> GetRecommendedInterventionAsync(int neuroScore, int minutesNoBreak, string userGoal)
         {

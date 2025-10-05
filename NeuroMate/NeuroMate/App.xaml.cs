@@ -1,7 +1,11 @@
-﻿namespace NeuroMate
+﻿using System;
+
+namespace NeuroMate
 {
     public partial class App : Application
     {
+        public static IServiceProvider Services { get; set; }
+
         public App()
         {
             InitializeComponent();

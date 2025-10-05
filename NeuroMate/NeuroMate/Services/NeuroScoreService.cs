@@ -1,9 +1,11 @@
 using NeuroMate.Models;
+using NeuroMate.Database;
 
 namespace NeuroMate.Services
 {
     public class NeuroScoreService : INeuroScoreService
     {
+        private readonly DatabaseService _db;
         private UserData _currentUserData;
         private NeuroScoreComponents _lastComponents;
         private readonly List<NeuroScoreHistory> _scoreHistory = new();
@@ -15,8 +17,10 @@ namespace NeuroMate.Services
         private const int OPTIMAL_HRV = 70;
         private const int OPTIMAL_SLEEP_MINUTES = 480; // 8h
 
-        public NeuroScoreService()
+        public NeuroScoreService(DatabaseService db)
         {
+            _db = db;
+
             _currentUserData = new UserData
             {
                 NeuroScore = 50,

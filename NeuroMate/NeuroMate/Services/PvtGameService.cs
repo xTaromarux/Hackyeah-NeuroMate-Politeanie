@@ -1,9 +1,11 @@
 using NeuroMate.Models;
+using NeuroMate.Database;
 
 namespace NeuroMate.Services
 {
     public class PvtGameService : IPVTGameService
     {
+        private readonly DatabaseService _db;
         private readonly List<ReactionRecord> _reactions = new();
         private readonly Random _random = new();
         private Timer? _gameTimer;
@@ -14,6 +16,11 @@ namespace NeuroMate.Services
         public event EventHandler<GameStateEventArgs>? OnGameStateChanged;
 
         public bool IsGameActive { get; private set; }
+
+        public PvtGameService(DatabaseService db)
+        {
+            _db = db;
+        }
 
         public Task StartGameAsync()
         {

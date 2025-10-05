@@ -12,14 +12,15 @@ namespace NeuroMate.Views
         private List<Avatar> _allAvatars = new();
         private string _currentFilter = "All";
 
-        public AvatarShopPage(IPointsService pointsService, IAvatarService avatarService)
+        public AvatarShopPage()
         {
             InitializeComponent();
-            _pointsService = pointsService;
-            _avatarService = avatarService;
+            _pointsService = App.Services.GetService<IPointsService>();
+            _avatarService = App.Services.GetService<IAvatarService>();
             AvatarsCollection.ItemsSource = _avatars;
 
-            _pointsService.OnProfileChanged += () => _ = LoadDataAsync();
+            if (_pointsService != null)
+                _pointsService.OnProfileChanged += () => _ = LoadDataAsync();
         }
 
         protected override async void OnAppearing()

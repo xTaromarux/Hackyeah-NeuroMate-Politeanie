@@ -30,6 +30,7 @@ namespace NeuroMate
 
             // Rejestracja routingu dla nowych stron
             Routing.RegisterRoute(nameof(LootBoxPage), typeof(Views.LootBoxPage));
+            Routing.RegisterRoute(nameof(AvatarShopPage), typeof(AvatarShopPage));
         }
     }
 }

@@ -23,8 +23,8 @@ namespace NeuroMate.Database
             _database.CreateTableAsync<NeuroScoreHistory>().Wait();
             _database.CreateTableAsync<NeuroScoreComponents>().Wait();
             _database.CreateTableAsync<UserData>().Wait();
-            _database.CreateTableAsync<PlayerProfile>().Wait();
-            _database.CreateTableAsync<PointsHistory>().Wait();
+            _database.CreateTableAsync<PlayerProfileData>().Wait();
+            _database.CreateTableAsync<PointsHistoryData>().Wait();
             _database.CreateTableAsync<Avatar>().Wait();
             _database.CreateTableAsync<LootBox>().Wait();
             _database.CreateTableAsync<LootBoxReward>().Wait();
@@ -66,15 +66,15 @@ namespace NeuroMate.Database
         public Task SaveUserDataAsync(UserData data) => _database.InsertOrReplaceAsync(data);
         public Task DeleteUserDataAsync(UserData data) => _database.DeleteAsync(data);
 
-        // PlayerProfile
-        public Task<List<PlayerProfile>> GetAllPlayerProfilesAsync() => _database.Table<PlayerProfile>().ToListAsync();
-        public Task SavePlayerProfileAsync(PlayerProfile data) => _database.InsertOrReplaceAsync(data);
-        public Task DeletePlayerProfileAsync(PlayerProfile data) => _database.DeleteAsync(data);
+        // PlayerProfileData
+        public Task<List<PlayerProfileData>> GetAllPlayerProfileDataAsync() => _database.Table<PlayerProfileData>().ToListAsync();
+        public Task SavePlayerProfileDataAsync(PlayerProfileData data) => _database.InsertOrReplaceAsync(data);
+        public Task DeletePlayerProfileDataAsync(PlayerProfileData data) => _database.DeleteAsync(data);
 
-        // PointsHistory
-        public Task<List<PointsHistory>> GetAllPointsHistoryAsync() => _database.Table<PointsHistory>().ToListAsync();
-        public Task SavePointsHistoryAsync(PointsHistory data) => _database.InsertOrReplaceAsync(data);
-        public Task DeletePointsHistoryAsync(PointsHistory data) => _database.DeleteAsync(data);
+        // PointsHistoryData
+        public Task<List<PointsHistoryData>> GetAllPointsHistoryDataAsync() => _database.Table<PointsHistoryData>().ToListAsync();
+        public Task SavePointsHistoryDataAsync(PointsHistoryData data) => _database.InsertOrReplaceAsync(data);
+        public Task DeletePointsHistoryDataAsync(PointsHistoryData data) => _database.DeleteAsync(data);
 
         // Avatar
         public Task<List<Avatar>> GetAllAvatarsAsync() => _database.Table<Avatar>().ToListAsync();

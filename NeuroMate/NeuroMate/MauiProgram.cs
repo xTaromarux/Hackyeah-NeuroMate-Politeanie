@@ -2,6 +2,7 @@
 using SkiaSharp.Views.Maui.Controls.Hosting;
 using NeuroMate.Services;
 using CommunityToolkit.Maui;
+using NeuroMate.Database;
 
 namespace NeuroMate
 {
@@ -20,6 +21,9 @@ namespace NeuroMate
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                     fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
                 });
+
+            // Rejestracja bazy danych
+            builder.Services.AddSingleton<DatabaseService>();
 
             // Rejestracja serwisów
             builder.Services.AddSingleton<IFloatingAvatarService, FloatingAvatarService>();
@@ -41,7 +45,9 @@ namespace NeuroMate
     		builder.Logging.AddDebug();
 #endif
 
-            return builder.Build();
+            var app = builder.Build();
+            App.Services = app.Services;
+            return app;
         }
     }
 }

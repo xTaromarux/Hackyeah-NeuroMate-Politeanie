@@ -1,18 +1,25 @@
 using NeuroMate.Models;
+using NeuroMate.Database;
+using NeuroMate.Database.Entities;
+using System.Text.Json;
 
 namespace NeuroMate.Services
 {
     public class PointsService : IPointsService
     {
         private PlayerProfile _playerProfile;
-        private readonly List<PointsHistory> _pointsHistory = new();
+        private readonly DatabaseService _db;
         public event Action OnProfileChanged;
 
-        public PointsService()
+        public PointsService(DatabaseService db)
         {
-            _playerProfile = new PlayerProfile
+            _db = db;
+            // Wczytaj profil gracza z bazy lub utwórz nowy
+            var profiles = _db.GetAllPlayerProfileDataAsync().Result;
+            var profileData = profiles.FirstOrDefault();
+            _playerProfile = profileData != null ? MapToBusiness(profileData) : new PlayerProfile
             {
-                TotalPoints = 500, // Zmieniam z 50000 na 500 dla łatwiejszego testowania
+                TotalPoints = 500,
                 PointsSpent = 0,
                 CurrentAvatarId = "hackyeah_default",
                 UnlockedAvatarIds = new List<string> { "hackyeah_default" },
@@ -20,29 +27,33 @@ namespace NeuroMate.Services
                 TotalLootBoxesOpened = 0,
                 LastPointsEarned = DateTime.Now
             };
+            if (profileData == null)
+            {
+                var newData = MapToData(_playerProfile);
+                _db.SavePlayerProfileDataAsync(newData).Wait();
+            }
         }
 
         public async Task<int> AddPointsForGameAsync(string gameType, int gameScore, int reactionTimeMs = 0)
         {
-            await Task.Delay(1); // Symulacja async
-
             int pointsEarned = CalculatePointsForGame(gameType, gameScore, reactionTimeMs);
 
             _playerProfile.TotalPoints += pointsEarned;
             _playerProfile.TotalGamesPlayed++;
             _playerProfile.LastPointsEarned = DateTime.Now;
+            await _db.SavePlayerProfileDataAsync(MapToData(_playerProfile));
 
-            // Dodaj do historii
-            _pointsHistory.Add(new PointsHistory
+            var history = new PointsHistoryData
             {
                 Timestamp = DateTime.Now,
                 PointsEarned = pointsEarned,
                 Source = gameType,
                 GameScore = gameScore,
                 Description = $"Gra {gameType}: {gameScore} pkt, RT: {reactionTimeMs}ms"
-            });
+            };
+            await _db.SavePointsHistoryDataAsync(history);
 
-            OnProfileChanged.Invoke();
+            OnProfileChanged?.Invoke();
             return pointsEarned;
         }
 
@@ -54,20 +65,18 @@ namespace NeuroMate.Services
                 "Stroop" => CalculateStroopPoints(gameScore),
                 "NBack" => CalculateNBackPoints(gameScore),
                 "TaskSwitching" => CalculateTaskSwitchingPoints(gameScore),
-                _ => 10 // Domyślne punkty
+                _ => 10
             };
 
-            // Bonus za wysokie wyniki
             if (gameScore >= 90) basePoints = (int)(basePoints * 1.5);
             else if (gameScore >= 80) basePoints = (int)(basePoints * 1.3);
             else if (gameScore >= 70) basePoints = (int)(basePoints * 1.1);
 
-            return Math.Max(5, basePoints); // Minimum 5 punktów
+            return Math.Max(5, basePoints);
         }
 
         private int CalculatePVTPoints(int reactionTimeMs, int accuracy)
         {
-            // Im szybsza reakcja, tym więcej punktów
             int basePoints = reactionTimeMs switch
             {
                 < 200 => 50,
@@ -76,8 +85,6 @@ namespace NeuroMate.Services
                 < 500 => 20,
                 _ => 10
             };
-
-            // Bonus za accuracy
             return basePoints + (accuracy / 10);
         }
 
@@ -98,7 +105,7 @@ namespace NeuroMate.Services
         {
             return accuracy switch
             {
-                >= 95 => 50, // N-back jest trudniejsze
+                >= 95 => 50,
                 >= 90 => 45,
                 >= 85 => 40,
                 >= 80 => 35,
@@ -122,38 +129,86 @@ namespace NeuroMate.Services
 
         public async Task<PlayerProfile> GetPlayerProfileAsync()
         {
-            await Task.Delay(1);
+            var profiles = await _db.GetAllPlayerProfileDataAsync();
+            var profileData = profiles.FirstOrDefault();
+            _playerProfile = profileData != null ? MapToBusiness(profileData) : _playerProfile;
             return _playerProfile;
         }
 
         public async Task<List<PointsHistory>> GetPointsHistoryAsync(int days = 30)
         {
-            await Task.Delay(1);
             var cutoffDate = DateTime.Now.AddDays(-days);
-            return _pointsHistory.Where(h => h.Timestamp >= cutoffDate)
-                                .OrderByDescending(h => h.Timestamp)
-                                .ToList();
+            var allHistoryData = await _db.GetAllPointsHistoryDataAsync();
+            var allHistory = allHistoryData.Select(MapToBusiness).ToList();
+            return allHistory.Where(h => h.Timestamp >= cutoffDate)
+                             .OrderByDescending(h => h.Timestamp)
+                             .ToList();
         }
 
         public async Task SavePlayerProfileAsync(PlayerProfile profile)
         {
-            await Task.Delay(1);
+            await _db.SavePlayerProfileDataAsync(MapToData(profile));
             _playerProfile = profile;
-            OnProfileChanged.Invoke();
+            OnProfileChanged?.Invoke();
         }
 
         public async Task<bool> SpendPointsAsync(int amount)
         {
-            await Task.Delay(1);
             if (_playerProfile.TotalPoints >= amount)
             {
                 _playerProfile.TotalPoints -= amount;
                 _playerProfile.PointsSpent += amount;
-                OnProfileChanged.Invoke();
+                await _db.SavePlayerProfileDataAsync(MapToData(_playerProfile));
+                OnProfileChanged?.Invoke();
                 return true;
             }
-            OnProfileChanged.Invoke();
+            OnProfileChanged?.Invoke();
             return false;
+        }
+
+        // Mapowanie encji bazodanowej na model biznesowy
+        private PlayerProfile MapToBusiness(PlayerProfileData data)
+        {
+            return new PlayerProfile
+            {
+                TotalPoints = data.TotalPoints,
+                PointsSpent = data.PointsSpent,
+                CurrentAvatarId = data.CurrentAvatarId,
+                UnlockedAvatarIds = string.IsNullOrEmpty(data.UnlockedAvatarIdsJson)
+                    ? new List<string>()
+                    : JsonSerializer.Deserialize<List<string>>(data.UnlockedAvatarIdsJson) ?? new List<string>(),
+                TotalGamesPlayed = data.TotalGamesPlayed,
+                TotalLootBoxesOpened = data.TotalLootBoxesOpened,
+                LastPointsEarned = data.LastPointsEarned
+            };
+        }
+
+        // Mapowanie modelu biznesowego na encję bazodanową
+        private PlayerProfileData MapToData(PlayerProfile profile)
+        {
+            return new PlayerProfileData
+            {
+                TotalPoints = profile.TotalPoints,
+                PointsSpent = profile.PointsSpent,
+                CurrentAvatarId = profile.CurrentAvatarId,
+                UnlockedAvatarIdsJson = JsonSerializer.Serialize(profile.UnlockedAvatarIds),
+                TotalGamesPlayed = profile.TotalGamesPlayed,
+                TotalLootBoxesOpened = profile.TotalLootBoxesOpened,
+                LastPointsEarned = profile.LastPointsEarned
+            };
+        }
+
+        // Mapowanie encji bazodanowej na model biznesowy PointsHistory
+        private PointsHistory MapToBusiness(PointsHistoryData data)
+        {
+            return new PointsHistory
+            {
+                Timestamp = data.Timestamp,
+                PointsEarned = data.PointsEarned,
+                Source = data.Source,
+                GameScore = data.GameScore,
+                Description = data.Description
+            };
         }
     }
 }
